@@ -1842,13 +1842,21 @@
             </div>
             <input type="file" id="pf" accept="image/*" style="display:none" onchange="pickPhoto(event)">
           </div>
-          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:#1e40af">
-            <b>⚡ Parametri Solunari Rilevati:</b>
-            <div id="auto-info" style="margin-top:2px;font-size:10px">🌙 Luna Crescente (5%) • 🌊 Flusso Crescente • 📍 Civitavecchia • 📅 Ora</div>
+
+          <!-- Selettore Data e Ora personalizzata con ricalcolo astronomico automatico -->
+          <div class="fg">
+            <label><i class="fa-solid fa-calendar-day" style="color:var(--primary)"></i> Data e Ora Cattura *</label>
+            <input type="datetime-local" id="fdt" required onchange="updateCatchSolunarParams()" style="background:#fff;font-weight:700">
           </div>
+
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:#1e40af">
+            <b>⚡ Parametri Solunari Rilevati per la Data:</b>
+            <div id="auto-info" style="margin-top:2px;font-size:10px">🌙 Calcolo in corso... • 🌊 Calcolo marea... • 📍 Spot</div>
+          </div>
+
           <div class="fr2">
             <div class="fg"><label>Specie *</label><select id="fs" required><option>Orata</option><option>Spigola</option><option>Sarago</option><option>Dentice</option><option>Mormora</option><option>Pesce Serra</option><option>Ricciola</option><option>Palamita</option><option>Calamaro</option><option>Seppia</option><option>Altro</option></select></div>
-            <div class="fg"><label>Quantità (N° Capi) *</label><input type="number" step="1" min="1" id="fq" value="1" placeholder="1" required></div>
+            <div class="fg"><label>Quantità *</label><input type="number" step="1" min="1" id="fq" value="1" placeholder="1" required></div>
           </div>
           <div class="fr2">
             <div class="fg"><label>Peso Totale (kg) *</label><input type="number" step="0.01" min="0.05" id="fw" placeholder="es. 1.85" required></div>
@@ -1856,7 +1864,7 @@
           </div>
           <div class="fr2">
             <div class="fg"><label>Tecnica</label><select id="ft"><option>Surfcasting</option><option>Bolognese</option><option>Spinning</option><option>Barca</option></select></div>
-            
+            <div class="fg"><label>Posizione / Spot *</label><input type="text" id="fsp" placeholder="es. Spiaggia di Sant'Agostino" required oninput="updateCatchSolunarParams()"></div>
           </div>
           <div class="fg"><label>Esca (Menu Surfcasting / Mare) *</label><select id="fb"><option>Trancio di Pesce</option><option>Cannolicchio vivo</option><option>Arenicola (Verme di sabbia)</option><option>Coreano</option><option>Americano (Bloodworm)</option><option>Bibi nostrano</option><option>Muriddu (Verme rosso)</option><option>Sarda a tocchetti / rivoltata</option><option>Strisciolina di Seppia / Calamaro</option><option>Granchio vivo di sabbia</option><option>Cozza / Fasolaro</option><option>Gambero vivo</option><option>Artificiale Minnow / Jerk</option><option>Altro / Personalizzato</option></select></div>
           
