@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  ${'<' + 'script' src="https://cdn.jsdelivr.net/npm/chart.js">${'<' + '/script>'}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --primary: #0284c7;
@@ -1893,8 +1893,8 @@
   </div>
 </div>
 
-${'<' + 'script' src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">${'<' + '/script>'}
-${'<' + 'script'>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
 // === DATABASE LOCALITÀ ITALIANE IN TEMPO REALE ===
 const locs = [
   { name: "Civitavecchia", reg: "Lazio", lat: 42.0924, lng: 11.7954, seaBase: 26.4 },
@@ -3546,7 +3546,7 @@ function generateReportHTML(d, forDirectPdf = false) {
       .table-stat th { background: #e2e8f0 !important; color: #000 !important; }
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  ${'<' + 'script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">' + '<' + '/script>'}
 </head>
 <body>
 
@@ -3665,7 +3665,7 @@ function generateReportHTML(d, forDirectPdf = false) {
   </div>
 </div>
 
-<script>
+${'<' + 'script>'}
   function exportToPdfFile() {
     const el = document.getElementById('printable-report');
     const opt = {
@@ -3681,15 +3681,7 @@ function generateReportHTML(d, forDirectPdf = false) {
       window.print();
     }
   }
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err));
-    });
-  }
-</script>
+${'<' + '/script>'}
 </body>
 </html>`;
 }
@@ -3767,14 +3759,13 @@ window.addEventListener('DOMContentLoaded', () => {
   renderDiary();
   renderStats();
 });
-${'<' + '/script>'}
-
+</script>
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err));
-    });
-  }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+  });
+}
 </script>
 </body>
 </html>
