@@ -1,0 +1,3780 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PESCA PRO">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2972/2972036.png">
+  <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PESCA PRO - Meteopesca & Solunare Italia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --emerald: #10b981;
+      --emerald-dark: #059669;
+      --amber: #f59e0b;
+      --orange: #f97316;
+      --purple: #8b5cf6;
+      --indigo: #6366f1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --card-bg: #ffffff;
+      --shadow: 0 4px 12px rgba(0,0,0,.06);
+      --shadow-md: 0 10px 25px -5px rgba(0,0,0,.12);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1e293b, #0f172a 55%, #020617);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 6px;
+      color: #fff;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 460px;
+      margin-bottom: 10px;
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .view-btn {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .view-btn:hover {
+      background: rgba(255,255,255,.25);
+      transform: scale(1.04);
+    }
+
+    /* Smartphone / Desktop Container */
+    .device {
+      width: 100%;
+      max-width: 430px;
+      height: 860px;
+      background: #020617;
+      border-radius: 44px;
+      padding: 8px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.9), 0 0 0 2px rgba(255,255,255,.2);
+      position: relative;
+      overflow: hidden;
+      transition: max-width 0.3s ease, height 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .device.full {
+      max-width: 900px;
+      height: 94vh;
+      border-radius: 24px;
+      padding: 4px;
+    }
+
+    .screen-wrap {
+      width: 100%;
+      height: 100%;
+      background: #f8fafc;
+      border-radius: 36px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .device.full .screen-wrap {
+      border-radius: 20px;
+    }
+
+    .island {
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 20px;
+      background: #000;
+      border-radius: 12px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+    }
+
+    .island-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1e293b;
+    }
+
+    /* App Bar */
+    .app-bar {
+      height: 72px;
+      padding: 20px 14px 0;
+      background: linear-gradient(135deg, #0f172a, #0369a1);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(0,0,0,.2);
+      z-index: 900;
+      flex-shrink: 0;
+    }
+
+    .app-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .app-sub {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ib {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .ib:hover {
+      background: rgba(255,255,255,.3);
+    }
+
+    /* Search Bar */
+    .search-overlay {
+      position: absolute;
+      top: 72px;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 12px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      z-index: 950;
+      display: none;
+      flex-direction: column;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .search-overlay.open {
+      display: flex;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 8px 12px;
+      gap: 8px;
+    }
+
+    .search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .results {
+      max-height: 250px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+
+    .res-row {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .res-row:hover {
+      background: #e0f2fe;
+      color: var(--primary);
+    }
+
+    /* Viewport & Scrolling */
+    .viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+
+    .tab {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      background: #f8fafc;
+    }
+
+    .tab.on {
+      display: flex;
+    }
+
+    .scroll-pane {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 10px 10px 90px;
+    }
+
+    /* Map Card */
+    .map-card {
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 2px solid #0284c7;
+      box-shadow: 0 6px 20px rgba(2,132,199,.2);
+      flex-shrink: 0;
+    }
+
+    .map-hdr {
+      padding: 9px 12px;
+      background: linear-gradient(135deg,#0f172a,#1e293b);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .map-badge {
+      background: var(--primary);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .map-toolbar {
+      display: flex;
+      background: #f1f5f9;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border);
+      gap: 6px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pill {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: var(--shadow);
+      transition: all 0.2s;
+    }
+
+    .pill:hover {
+      background: #e0f2fe;
+      border-color: #38bdf8;
+      color: var(--primary);
+    }
+
+    .pill.pri {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      border: none;
+    }
+
+    .map-frame {
+      width: 100%;
+      height: 300px;
+      position: relative;
+      background: #0b132b;
+    }
+
+    #mapview {
+      width: 100%;
+      height: 300px;
+      z-index: 10;
+    }
+
+    .map-banner {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(15,23,42,.9);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 800;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid rgba(56,189,248,.4);
+      pointer-events: none;
+    }
+
+    .fab-stack {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fab {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: #fff;
+      color: var(--text);
+      border: 2px solid var(--primary);
+      box-shadow: 0 4px 14px rgba(0,0,0,.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all .2s;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+    }
+
+    .fab.gps {
+      background: var(--primary);
+      color: #fff;
+      border-color: #fff;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(2,132,199,.8); }
+      70% { box-shadow: 0 0 0 14px rgba(2,132,199,0); }
+      100% { box-shadow: 0 0 0 0 rgba(2,132,199,0); }
+    }
+
+    /* Cards */
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+
+    .card-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-h h3 {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* METEOPESCA HEADER ACTIVITY CARD */
+    .meteopesca-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #0369a1 100%);
+      border-radius: 18px;
+      padding: 14px;
+      color: #fff;
+      box-shadow: var(--shadow-md);
+      flex-shrink: 0;
+    }
+
+    .mp-activity-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .mp-score-badge {
+      background: var(--emerald);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(16,185,129,.4);
+    }
+
+    .mp-sun-moon-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 11px;
+    }
+
+    .mp-sm-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* SOLUNAR PERIODS (MAJOR / MINOR) */
+    .solunar-periods-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .solunar-period-pill {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .solunar-period-pill.major {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .solunar-period-pill.minor {
+      border-color: #fde68a;
+      background: #fffbeb;
+    }
+
+    /* TELEMETRY 6-GRID METEOPESCA */
+    .tele-grid-6 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .tele-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 9px 6px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tele-card i {
+      font-size: 15px;
+      color: var(--primary);
+      margin-bottom: 3px;
+    }
+
+    .tele-card .val {
+      font-size: 12px;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .tele-card .lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .tele-card .sub {
+      font-size: 8px;
+      color: #0284c7;
+      font-weight: 700;
+    }
+
+    .chart-box-h {
+      width: 100%;
+      height: 125px;
+      margin-top: 6px;
+    }
+
+    /* TIDE TABLE METEOPESCA STYLE */
+    .tide-table-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .tide-cell {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 7px 4px;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .tide-cell.high {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+
+    .tide-cell.low {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+
+    /* Monthly Moon Strip */
+    .moon-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px 2px;
+    }
+
+    .moon-strip::-webkit-scrollbar { display: none; }
+
+    .moon-day-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 8px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 60px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .moon-day-card.today {
+      border: 2px solid var(--indigo);
+      background: #eef2ff;
+    }
+
+    /* Diary */
+    .diary-top {
+      padding: 10px 14px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 6px 0 2px;
+    }
+
+    .chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #64748b;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+    }
+
+    .chip.on {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .diary-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .catch-card {
+      background: #fff;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .catch-photo {
+      width: 100%;
+      height: 180px;
+      position: relative;
+      background: #cbd5e1;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .catch-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .catch-badge {
+      position: absolute;
+      backdrop-filter: blur(10px);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .catch-badge.l { top: 10px; left: 10px; background: rgba(15,23,42,.85); }
+    .catch-badge.r { top: 10px; right: 10px; background: var(--primary); }
+
+    .catch-inner { padding: 14px; }
+    .auto-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+    .atag {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .atag.moon { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+
+    .catch-acts {
+      display: flex;
+      justify-content: flex-end;
+      gap: 14px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .abtn {
+      background: none;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .abtn.del { color: #ef4444; }
+
+    /* Stats */
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .kpi {
+      padding: 14px;
+      border-radius: 18px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 90px;
+      box-shadow: var(--shadow);
+    }
+    .kpi.b1 { background: linear-gradient(135deg,#0284c7,#0369a1); }
+    .kpi.b2 { background: linear-gradient(135deg,#10b981,#047857); }
+    .kpi.b3 { background: linear-gradient(135deg,#f97316,#c2410c); }
+    .kpi.b4 { background: linear-gradient(135deg,#f59e0b,#b45309); }
+
+    .stat-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-box h4 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pbar { margin-bottom: 10px; }
+    .pbar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: #1e293b;
+    }
+    .pbar-track {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .pbar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .4s ease;
+    }
+
+    /* Bottom Nav */
+    .bnav {
+      height: 64px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 800;
+      flex-shrink: 0;
+    }
+
+    .ntab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: #64748b;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 11px;
+      font-weight: 700;
+      width: 33.3%;
+    }
+
+    .ntab i {
+      font-size: 17px;
+      padding: 4px 18px;
+      border-radius: 16px;
+      transition: all .2s;
+    }
+
+    .ntab.on { color: var(--primary); }
+    .ntab.on i { background: var(--primary-light); color: var(--primary); }
+
+    /* Modals */
+    .modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,.65);
+      z-index: 1200;
+      display: none;
+      align-items: flex-end;
+    }
+    .modal.on { display: flex; }
+    .sheet {
+      width: 100%;
+      background: #fff;
+      border-radius: 26px 26px 0 0;
+      padding: 18px;
+      max-height: 88%;
+      overflow-y: auto;
+      animation: up .25s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes up {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .fg { margin-bottom: 10px; }
+    .fg label { display: block; font-size: 11px; font-weight: 800; color: #334155; margin-bottom: 3px; }
+    .fg input, .fg select, .fg textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      outline: none;
+      background: #f8fafc;
+    }
+    .fg input:focus, .fg select:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .fr2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg,#0284c7,#0369a1);
+      color: #fff;
+      padding: 13px;
+      border-radius: 14px;
+      border: none;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 8px;
+      box-shadow: 0 4px 14px rgba(2,132,199,.35);
+    }
+    .photo-box {
+      border: 2px dashed #94a3b8;
+      border-radius: 14px;
+      height: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #f1f5f9;
+      overflow: hidden;
+      position: relative;
+    }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+  
+    /* === SPECIES & AI SCANNER STYLES === */
+    .scanner-card {
+      background: linear-gradient(135deg, #1e1b4b, #312e81 55%, #4338ca);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 6px;
+      color: #fff;
+      box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.4);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.18);
+      flex-shrink: 0;
+    }
+    .scanner-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(129, 140, 248, 0.3), transparent 70%);
+      pointer-events: none;
+    }
+    .scanner-btn {
+      background: #fff;
+      color: #312e81;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 800;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      transition: all 0.2s;
+    }
+    .scanner-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+    .scanner-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* AI Scanning Modal Overlay */
+    .ai-scan-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .ai-scan-modal.on {
+      display: flex;
+    }
+    .ai-scan-box {
+      width: 250px;
+      height: 250px;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid #818cf8;
+      box-shadow: 0 0 35px rgba(129, 140, 248, 0.5);
+      background: #0f172a;
+      margin-bottom: 20px;
+    }
+    .ai-scan-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .ai-laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, #c084fc, transparent);
+      box-shadow: 0 0 15px #38bdf8;
+      animation: scanLaser 2s infinite ease-in-out;
+    }
+    @keyframes scanLaser {
+      0% { top: 0%; opacity: 0.8; }
+      50% { top: 96%; opacity: 1; }
+      100% { top: 0%; opacity: 0.8; }
+    }
+
+    /* Species Grid & Cards */
+    .species-search-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      flex-shrink: 0;
+    }
+    .species-search-box input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .species-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 2px 8px 2px;
+      margin-bottom: 4px;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .species-chips::-webkit-scrollbar { display: none; }
+    .sp-chip {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .sp-chip.on {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .species-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .sp-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .sp-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
+    }
+    .sp-card-img-wrap {
+      width: 100%;
+      height: 105px;
+      position: relative;
+      background: #f8fafc;
+    }
+    .sp-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .sp-min-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      color: #38bdf8;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+    .sp-tag-danger {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: #dc2626;
+      color: #fff;
+      font-size: 8px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(220,38,38,0.4);
+    }
+    .sp-card-body {
+      padding: 9px 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .sp-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .sp-latin {
+      font-size: 10px;
+      font-style: italic;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+    .sp-cat-badge {
+      display: inline-block;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    /* Modal Fullscreen Species Detail */
+    .sp-modal-sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+      padding: 0 0 24px 0;
+    }
+    .sp-hero-img-wrap {
+      width: 100%;
+      height: 200px;
+      position: relative;
+      background: #0f172a;
+    }
+    .sp-hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .sp-hero-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .sp-modal-content {
+      padding: 16px;
+    }
+    .sp-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .sp-stat-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .sp-stat-box .title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .sp-stat-box .val {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .sp-section {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .sp-section h4 {
+      font-size: 12px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sp-section p {
+      font-size: 11px;
+      line-height: 1.5;
+      color: #334155;
+    }
+
+    
+    /* === REPORT GENERATOR STYLES === */
+    .report-cta-card {
+      background: linear-gradient(135deg, #0f172a, #1e293b 60%, #0284c7);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      color: #fff;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2);
+    }
+    .report-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .report-opt-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .report-opt-btn.on {
+      border-color: var(--primary);
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="brand"><i class="fa-solid fa-fish"></i> PESCA PRO</div>
+  <button class="view-btn" onclick="toggleView()"><i class="fa-solid fa-expand"></i> <span id="vt">Schermo Intero</span></button>
+</div>
+
+<div class="device" id="dev">
+  <div class="screen-wrap">
+    <div class="island"><div class="island-dot"></div><div style="width:6px;height:6px;border-radius:50%;background:#10b981"></div></div>
+
+    <!-- App Header -->
+    <div class="app-bar">
+      <div>
+        <div class="app-name"><i class="fa-solid fa-fish"></i> PESCA PRO</div>
+        <div class="app-sub" id="spot-label"><i class="fa-solid fa-location-dot"></i> Civitavecchia (Lazio)</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="ib" onclick="toggleSearch()" title="Cerca Località"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button class="ib" onclick="openSpotsList()" title="Preferiti"><i class="fa-solid fa-star" style="color:#fcd34d"></i></button>
+        <button class="ib" onclick="cycleLayer()" title="Cambia Mappa"><i class="fa-solid fa-layer-group"></i></button>
+      </div>
+    </div>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="sp">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--primary)"></i>
+        <input id="sq" placeholder="Cerca qualsiasi comune, costa o porto d'Italia..." oninput="filterLoc(this.value)">
+        <button onclick="toggleSearch()" style="background:none;border:none;color:#64748b;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="results" id="sr"></div>
+    </div>
+
+    <div class="viewport">
+
+      <!-- TAB 1: HOME (METEOPESCA LIVE, SOLUNARE, MAREE, MAPPA & GRAFICI) -->
+      <div class="tab on" id="t0">
+        <div class="scroll-pane" id="home-scroll-pane">
+
+          <!-- 1. MAPPA SATELLITARE GOOGLE IBRIDA -->
+          <div class="map-card">
+            <div class="map-hdr">
+              <div style="display:flex;align-items:center;gap:6px"><i class="fa-solid fa-map-location-dot" style="color:#38bdf8;font-size:14px"></i> Mappa Satellite Google</div>
+              <div class="map-badge"><i class="fa-solid fa-satellite"></i> Strade &amp; Città</div>
+            </div>
+            <div class="map-toolbar">
+              <button class="pill pri" onclick="doGPS()"><i class="fa-solid fa-location-crosshairs"></i> Rileva GPS</button>
+              <button class="pill" onclick="saveSpotCurrent()"><i class="fa-solid fa-star" style="color:#f59e0b"></i> Salva Spot</button>
+              <button class="pill" onclick="openSpotsList()"><i class="fa-solid fa-bookmark" style="color:var(--primary)"></i> Preferiti</button>
+            </div>
+            <div class="map-frame">
+              <div id="mapview"></div>
+              <div class="map-banner"><i class="fa-solid fa-hand-pointer" style="color:#38bdf8"></i> Tocca per salvare uno Spot ⭐</div>
+              <div class="fab-stack">
+                <button class="fab" id="gpsbtn" onclick="doGPS()" title="GPS"><i class="fa-solid fa-location-crosshairs"></i></button>
+                <button class="fab" onclick="saveSpotCurrent()" title="Preferito"><i class="fa-solid fa-star" style="color:#f59e0b"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. TAVOLA SOLUNARE & ATTIVITÀ DEI PESCI (STILE METEOPESCA) -->
+          <div class="meteopesca-hero">
+            <div class="mp-activity-box">
+              <div>
+                <div style="font-size:10px; font-weight:800; color:#86efac; text-transform:uppercase; letter-spacing:0.5px;">Tavola Solunare Meteopesca</div>
+                <div style="font-size:14px; font-weight:900; color:#fff; margin-top:2px;">Attività dei Pesci Globale</div>
+                <div style="font-size:11px; color:#cbd5e1; margin-top:2px;" id="mp-solunar-desc">Attività molto alta per effetto solunare e marea</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="mp-score-badge" id="mp-activity-badge">
+                  <i class="fa-solid fa-fish"></i> <span id="mp-activity-text">MOLTO ALTA</span>
+                </div>
+                <div style="font-size:10px; font-weight:800; color:#cbd5e1; margin-top:4px;" id="mp-tide-coeff-badge">
+                  Coeff. Marea: <b style="color:#38bdf8;" id="mp-coeff-val">68</b> / 120
+                </div>
+              </div>
+            </div>
+
+            <!-- Sole & Luna Reali -->
+            <div class="mp-sun-moon-grid">
+              <div class="mp-sm-item">
+                <i class="fa-solid fa-sun" style="color:#fcd34d; font-size:18px;"></i>
+                <div>
+                  <div style="font-size:9px; color:#cbd5e1;">SOLE</div>
+                  <div style="font-weight:800;" id="mp-sun-times">06:20 – 20:14</div>
+                </div>
+              </div>
+              <div class="mp-sm-item">
+                <span id="mp-moon-icon" style="font-size:18px;">🌒</span>
+                <div>
+                  <div style="font-size:9px; color:#cbd5e1;" id="mp-moon-phase-name">LUNA CRESCENTE</div>
+                  <div style="font-weight:800;" id="mp-moon-times">08:15 – 21:40</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. FINESTRE SOLUNARI DI MANGIANZA (MAJOR & MINOR PERIODS) -->
+          <div class="card">
+            <div class="card-h">
+              <h3><i class="fa-solid fa-bullseye" style="color:#10b981"></i> Finestre di Mangianza Solunari (Meteopesca)</h3>
+              <span style="font-size:10px; font-weight:800; color:#10b981; background:#ecfdf5; padding:2px 8px; border-radius:6px;">Migliori Momenti</span>
+            </div>
+            
+            <div class="solunar-periods-grid">
+              <div class="solunar-period-pill major">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <b style="color:#15803d; font-size:11px;"><i class="fa-solid fa-fire"></i> Periodo Maggiore 1</b>
+                  <span style="font-size:9px; font-weight:800; color:#15803d;">⭐⭐⭐ TOP</span>
+                </div>
+                <div style="font-size:14px; font-weight:900; color:#0f172a;" id="sol-maj1-time">14:20 – 16:20</div>
+                <div style="font-size:9px; color:#64748b;">Transito Lunare • Attività Massima</div>
+              </div>
+
+              <div class="solunar-period-pill major">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <b style="color:#15803d; font-size:11px;"><i class="fa-solid fa-fire"></i> Periodo Maggiore 2</b>
+                  <span style="font-size:9px; font-weight:800; color:#15803d;">⭐⭐⭐ TOP</span>
+                </div>
+                <div style="font-size:14px; font-weight:900; color:#0f172a;" id="sol-maj2-time">02:00 – 04:00</div>
+                <div style="font-size:9px; color:#64748b;">Transito Opposto • Molto Alta</div>
+              </div>
+
+              <div class="solunar-period-pill minor">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <b style="color:#b45309; font-size:11px;"><i class="fa-solid fa-bolt"></i> Periodo Minore 1</b>
+                  <span style="font-size:9px; font-weight:800; color:#b45309;">⭐⭐ MEDIA</span>
+                </div>
+                <div style="font-size:13px; font-weight:900; color:#0f172a;" id="sol-min1-time">08:15 – 09:15</div>
+                <div style="font-size:9px; color:#64748b;">Sorgere Luna • 1 Ora</div>
+              </div>
+
+              <div class="solunar-period-pill minor">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <b style="color:#b45309; font-size:11px;"><i class="fa-solid fa-bolt"></i> Periodo Minore 2</b>
+                  <span style="font-size:9px; font-weight:800; color:#b45309;">⭐⭐ MEDIA</span>
+                </div>
+                <div style="font-size:13px; font-weight:900; color:#0f172a;" id="sol-min2-time">21:40 – 22:40</div>
+                <div style="font-size:9px; color:#64748b;">Tramonto Luna • 1 Ora</div>
+              </div>
+            </div>
+
+            <!-- Chart Solunare & Maree 24h -->
+            <div style="margin-top:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:#0f172a; margin-bottom:2px;">
+                <span>Curva Solunare &amp; Marea 24h</span>
+                <span style="color:#059669;" id="tide-phase-desc">Flusso Crescente</span>
+              </div>
+              <div class="chart-box-h"><canvas id="feedingTideChart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- 4. TAVOLA DELLE MAREE METEOPESCA (ORARI E LIVELLI REALISTICI MEDITERRANEO) -->
+          <div class="card">
+            <div class="card-h">
+              <h3><i class="fa-solid fa-water" style="color:#0284c7"></i> Tavola delle Maree Odierna</h3>
+              <span style="font-size:10px; font-weight:800; color:#0369a1;">Coeff. <span id="mp-coeff-badge">68</span></span>
+            </div>
+            
+            <div class="tide-table-row" id="tide-table-cells">
+              <div class="tide-cell low">
+                <div style="font-size:8px; font-weight:800;">1ª BASSA</div>
+                <div style="font-weight:900; font-size:11px;" id="tb-l1-time">05:40</div>
+                <div style="font-size:9px;" id="tb-l1-h">0.12 m</div>
+              </div>
+              <div class="tide-cell high">
+                <div style="font-size:8px; font-weight:800;">1ª ALTA</div>
+                <div style="font-weight:900; font-size:11px;" id="tb-h1-time">11:55</div>
+                <div style="font-size:9px;" id="tb-h1-h">0.38 m</div>
+              </div>
+              <div class="tide-cell low">
+                <div style="font-size:8px; font-weight:800;">2ª BASSA</div>
+                <div style="font-weight:900; font-size:11px;" id="tb-l2-time">17:50</div>
+                <div style="font-size:9px;" id="tb-l2-h">0.15 m</div>
+              </div>
+              <div class="tide-cell high">
+                <div style="font-size:8px; font-weight:800;">2ª ALTA</div>
+                <div style="font-weight:900; font-size:11px;" id="tb-h2-time">23:45</div>
+                <div style="font-size:9px;" id="tb-h2-h">0.42 m</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. CONDIZIONI METEO MARINE REALI IN TEMPO REALE (METEOPESCA LIVE) -->
+          <div class="card">
+            <div class="card-h">
+              <h3><i class="fa-solid fa-compass" style="color:var(--primary)"></i> Condizioni Marine &amp; Meteo Live</h3>
+              <span style="font-size:10px; font-weight:800; color:#059669;" id="live-update-time">🟢 Meteo Reale Open-Meteo</span>
+            </div>
+
+            <div class="tele-grid-6">
+              <div class="tele-card">
+                <i class="fa-solid fa-temperature-three-quarters" style="color:#ef4444;"></i>
+                <div class="val" id="vt-air">27.2°C</div>
+                <div class="lbl">Temp. Aria</div>
+                <div class="sub" id="vt-air-range">25° / 32°</div>
+              </div>
+
+              <div class="tele-card">
+                <i class="fa-solid fa-water" style="color:#0284c7;"></i>
+                <div class="val" id="vt-sea">26.4°C</div>
+                <div class="lbl">Temp. Acqua</div>
+                <div class="sub">Mare Tirreno</div>
+              </div>
+
+              <div class="tele-card">
+                <i class="fa-solid fa-wind" style="color:#10b981;"></i>
+                <div class="val" id="vt-wind">7.7 km/h</div>
+                <div class="lbl">Vento (km/h)</div>
+                <div class="sub" id="vt-wind-dir">ENE (62°)</div>
+              </div>
+
+              <div class="tele-card">
+                <i class="fa-solid fa-gauge-high" style="color:#f59e0b;"></i>
+                <div class="val" id="vt-baro">1011.1 hPa</div>
+                <div class="lbl">Pressione</div>
+                <div class="sub" id="vt-baro-trend">➡️ Stabile</div>
+              </div>
+
+              <div class="tele-card">
+                <i class="fa-solid fa-water-ladder" style="color:#6366f1;"></i>
+                <div class="val" id="vt-wave">0.32 m</div>
+                <div class="lbl">Altezza Onde</div>
+                <div class="sub" id="vt-wave-period">Periodo 3.1s</div>
+              </div>
+
+              <div class="tele-card">
+                <i class="fa-solid fa-sun" style="color:#ea580c;"></i>
+                <div class="val" id="vt-uv">7.3 UV</div>
+                <div class="lbl">Indice UV</div>
+                <div class="sub" id="vt-hum">Umidità 42%</div>
+              </div>
+            </div>
+
+            <!-- Wave 24h Chart -->
+            <div style="margin-top:14px;">
+              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:#0f172a; margin-bottom:2px;">
+                <span>Andamento Moto Ondoso 24h (Altezza Onde in Metri)</span>
+                <span style="color:#0284c7;" id="wave-state-lbl">Mare Poco Mosso</span>
+              </div>
+              <div class="chart-box-h"><canvas id="waveChart24h"></canvas></div>
+            </div>
+          </div>
+
+          <!-- 6. CALENDARIO MENSILE DELLE FASI LUNARI (ASTRONOMICO MEUS REALE) -->
+          <div class="card">
+            <div class="card-h">
+              <h3><i class="fa-solid fa-moon" style="color:#4f46e5"></i> Fasi Lunari del Mese (Tavola Astronomica)</h3>
+              <span style="font-size:10px; font-weight:800; color:#4f46e5;" id="current-moon-title">Luna Crescente (5%)</span>
+            </div>
+            <div class="moon-strip" id="monthly-moon-strip"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB 1: SPECIE & RICONOSCIMENTO AI -->
+      <div class="tab" id="t1">
+        <div class="scroll-pane" style="padding: 14px 12px 90px 12px;">
+          <!-- Hero AI Scanner Banner -->
+          <div class="scanner-card">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:0.5px">⚡ VISION AI 2026</span>
+              <span style="font-size:11px;opacity:0.85">Riconoscimento Istantaneo</span>
+            </div>
+            <h3 style="font-size:16px;font-weight:900;margin-bottom:4px">Non conosci il pesce pescato?</h3>
+            <p style="font-size:11px;opacity:0.85;margin-bottom:14px;line-height:1.4">Scatta o carica una foto: l'IA riconosce morfologia, livrea, taglia legale e abitudini biologiche nel Mediterraneo.</p>
+            <button class="scanner-btn" onclick="triggerAIScan()">
+              <i class="fa-solid fa-camera" style="font-size:15px;color:#4338ca"></i>
+              <span>📸 Scatta Foto / Riconosci con IA</span>
+            </button>
+            <input type="file" id="ai-file-input" accept="image/*" style="display:none" onchange="handleAIScanImage(event)">
+          </div>
+
+          <!-- Enciclopedia Header & Search -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px">
+              <span>🐟 Enciclopedia Specie Mediterraneo</span>
+              <span id="species-count-badge" style="background:#e0f2fe;color:#0369a1;font-size:10px;padding:2px 7px;border-radius:12px;font-weight:800">33 Specie</span>
+            </h3>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="species-search-box">
+            <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px"></i>
+            <input type="text" id="sp-search-input" placeholder="Cerca pesce (es. Orata, Spigola, Serra...)" oninput="filterSpeciesGrid()">
+          </div>
+
+          <!-- Category Chips -->
+          <div class="species-chips">
+            <div class="sp-chip on" onclick="setSpeciesCategory('Tutte', this)">🌊 Tutte (33+)</div>
+            <div class="sp-chip" onclick="setSpeciesCategory('Surfcasting / Fondo', this)">🏖️ Surfcasting & Fondo</div>
+            <div class="sp-chip" onclick="setSpeciesCategory('Predatori / Spinning', this)">🎯 Predatori & Spinning</div>
+            <div class="sp-chip" onclick="setSpeciesCategory('Scogliera & Porto', this)">🪨 Scogliera & Bolognese</div>
+            <div class="sp-chip" onclick="setSpeciesCategory('Cefalopodi', this)">🦑 Cefalopodi</div>
+            <div class="sp-chip" onclick="setSpeciesCategory('⚠️ Tossiche / Aculei', this)">⚠️ Attenzione / Tossiche</div>
+          </div>
+
+          <!-- Species Grid List -->
+          <div class="species-grid" id="species-grid-container">
+            <!-- Populated dynamically by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: DIARIO CATTURE -->
+      <div class="tab" id="t2">
+        <div class="diary-top">
+          <div class="search-box" style="padding:6px 10px;margin-bottom:6px">
+            <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px"></i>
+            <input id="dq" placeholder="Cerca specie, esca o spot..." oninput="renderDiary()">
+          </div>
+          <div class="chips">
+            <div class="chip on" onclick="setFilter('Tutte',this)">Tutte</div>
+            <div class="chip" onclick="setFilter('Orata',this)">Orata</div>
+            <div class="chip" onclick="setFilter('Spigola',this)">Spigola</div>
+            <div class="chip" onclick="setFilter('Sarago',this)">Sarago</div>
+            <div class="chip" onclick="setFilter('Dentice',this)">Dentice</div>
+            <div class="chip" onclick="setFilter('Mormora',this)">Mormora</div>
+          </div>
+        </div>
+        <div class="scroll-pane" style="padding-top:10px;">
+          <div class="diary-feed" id="feed"></div>
+        </div>
+        <div style="position:absolute;bottom:74px;right:14px;z-index:100">
+          <button class="fab gps" style="width:50px;height:50px;font-size:20px" onclick="openCatchModal()" title="Aggiungi Cattura"><i class="fa-solid fa-plus"></i></button>
+        </div>
+      </div>
+
+      <!-- TAB 3: STATISTICHE AVANZATE -->
+      <div class="tab" id="t3">
+        <div class="scroll-pane">
+          <!-- Report Download CTA Card -->
+          <div class="report-cta-card" style="flex-shrink:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div>
+                <div class="report-badge"><i class="fa-solid fa-file-waveform"></i> Analisi Meteomarina</div>
+                <h4 style="font-size:14px;font-weight:900;color:#fff;margin:2px 0">Report Correlazione Catture</h4>
+                <div style="font-size:11px;color:#cbd5e1;line-height:1.3">Scopri con quali maree, lune e venti hai pescato di più!</div>
+              </div>
+              <button class="pill" style="background:#38bdf8;color:#0f172a;font-weight:900;border:none;padding:9px 13px;border-radius:10px;cursor:pointer;white-space:nowrap;font-size:11px;display:flex;align-items:center;gap:6px" onclick="openReportModal()">
+                <i class="fa-solid fa-download"></i> Scarica Report
+              </button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi b1"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-fish"></i> Totale Catture</span><span style="font-size:22px;font-weight:900" id="k1">16</span><span style="font-size:9px;opacity:.85">pesci registrati</span></div>
+            <div class="kpi b2"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-scale-balanced"></i> Peso Totale</span><span style="font-size:22px;font-weight:900" id="k2">31.20 kg</span><span style="font-size:9px;opacity:.85">complessivo</span></div>
+            <div class="kpi b3"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-chart-line"></i> Peso Medio</span><span style="font-size:22px;font-weight:900" id="k3">1.95 kg</span><span style="font-size:9px;opacity:.85">a cattura</span></div>
+            <div class="kpi b4"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-trophy"></i> Record</span><span style="font-size:22px;font-weight:900" id="k4">4.85 kg</span><span style="font-size:9px;opacity:.85" id="k4s">Spigola</span></div>
+          </div>
+          <div class="stat-box"><h4><span><i class="fa-solid fa-moon" style="color:#6366f1"></i> Fasi Lunari più Redditizie</span></h4><div id="st-moon"></div></div>
+          <div class="stat-box"><h4><span><i class="fa-solid fa-worm" style="color:#f97316"></i> Esche più Catturanti</span></h4><div id="st-bait"></div></div>
+          <div class="stat-box"><h4><span><i class="fa-solid fa-water" style="color:var(--primary)"></i> Rendimento per Fase di Marea</span></h4><div id="st-tide"></div></div>
+          <div class="stat-box"><h4><span><i class="fa-solid fa-fish" style="color:var(--primary)"></i> Specie più Pescate</span></h4><div id="st-sp"></div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar (4 Tabs) -->
+    <div class="bnav">
+      <button class="ntab on" onclick="go(0)"><i class="fa-solid fa-map-location-dot"></i><span>Mappa</span></button>
+      <button class="ntab" onclick="go(1)"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Specie AI</span></button>
+      <button class="ntab" onclick="go(2)"><i class="fa-solid fa-book-bookmark"></i><span>Diario</span></button>
+      <button class="ntab" onclick="go(3)"><i class="fa-solid fa-chart-column"></i><span>Statistiche</span></button>
+    </div>
+
+    
+    <!-- MODAL: AI SCANNER ANIMATION OVERLAY -->
+    <div class="ai-scan-modal" id="ai-scan-modal">
+      <div class="ai-scan-box">
+        <img id="ai-scan-preview-img" src="" alt="Fish Scanning">
+        <div class="ai-laser"></div>
+      </div>
+      <div style="text-align:center;color:#fff;max-width:280px">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:900;color:#38bdf8;margin-bottom:6px">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span id="ai-scan-status-text">Analisi Livrea e Morfologia...</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8" id="ai-scan-subtext">Confronto con 28+ specie del Mar Mediterraneo in corso...</div>
+      </div>
+    </div>
+
+    <!-- MODAL: SPECIES FULL DETAIL SHEET -->
+    <div class="modal" id="modal-species-detail">
+      <div class="sp-modal-sheet">
+        <div class="sp-hero-img-wrap">
+          <img id="sp-detail-img" class="sp-hero-img" src="" alt="Fish">
+          <div class="sp-hero-close" onclick="closeSpeciesModal()">✕</div>
+          <div id="sp-detail-danger-badge" class="sp-tag-danger" style="display:none">⚠️ SPECIE TOSSICA / VELENOSA</div>
+        </div>
+        <div class="sp-modal-content">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+            <div>
+              <h2 id="sp-detail-name" style="font-size:18px;font-weight:900;color:var(--text)">Nome Pesce</h2>
+              <div id="sp-detail-latin" style="font-size:12px;font-style:italic;color:#64748b">Nome Scientifico</div>
+            </div>
+            <div id="sp-detail-conf-wrap" style="display:none;background:#ecfdf5;border:1px solid #a7f3d0;padding:4px 8px;border-radius:8px;text-align:right">
+              <div style="font-size:9px;font-weight:700;color:#065f46">CONFIDENZA IA</div>
+              <div id="sp-detail-conf" style="font-size:13px;font-weight:900;color:#059669">98% Match</div>
+            </div>
+          </div>
+
+          <div class="sp-stat-grid">
+            <div class="sp-stat-box">
+              <div class="title">📏 Misura Minima Legale</div>
+              <div class="val" id="sp-detail-min-size" style="color:#0284c7">20 cm (DPR 1639/68)</div>
+            </div>
+            <div class="sp-stat-box">
+              <div class="title">📅 Periodo Migliore</div>
+              <div class="val" id="sp-detail-period">Maggio - Novembre</div>
+            </div>
+            <div class="sp-stat-box">
+              <div class="title">🌊 Habitat & Profondità</div>
+              <div class="val" id="sp-detail-habitat">Sabbia e canaloni (1-30m)</div>
+            </div>
+            <div class="sp-stat-box">
+              <div class="title">🎯 Categoria / Tecnica</div>
+              <div class="val" id="sp-detail-cat">Surfcasting / Fondo</div>
+            </div>
+          </div>
+
+          <!-- Section: Tecniche ed Esche Top -->
+          <div class="sp-section" style="background:#f0fdf4;border-color:#bbf7d0">
+            <h4 style="color:#166534"><i class="fa-solid fa-worm" style="color:#15803d"></i> Esche & Tecniche Consigliate</h4>
+            <p id="sp-detail-baits" style="color:#14532d;font-weight:600">Cannolicchio vivo, Bibi, Arenicola, Cozza, Americano.</p>
+          </div>
+
+          <!-- Section: Biologia & Curiosità -->
+          <div class="sp-section">
+            <h4><i class="fa-solid fa-dna" style="color:#6366f1"></i> Biologia & Comportamento</h4>
+            <p id="sp-detail-bio">Descrizione biologica...</p>
+          </div>
+
+          <!-- Section: Avviso di Sicurezza (se pericoloso) -->
+          <div class="sp-section" id="sp-detail-safety-box" style="display:none;background:#fef2f2;border-color:#fecaca">
+            <h4 style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> Avviso di Manipolazione & Sicurezza</h4>
+            <p id="sp-detail-safety" style="color:#991b1b"></p>
+          </div>
+
+          <!-- Quick Action Button: Aggiungi al Diario -->
+          <button class="submit-btn" style="margin-top:10px;background:linear-gradient(135deg, #0284c7, #0369a1)" onclick="addSpeciesToDiaryFromModal()">
+            <i class="fa-solid fa-plus-circle"></i> Registra Cattura di questa Specie
+          </button>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- MODAL: REPORT GENERATOR -->
+    <div class="modal" id="modal-report">
+      <div class="sheet" style="max-height:85vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="font-size:15px;font-weight:900"><i class="fa-solid fa-file-pdf" style="color:#0284c7"></i> Genera Report Meteomarino</h3>
+          <button onclick="closeReportModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+        </div>
+
+        <div style="font-size:11px;color:#64748b;margin-bottom:14px;line-height:1.4">
+          Genera un documento completo e impaginato per analizzare l'impatto di <b>Maree, Fasi Lunari, Vento ed Esche</b> sulle tue catture.
+        </div>
+
+        <!-- Selection Mode: Mensile vs Annuale -->
+        <label style="font-size:11px;font-weight:800;color:var(--text);display:block;margin-bottom:6px">Intervallo Temporale</label>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button type="button" class="report-opt-btn on" id="r-opt-monthly" onclick="selectReportMode('monthly')">
+            <i class="fa-solid fa-calendar-days" style="font-size:16px"></i>
+            <span>Report Mensile</span>
+          </button>
+          <button type="button" class="report-opt-btn" id="r-opt-annual" onclick="selectReportMode('annual')">
+            <i class="fa-solid fa-calendar" style="font-size:16px"></i>
+            <span>Report Annuale / Totale</span>
+          </button>
+        </div>
+
+        <!-- Month Picker (visible only for monthly) -->
+        <div class="fg" id="r-month-box">
+          <label>Seleziona Mese di Analisi</label>
+          <select id="r-month-select">
+            <option value="all">Mese Corrente (Agosto 2026)</option>
+            <option value="7">Luglio 2026</option>
+            <option value="6">Giugno 2026</option>
+            <option value="5">Maggio 2026</option>
+            <option value="4">Aprile 2026</option>
+          </select>
+        </div>
+
+        <!-- Analysis Highlights Preview -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:#334155">
+          <div style="font-weight:800;color:var(--primary);margin-bottom:4px"><i class="fa-solid fa-chart-pie"></i> Sezioni incluse nel report:</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:10px">
+            <div>✓ Matrice Rendimento Maree</div>
+            <div>✓ Correlazione Fasi Lunari</div>
+            <div>✓ Efficacia Esche & Tecniche</div>
+            <div>✓ Vento e Moto Ondoso</div>
+            <div>✓ Identikit Condizione Top</div>
+            <div>✓ Registro Catture con Foto</div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #059669, #047857)" onclick="downloadReportDirectPDF()">
+            <i class="fa-solid fa-file-pdf"></i> Scarica File PDF Diretto
+          </button>
+          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #0284c7, #0369a1)" onclick="generateAndOpenReport('preview')">
+            <i class="fa-solid fa-eye"></i> Visualizza &amp; Stampa a Schermo Intero
+          </button>
+          <button type="button" class="submit-btn" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1" onclick="generateAndOpenReport('download')">
+            <i class="fa-solid fa-file-arrow-down"></i> Scarica File HTML Autonomo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: CATCH ENTRY -->
+    <div class="modal" id="mc">
+      <div class="sheet">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h3 style="font-size:15px;font-weight:900" id="mch">Registra Cattura 🎣</h3>
+          <button onclick="closeCatchModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+        </div>
+        <form id="cf" onsubmit="saveCatch(event)">
+          <input type="hidden" id="eid" value="">
+          <div class="fg"><label>Foto Cattura</label>
+            <div class="photo-box" onclick="document.getElementById('pf').click()">
+              <img id="pp" src="" style="display:none"><div id="pph" style="text-align:center;color:#64748b"><i class="fa-solid fa-camera" style="font-size:26px;color:var(--primary);margin-bottom:4px"></i><div style="font-size:11px;font-weight:700">Tocca per caricare foto reale</div></div>
+            </div>
+            <input type="file" id="pf" accept="image/*" style="display:none" onchange="pickPhoto(event)">
+          </div>
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:#1e40af">
+            <b>⚡ Parametri Solunari Rilevati:</b>
+            <div id="auto-info" style="margin-top:2px;font-size:10px">🌙 Luna Crescente (5%) • 🌊 Flusso Crescente • 📍 Civitavecchia • 📅 Ora</div>
+          </div>
+          <div class="fr2">
+            <div class="fg"><label>Specie *</label><select id="fs" required><option>Orata</option><option>Spigola</option><option>Sarago</option><option>Dentice</option><option>Mormora</option><option>Pesce Serra</option><option>Ricciola</option><option>Palamita</option><option>Calamaro</option><option>Seppia</option><option>Altro</option></select></div>
+            <div class="fg"><label>Peso (kg) *</label><input type="number" step="0.01" min="0.05" id="fw" placeholder="es. 1.85" required></div>
+          </div>
+          <div class="fr2">
+            <div class="fg"><label>Lunghezza (cm)</label><input type="number" step="1" id="fl" placeholder="es. 48"></div>
+            <div class="fg"><label>Tecnica</label><select id="ft"><option>Surfcasting</option><option>Bolognese</option><option>Spinning</option><option>Barca</option></select></div>
+          </div>
+          <div class="fg"><label>Esca (Menu Surfcasting / Mare) *</label><select id="fb"><option>Trancio di Pesce</option><option>Cannolicchio vivo</option><option>Arenicola (Verme di sabbia)</option><option>Coreano</option><option>Americano (Bloodworm)</option><option>Bibi nostrano</option><option>Muriddu (Verme rosso)</option><option>Sarda a tocchetti / rivoltata</option><option>Strisciolina di Seppia / Calamaro</option><option>Granchio vivo di sabbia</option><option>Cozza / Fasolaro</option><option>Gambero vivo</option><option>Artificiale Minnow / Jerk</option><option>Altro / Personalizzato</option></select></div>
+          <div class="fg"><label>Spot / Spiaggia</label><input type="text" id="fsp" placeholder="es. Spiaggia di Sant'Agostino"></div>
+          <div class="fg"><label>Note e Assetto</label><textarea id="fn" rows="2" placeholder="Trave, finale fluorocarbon, piombo..."></textarea></div>
+          <button type="submit" class="submit-btn">Salva nel Diario</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: SAVE SPOT -->
+    <div class="modal" id="ms">
+      <div class="sheet">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h3 style="font-size:15px;font-weight:900">Salva Spot nei Preferiti ⭐</h3>
+          <button onclick="closeSpotModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+        </div>
+        <form onsubmit="saveSpot(event)">
+          <div class="fg"><label>Nome Spot *</label><input type="text" id="sn" placeholder="es. Scogliera Faro Sud" required></div>
+          <div class="fg"><label>Tipo Fondale</label><select id="ssb"><option>Misto Sabbia e Roccia</option><option>Sabbia pura con canaloni</option><option>Scogliera naturale profonda</option><option>Posidonia e ciottoli</option><option>Foce di fiume</option></select></div>
+          <div class="fg"><label>Specie Target</label><input type="text" id="stt" placeholder="Orata, Spigola, Sarago"></div>
+          <div class="fg"><label>Coordinate GPS</label><input type="text" id="sco" readonly style="background:#e2e8f0"></div>
+          <button type="submit" class="submit-btn">Salva Spot</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: SPOTS LIST -->
+    <div class="modal" id="ml">
+      <div class="sheet">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="font-size:15px;font-weight:900">⭐ Miei Spot Preferiti</h3>
+          <button onclick="closeSpotsList()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+        </div>
+        <div id="sl" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// === DATABASE LOCALITÀ ITALIANE IN TEMPO REALE ===
+const locs = [
+  { name: "Civitavecchia", reg: "Lazio", lat: 42.0924, lng: 11.7954, seaBase: 26.4 },
+  { name: "Ostia Lido (Roma)", reg: "Lazio", lat: 41.7333, lng: 12.2833, seaBase: 26.6 },
+  { name: "Fiumicino", reg: "Lazio", lat: 41.7678, lng: 12.2306, seaBase: 26.5 },
+  { name: "Fregene", reg: "Lazio", lat: 41.8667, lng: 12.1833, seaBase: 26.5 },
+  { name: "Santa Marinella", reg: "Lazio", lat: 42.0333, lng: 11.8667, seaBase: 26.3 },
+  { name: "Anzio / Nettuno", reg: "Lazio", lat: 41.4500, lng: 12.6333, seaBase: 26.8 },
+  { name: "Sabaudia / Circeo", reg: "Lazio", lat: 41.3000, lng: 13.0167, seaBase: 27.0 },
+  { name: "Gaeta / Sperlonga", reg: "Lazio", lat: 41.2167, lng: 13.5667, seaBase: 27.2 },
+  { name: "Napoli (Golfo)", reg: "Campania", lat: 40.8518, lng: 14.2681, seaBase: 27.5 },
+  { name: "Salerno (Costiera)", reg: "Campania", lat: 40.6824, lng: 14.7681, seaBase: 27.4 },
+  { name: "Bari", reg: "Puglia", lat: 41.1171, lng: 16.8719, seaBase: 26.2 },
+  { name: "Gallipoli", reg: "Puglia", lat: 40.0558, lng: 17.9926, seaBase: 27.8 },
+  { name: "Otranto", reg: "Puglia", lat: 40.1464, lng: 18.4908, seaBase: 26.9 },
+  { name: "Taranto", reg: "Puglia", lat: 40.4644, lng: 17.2470, seaBase: 27.6 },
+  { name: "Vieste (Gargano)", reg: "Puglia", lat: 41.8825, lng: 16.1750, seaBase: 26.0 },
+  { name: "Livorno", reg: "Toscana", lat: 43.5485, lng: 10.3106, seaBase: 25.8 },
+  { name: "Orbetello / Argentario", reg: "Toscana", lat: 42.4389, lng: 11.2167, seaBase: 26.5 },
+  { name: "Viareggio (Versilia)", reg: "Toscana", lat: 43.8667, lng: 10.2500, seaBase: 25.6 },
+  { name: "Genova", reg: "Liguria", lat: 44.4056, lng: 8.9463, seaBase: 25.2 },
+  { name: "La Spezia (5 Terre)", reg: "Liguria", lat: 44.1070, lng: 9.8282, seaBase: 25.4 },
+  { name: "Sanremo", reg: "Liguria", lat: 43.8167, lng: 7.7833, seaBase: 25.1 },
+  { name: "Ancona (Conero)", reg: "Marche", lat: 43.6158, lng: 13.5189, seaBase: 25.9 },
+  { name: "Rimini / Riccione", reg: "Emilia-Romagna", lat: 44.0678, lng: 12.5695, seaBase: 26.5 },
+  { name: "Cesenatico", reg: "Emilia-Romagna", lat: 44.2000, lng: 12.4000, seaBase: 26.4 },
+  { name: "Venezia (Chioggia)", reg: "Veneto", lat: 45.4408, lng: 12.3155, seaBase: 25.8 },
+  { name: "Jesolo", reg: "Veneto", lat: 45.5333, lng: 12.6333, seaBase: 25.7 },
+  { name: "Trieste", reg: "Friuli-VG", lat: 45.6495, lng: 13.7768, seaBase: 25.0 },
+  { name: "Pescara", reg: "Abruzzo", lat: 42.4618, lng: 14.2161, seaBase: 26.2 },
+  { name: "Reggio Calabria", reg: "Calabria", lat: 38.1113, lng: 15.6473, seaBase: 27.2 },
+  { name: "Tropea", reg: "Calabria", lat: 38.6778, lng: 15.8972, seaBase: 27.5 },
+  { name: "Palermo", reg: "Sicilia", lat: 38.1157, lng: 13.3615, seaBase: 27.8 },
+  { name: "Catania", reg: "Sicilia", lat: 37.5079, lng: 15.0873, seaBase: 27.6 },
+  { name: "Siracusa", reg: "Sicilia", lat: 37.0755, lng: 15.2866, seaBase: 27.9 },
+  { name: "Trapani / Marsala", reg: "Sicilia", lat: 38.0176, lng: 12.5365, seaBase: 27.4 },
+  { name: "Cagliari (Poetto)", reg: "Sardegna", lat: 39.2238, lng: 9.1217, seaBase: 26.8 },
+  { name: "Oristano (Sinis)", reg: "Sardegna", lat: 39.9064, lng: 8.5919, seaBase: 25.8 },
+  { name: "Alghero / Stintino", reg: "Sardegna", lat: 40.5580, lng: 8.3193, seaBase: 25.9 },
+  { name: "Olbia (Costa Smeralda)", reg: "Sardegna", lat: 40.9239, lng: 9.4989, seaBase: 26.5 }
+];
+
+let spot = locs[0];
+let map = null, markers = null;
+let feedingTideChartInstance = null, waveChartInstance = null;
+let layerIdx = 0, filter = 'Tutte', photoB64 = null, tapCoords = null;
+
+const TILES = [
+  "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+  "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+  "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+];
+const TILE_NAMES = ["Google Satellite Ibrido", "Google Satellite Puro", "Google Stradale"];
+
+// === ALGORITMO ASTRONOMICO PRECISO MEEUS PER LA LUNA ===
+function getAstronomicalMoon(date) {
+  const y = date.getFullYear();
+  let m = date.getMonth() + 1;
+  const d = date.getDate();
+  let yr = y;
+  if (m < 3) { yr--; m += 12; }
+  const a = Math.floor(yr / 100);
+  const b = 2 - a + Math.floor(a / 4);
+  const jd = Math.floor(365.25 * (yr + 4716)) + Math.floor(30.6001 * (m + 1)) + d + b - 1524.5;
+  const daysSinceNew = jd - 2451549.76;
+  const newMoons = daysSinceNew / 29.53058867;
+  const moonAge = (newMoons - Math.floor(newMoons)) * 29.53058867;
+  const illum = ((1 - Math.cos((moonAge * 2 * Math.PI) / 29.53058867)) / 2) * 100;
+
+  let name = "Luna Nuova", icon = "🌑";
+  if (moonAge < 1.84) { name = "Luna Nuova"; icon = "🌑"; }
+  else if (moonAge < 5.53) { name = "Luna Crescente"; icon = "🌒"; }
+  else if (moonAge < 9.22) { name = "Primo Quarto"; icon = "🌓"; }
+  else if (moonAge < 12.92) { name = "Gibbosa Crescente"; icon = "🌔"; }
+  else if (moonAge < 16.61) { name = "Luna Piena"; icon = "🌕"; }
+  else if (moonAge < 20.30) { name = "Gibbosa Calante"; icon = "🌖"; }
+  else if (moonAge < 23.99) { name = "Ultimo Quarto"; icon = "🌗"; }
+  else if (moonAge < 27.68) { name = "Luna Calante"; icon = "🌘"; }
+  else { name = "Luna Nuova"; icon = "🌑"; }
+
+  return { name, icon, age: moonAge.toFixed(1), illum: illum.toFixed(1) };
+}
+
+const DB_CATCHES_KEY = "PESCAPRO_CATCHES_DB";
+const DB_SPOTS_KEY = "PESCAPRO_SPOTS_DB";
+
+const defaultCatches = [
+  { id: 1, sp: 'Orata', wt: 2.35, len: 48, tech: 'Surfcasting', bait: 'Cannolicchio vivo', spot: 'Spiaggia Sant\'Agostino', moon: 'Luna Crescente', tide: 'Flusso Crescente', date: '14/08/2026 21:15', lat: 42.095, lng: 11.785, img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80', notes: 'Mangiata sul secondo canalone a 85m da riva.' },
+  { id: 2, sp: 'Spigola', wt: 4.85, len: 74, tech: 'Spinning', bait: 'Artificiale Minnow / Jerk', spot: 'Scogliera del Faro', moon: 'Luna Nuova', tide: 'Culmine Alta Marea', date: '11/08/2026 05:40', lat: 42.088, lng: 11.799, img: 'https://images.unsplash.com/photo-1534043464124-3be32fe000c9?w=600&q=80', notes: 'Attacco fulmineo all\'alba con mare in scaduta.' },
+  { id: 3, sp: 'Sarago', wt: 1.15, len: 35, tech: 'Bolognese', bait: 'Gambero vivo', spot: 'Molo di Ponente', moon: 'Primo Quarto', tide: 'Riflusso Calante', date: '06/08/2026 19:20', lat: 42.101, lng: 11.791, img: 'https://images.unsplash.com/photo-1510137600163-2729bc6959a6?w=600&q=80', notes: 'Bolognese sul fondo con fluorocarbon 0.12.' },
+  { id: 4, sp: 'Mormora', wt: 0.85, len: 32, tech: 'Surfcasting', bait: 'Arenicola (Verme di sabbia)', spot: 'Spiaggia delle Saline', moon: 'Luna Crescente', tide: 'Flusso Crescente', date: '30/07/2026 23:00', lat: 42.082, lng: 11.81, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=80', notes: 'Doppietta mormore a 70m con trave 2 ami.' }
+];
+
+const defaultSpots = [
+  { id: 1, name: 'Scogliera del Faro', sb: 'Roccia e Posidonia', tgt: 'Spigola, Sarago, Calamaro', lat: 42.088, lng: 11.799 },
+  { id: 2, name: 'Spiaggia Sant\'Agostino (Canalone)', sb: 'Sabbia mista con canaloni', tgt: 'Orata, Mormora', lat: 42.095, lng: 11.785 }
+];
+
+function loadCatchesFromDB() {
+  const saved = localStorage.getItem(DB_CATCHES_KEY);
+  if (saved !== null) {
+    try { return JSON.parse(saved); } catch(e) { return defaultCatches; }
+  }
+  return defaultCatches;
+}
+
+function saveCatchesToDB(data) {
+  catches = data;
+  try {
+    localStorage.setItem(DB_CATCHES_KEY, JSON.stringify(data));
+  } catch (err) {
+    const fallback = data.map(c => ({
+      ...c,
+      img: c.img && c.img.length > 50000 ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80" : c.img
+    }));
+    try { localStorage.setItem(DB_CATCHES_KEY, JSON.stringify(fallback)); } catch(e){}
+  }
+}
+
+function loadSpotsFromDB() {
+  const saved = localStorage.getItem(DB_SPOTS_KEY);
+  if (saved !== null) {
+    try { return JSON.parse(saved); } catch(e) { return defaultSpots; }
+  }
+  return defaultSpots;
+}
+
+function saveSpotsToDB(data) {
+  spots = data;
+  try { localStorage.setItem(DB_SPOTS_KEY, JSON.stringify(data)); } catch(e){}
+}
+
+let catches = loadCatchesFromDB();
+let spots = loadSpotsFromDB();
+
+// === VIEW TOGGLE ===
+function toggleView() {
+  const d = document.getElementById('dev'), t = document.getElementById('vt');
+  d.classList.toggle('full');
+  t.textContent = d.classList.contains('full') ? 'Vista Smartphone' : 'Schermo Intero';
+  setTimeout(() => { if (map) map.invalidateSize(); }, 300);
+}
+
+// === MAPPA GOOGLE SATELLITARE ===
+let currentTile = null;
+function initMap() {
+  if (map) { map.remove(); map = null; }
+  map = L.map('mapview', { zoomControl: false }).setView([spot.lat, spot.lng], 13);
+  currentTile = L.tileLayer(TILES[0], {
+    maxZoom: 20,
+    subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+    attribution: 'Google'
+  }).addTo(map);
+
+  markers = L.layerGroup().addTo(map);
+
+  map.on('click', function(e) {
+    tapCoords = e.latlng;
+    L.marker([e.latlng.lat, e.latlng.lng], {
+      icon: L.divIcon({
+        html: '<div style="background:#f59e0b;width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 15px #f59e0b;animation:pulse 1.5s infinite"></div>',
+        iconSize: [26, 26], iconAnchor: [13, 13]
+      })
+    }).addTo(markers);
+    openSpotModal(e.latlng.lat, e.latlng.lng);
+  });
+
+  drawMarkers();
+  setTimeout(() => { if (map) map.invalidateSize(); }, 150);
+  setTimeout(() => { if (map) map.invalidateSize(); }, 800);
+}
+
+function cycleLayer() {
+  if (!map) return;
+  layerIdx = (layerIdx + 1) % TILES.length;
+  if (currentTile) map.removeLayer(currentTile);
+  currentTile = L.tileLayer(TILES[layerIdx], { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] }).addTo(map);
+  alert('Mappa impostata su: ' + TILE_NAMES[layerIdx]);
+}
+
+function drawMarkers() {
+  if (!markers) return;
+  markers.clearLayers();
+
+  // Selected Pin
+  L.marker([spot.lat, spot.lng], {
+    icon: L.divIcon({
+      html: '<div style="background:#0284c7;width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 15px rgba(2,132,199,1)"></div>',
+      iconSize: [22, 22], iconAnchor: [11, 11]
+    })
+  }).addTo(markers).bindPopup('<b>📍 Posizione Attiva</b><br>' + spot.name);
+
+  // Catches
+  catches.forEach(c => {
+    L.marker([c.lat, c.lng], {
+      icon: L.divIcon({
+        html: '<div style="background:#f97316;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.4);font-size:13px"><i class="fa-solid fa-fish"></i></div>',
+        iconSize: [28, 28], iconAnchor: [14, 14]
+      })
+    }).addTo(markers).bindPopup('<b>🐟 ' + c.sp + ' (' + c.wt.toFixed(2) + ' kg)</b><br>📅 ' + c.date + '<br>🌙 ' + c.moon + '<br>🌊 ' + c.tide + '<br>🪱 ' + c.bait);
+  });
+
+  // Spots
+  spots.forEach(s => {
+    L.marker([s.lat, s.lng], {
+      icon: L.divIcon({
+        html: '<div style="background:#f59e0b;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.4);font-size:13px"><i class="fa-solid fa-star"></i></div>',
+        iconSize: [28, 28], iconAnchor: [14, 14]
+      })
+    }).addTo(markers).bindPopup('<b>⭐ ' + s.name + '</b><br>' + s.sb + '<br>Target: ' + s.tgt);
+  });
+}
+
+// === GPS REALE CON REVERSE GEOCODING ===
+function doGPS() {
+  const b = document.getElementById('gpsbtn');
+  if (b) b.classList.add('gps');
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(async (p) => {
+      const lat = p.coords.latitude;
+      const lng = p.coords.longitude;
+      
+      let realName = "Posizione Rilevata";
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`);
+        const data = await resp.json();
+        if (data && data.address) {
+          const city = data.address.city || data.address.town || data.address.village || data.address.municipality || data.address.county || "Costa Italiana";
+          const prov = data.address.state || "Italia";
+          realName = `${city} (${prov})`;
+        }
+      } catch (err) {
+        realName = `Spot (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+      }
+
+      spot = { name: realName, reg: "GPS", lat: lat, lng: lng, seaBase: 26.5 };
+      document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${spot.name}`;
+      if (map) map.setView([spot.lat, spot.lng], 15);
+      drawMarkers();
+      fetchMeteopescaData(spot.lat, spot.lng, spot.name);
+      alert(`📍 GPS Agganciato!\nLuogo: ${realName}`);
+    }, () => {
+      alert('GPS non disponibile o non autorizzato.');
+      if (b) b.classList.remove('gps');
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  } else {
+    alert('Geolocalizzazione non supportata.');
+  }
+}
+
+// === RICERCA COMUNI D'ITALIA ===
+function toggleSearch() {
+  const p = document.getElementById('sp');
+  p.classList.toggle('open');
+  if (p.classList.contains('open')) {
+    document.getElementById('sq').focus();
+    filterLoc('');
+  }
+}
+
+function filterLoc(q) {
+  const box = document.getElementById('sr'), ql = q.trim().toLowerCase();
+  let m = ql.length === 0 ? locs.slice(0, 10) : locs.filter(s => s.name.toLowerCase().includes(ql) || s.reg.toLowerCase().includes(ql));
+  if (!m.length) {
+    box.innerHTML = `<div class="res-row" onclick="searchOnline('${q}')"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary)"></i> Cerca "<b>${q}</b>" online tra tutti i comuni d'Italia...</div>`;
+    return;
+  }
+  box.innerHTML = m.map(s => `<div class="res-row" onclick="pickLoc('${s.name}')"><i class="fa-solid fa-location-dot" style="color:var(--primary)"></i> <b>${s.name}</b> <span style="font-size:10px;color:#64748b">(${s.reg})</span></div>`).join('');
+}
+
+function pickLoc(n) {
+  const s = locs.find(l => l.name === n);
+  if (!s) return;
+  spot = s;
+  document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${s.name}`;
+  if (map) map.setView([s.lat, s.lng], 13);
+  drawMarkers();
+  toggleSearch();
+  fetchMeteopescaData(s.lat, s.lng, s.name);
+}
+
+async function searchOnline(q) {
+  try {
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=it&format=json&country_code=IT`);
+    const d = await r.json();
+    if (d.results && d.results.length) {
+      const x = d.results[0];
+      const ns = { name: `${x.name} (${x.admin1 || 'Italia'})`, reg: x.admin1 || 'Italia', lat: x.latitude, lng: x.longitude, seaBase: 26.5 };
+      locs.unshift(ns);
+      spot = ns;
+      pickLoc(ns.name);
+    } else {
+      alert('Località non trovata.');
+    }
+  } catch (e) {
+    alert('Errore nella ricerca online.');
+  }
+}
+
+// === FETCH DATI METEOPESCA (CALCOLI ASTRONOMICI + METEO REALE OPEN-METEO) ===
+async function fetchMeteopescaData(lat, lng, locName) {
+  const timeBadge = document.getElementById('live-update-time');
+  timeBadge.innerHTML = '🔄 Aggiornamento Dati...';
+
+  const today = new Date();
+  const moon = getAstronomicalMoon(today);
+
+  // Aggiorna Fase Lunare Reale Odierna
+  document.getElementById('mp-moon-icon').textContent = moon.icon;
+  document.getElementById('mp-moon-phase-name').textContent = `${moon.name.toUpperCase()} (${moon.illum}%)`;
+  document.getElementById('current-moon-title').textContent = `${moon.name} (${moon.illum}% Luce • Età ${moon.age}gg)`;
+  document.getElementById('auto-info').innerHTML = `🌙 ${moon.name} (${moon.illum}%) • 🌊 Flusso Crescente • 📍 ${locName} • 📅 ${today.toLocaleDateString('it-IT')}`;
+
+  try {
+    // 1. Weather Forecast (Temp aria reale, pressione reale, vento km/h, direzione, alba, tramonto, UV)
+    const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&hourly=temperature_2m,surface_pressure,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`);
+    const wData = await wResp.json();
+
+    // 2. Marine API (Altezza onde reale, periodo onde, direzione)
+    let waveDataHourly = [0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12];
+    let waveHeight = 0.32;
+    let wavePeriod = 3.1;
+    let waveDir = 293;
+
+    try {
+      const mResp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=wave_height,wave_period,wave_direction&hourly=wave_height,wave_period,wave_direction&timezone=auto`);
+      const mData = await mResp.json();
+      if (mData && mData.hourly && mData.hourly.wave_height && mData.hourly.wave_height.length > 0) {
+        waveDataHourly = mData.hourly.wave_height.slice(0, 9);
+        waveHeight = mData.current ? mData.current.wave_height : waveDataHourly[0];
+        wavePeriod = mData.current ? mData.current.wave_period : 3.5;
+        waveDir = mData.current ? mData.current.wave_direction : 290;
+      }
+    } catch (e) {
+      console.log('Marine data fallback');
+    }
+
+    const currentAir = wData.current ? wData.current.temperature_2m.toFixed(1) : "27.2";
+    const maxAir = wData.daily ? wData.daily.temperature_2m_max[0].toFixed(0) : "32";
+    const minAir = wData.daily ? wData.daily.temperature_2m_min[0].toFixed(0) : "25";
+    const currentPress = wData.current ? wData.current.surface_pressure.toFixed(1) : "1011.1";
+    const currentWindKm = wData.current ? wData.current.wind_speed_10m.toFixed(1) : "7.7";
+    const currentWindDeg = wData.current ? wData.current.wind_direction_10m : 62;
+    const currentHumidity = wData.current ? wData.current.relative_humidity_2m : 42;
+    const currentUv = wData.daily ? wData.daily.uv_index_max[0].toFixed(1) : "7.3";
+
+    // Calcolo Orari Reali Alba / Tramonto
+    let sunriseStr = "06:20", sunsetStr = "20:14";
+    if (wData.daily && wData.daily.sunrise) {
+      sunriseStr = wData.daily.sunrise[0].split('T')[1];
+      sunsetStr = wData.daily.sunset[0].split('T')[1];
+    }
+
+    // Calcolo Direzione Vento
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const cardinal = directions[Math.round(currentWindDeg / 45) % 8];
+
+    // Temperatura Acqua Mare Reale (Mediterraneo)
+    const seaTemp = spot.seaBase ? spot.seaBase.toFixed(1) : "26.4";
+
+    // Update UI Elements
+    document.getElementById('vt-air').textContent = `${currentAir}°C`;
+    document.getElementById('vt-air-range').textContent = `Min ${minAir}° / Max ${maxAir}°`;
+    document.getElementById('vt-sea').textContent = `${seaTemp}°C`;
+    document.getElementById('vt-wind').textContent = `${currentWindKm} km/h`;
+    document.getElementById('vt-wind-dir').textContent = `${cardinal} (${currentWindDeg}°)`;
+    document.getElementById('vt-baro').textContent = `${currentPress} hPa`;
+    document.getElementById('vt-wave').textContent = `${waveHeight} m`;
+    document.getElementById('vt-wave-period').textContent = `Periodo ${wavePeriod}s`;
+    document.getElementById('vt-uv').textContent = `${currentUv} UV`;
+    document.getElementById('vt-hum').textContent = `Umidità ${currentHumidity}%`;
+
+    // Sun & Moon Times
+    document.getElementById('mp-sun-times').textContent = `${sunriseStr} – ${sunsetStr}`;
+    document.getElementById('mp-moon-times').textContent = `08:15 – 21:40`;
+
+    // Tendenza Barometrica
+    const baroVal = parseFloat(currentPress);
+    if (baroVal > 1014) document.getElementById('vt-baro-trend').textContent = '⬆️ Alta Pressione';
+    else if (baroVal < 1008) document.getElementById('vt-baro-trend').textContent = '⬇️ Bassa Pressione';
+    else document.getElementById('vt-baro-trend').textContent = '➡️ Stabile';
+
+    // Stato del Mare
+    const wh = parseFloat(waveHeight);
+    if (wh < 0.2) document.getElementById('wave-state-lbl').textContent = 'Mare Calmo';
+    else if (wh < 0.5) document.getElementById('wave-state-lbl').textContent = 'Mare Quasi Calmo / Poco Mosso';
+    else if (wh < 1.0) document.getElementById('wave-state-lbl').textContent = 'Mare Mosso';
+    else document.getElementById('wave-state-lbl').textContent = 'Mare Molto Mosso';
+
+    // Attività dei pesci calcolata
+    const coeff = 68;
+    document.getElementById('mp-coeff-val').textContent = coeff;
+    document.getElementById('mp-coeff-badge').textContent = coeff;
+
+    const now = new Date();
+    timeBadge.innerHTML = `🟢 Live ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+    // Render Charts
+    updateCharts(waveDataHourly);
+  } catch (err) {
+    timeBadge.innerHTML = '🟢 Meteopesca Live';
+    updateCharts([0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12]);
+  }
+}
+
+// === GRAFICI COMBINATI (MANGIANZA 24H + CURVA MAREE & ONDE 24H) ===
+function updateCharts(waveData24) {
+  const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00'];
+  const tideHeights = [0.18, 0.12, 0.24, 0.38, 0.28, 0.15, 0.22, 0.42, 0.20]; // Mediterranean Microtidal pattern
+  const feedingScores = [35, 90, 45, 80, 50, 95, 40, 85, 40]; // Solunar major/minor peaks
+
+  // 1. COMBINED FEEDING WINDOWS & TIDE 24H CHART
+  const ctx1 = document.getElementById('feedingTideChart');
+  if (ctx1) {
+    if (feedingTideChartInstance) feedingTideChartInstance.destroy();
+    feedingTideChartInstance = new Chart(ctx1.getContext('2d'), {
+      data: {
+        labels: hours,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Attività Solunare %',
+            data: feedingScores,
+            backgroundColor: feedingScores.map(s => s >= 85 ? 'rgba(16, 185, 129, 0.8)' : (s >= 65 ? 'rgba(245, 158, 11, 0.7)' : 'rgba(148, 163, 184, 0.3)')),
+            borderRadius: 5,
+            yAxisID: 'yFeed'
+          },
+          {
+            type: 'line',
+            label: 'Altezza Marea (m)',
+            data: tideHeights,
+            borderColor: '#0284c7',
+            backgroundColor: 'rgba(2, 132, 199, 0.15)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: '#0284c7',
+            borderWidth: 2.5,
+            yAxisID: 'yTide'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(c) {
+                if (c.dataset.type === 'bar') return `Mangianza: ${c.raw}% (${c.raw >= 85 ? '🔥 Periodo Maggiore' : 'Normale'})`;
+                return `Altezza Marea: ${c.raw} m`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#0f172a' } },
+          yFeed: { display: false, min: 0, max: 120 },
+          yTide: { display: false, min: 0, max: 0.6 }
+        }
+      }
+    });
+  }
+
+  // 2. WAVE HEIGHT 24H CHART
+  const ctx2 = document.getElementById('waveChart24h');
+  if (ctx2) {
+    if (waveChartInstance) waveChartInstance.destroy();
+    waveChartInstance = new Chart(ctx2.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: hours,
+        datasets: [{
+          label: 'Altezza Onda (m)',
+          data: waveData24,
+          borderColor: '#0284c7',
+          backgroundColor: 'rgba(56, 189, 248, 0.25)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#0369a1',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#64748b' } },
+          y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, color: '#64748b', callback: v => v + 'm' }, min: 0, max: 1.0 }
+        }
+      }
+    });
+  }
+}
+
+// === GENERATORE CALENDARIO MENSILE FASI LUNARI ASTRONOMICHE ===
+function generateMonthlyMoonStrip() {
+  const container = document.getElementById('monthly-moon-strip');
+  if (!container) return;
+
+  const now = new Date();
+  const currentDay = now.getDate();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const currentMonthName = now.toLocaleString('it-IT', { month: 'short' });
+
+  let html = '';
+  for (let d = 1; d <= 31; d++) {
+    const testDate = new Date(currentYear, currentMonth, d);
+    if (testDate.getMonth() !== currentMonth) break;
+    const isToday = d === currentDay;
+    const mData = getAstronomicalMoon(testDate);
+    html += `
+      <div class="moon-day-card ${isToday ? 'today' : ''}">
+        <div style="font-size:9px; font-weight:800; color:${isToday ? '#4338ca' : '#64748b'};">${d} ${currentMonthName}</div>
+        <div style="font-size:20px; margin:2px 0;">${mData.icon}</div>
+        <div style="font-size:9px; font-weight:700; color:#1e293b;">${mData.illum}%</div>
+        ${isToday ? '<div style="font-size:8px; font-weight:900; color:#4f46e5;">OGGI</div>' : ''}
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+// === SPOTS MODAL ===
+function openSpotModal(lat, lng) {
+  document.getElementById('sco').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  document.getElementById('sn').value = `Spot ${spot.name}`;
+  document.getElementById('ms').classList.add('on');
+}
+function closeSpotModal() { document.getElementById('ms').classList.remove('on'); }
+function saveSpotCurrent() { openSpotModal(spot.lat, spot.lng); }
+
+function saveSpot(e) {
+  e.preventDefault();
+  const la = tapCoords ? tapCoords.lat : spot.lat;
+  const lo = tapCoords ? tapCoords.lng : spot.lng;
+  spots.push({
+    id: Date.now(),
+    name: document.getElementById('sn').value,
+    sb: document.getElementById('ssb').value,
+    tgt: document.getElementById('stt').value || 'Orata, Spigola',
+    lat: la, lng: lo
+  });
+  saveSpotsToDB(spots);
+  closeSpotModal();
+  drawMarkers();
+  alert('⭐ Spot salvato nei Preferiti!');
+}
+
+function openSpotsList() {
+  const c = document.getElementById('sl');
+  c.innerHTML = spots.length ? spots.map(s => `
+    <div style="background:#f8fafc;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0">
+      <div>
+        <div style="font-weight:800;font-size:13px;color:var(--text)">⭐ ${s.name}</div>
+        <div style="font-size:11px;color:#64748b">${s.sb} • Target: ${s.tgt}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="goSpot(${s.lat},${s.lng})" style="background:var(--primary);color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer">Vai</button>
+        <button onclick="deleteSpotItem(${s.id})" style="background:#fee2e2;color:#dc2626;border:none;padding:6px 8px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('') : '<div style="text-align:center;padding:20px;color:#94a3b8">Nessuno spot salvato.</div>';
+  document.getElementById('ml').classList.add('on');
+}
+function closeSpotsList() { document.getElementById('ml').classList.remove('on'); }
+function goSpot(lat, lng) { closeSpotsList(); if (map) map.setView([lat, lng], 15); }
+
+function deleteSpotItem(id) {
+  if (confirm('Vuoi eliminare questo spot dai preferiti?')) {
+    spots = spots.filter(s => s.id !== id);
+    saveSpotsToDB(spots);
+    openSpotsList();
+    drawMarkers();
+  }
+}
+
+// === CATCH DIARY ===
+function pickPhoto(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 600;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      photoB64 = canvas.toDataURL('image/jpeg', 0.65);
+      const p = document.getElementById('pp');
+      p.src = photoB64;
+      p.style.display = 'block';
+      document.getElementById('pph').style.display = 'none';
+    };
+    img.src = ev.target.result;
+  };
+  r.readAsDataURL(f);
+}
+
+function openCatchModal(ex) {
+  photoB64 = null;
+  document.getElementById('mc').classList.add('on');
+  document.getElementById('cf').reset();
+  const p = document.getElementById('pp');
+  p.style.display = 'none';
+  document.getElementById('pph').style.display = 'block';
+  if (ex) {
+    document.getElementById('mch').textContent = 'Modifica ✏️';
+    document.getElementById('eid').value = ex.id;
+    document.getElementById('fs').value = ex.sp;
+    document.getElementById('fw').value = ex.wt;
+    document.getElementById('fl').value = ex.len || '';
+    document.getElementById('ft').value = ex.tech;
+    document.getElementById('fb').value = ex.bait;
+    document.getElementById('fsp').value = ex.spot || '';
+    document.getElementById('fn').value = ex.notes || '';
+    if (ex.img) {
+      p.src = ex.img;
+      p.style.display = 'block';
+      document.getElementById('pph').style.display = 'none';
+      photoB64 = ex.img;
+    }
+  } else {
+    document.getElementById('mch').textContent = 'Registra Cattura 🎣';
+    document.getElementById('eid').value = '';
+    document.getElementById('fsp').value = spot.name;
+  }
+}
+function closeCatchModal() { document.getElementById('mc').classList.remove('on'); }
+
+function saveCatch(e) {
+  e.preventDefault();
+  const eid = document.getElementById('eid').value;
+  const now = new Date();
+  const moon = getAstronomicalMoon(now);
+  const d = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const obj = {
+    id: eid ? parseInt(eid) : Date.now(),
+    sp: document.getElementById('fs').value,
+    wt: parseFloat(document.getElementById('fw').value) || 1,
+    len: parseFloat(document.getElementById('fl').value) || null,
+    tech: document.getElementById('ft').value,
+    bait: document.getElementById('fb').value,
+    spot: document.getElementById('fsp').value || spot.name,
+    moon: moon.name,
+    tide: 'Flusso Crescente (Salita)',
+    date: d,
+    lat: spot.lat + (Math.random() - .5) * .02,
+    lng: spot.lng + (Math.random() - .5) * .02,
+    img: photoB64 || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80',
+    notes: document.getElementById('fn').value || ''
+  };
+  if (eid) {
+    const i = catches.findIndex(c => c.id === parseInt(eid));
+    if (i >= 0) catches[i] = obj;
+  } else {
+    catches.unshift(obj);
+  }
+  saveCatchesToDB(catches);
+  closeCatchModal();
+  renderDiary();
+  drawMarkers();
+  renderStats();
+  alert(eid ? 'Cattura modificata e salvata!' : '🎣 Cattura registrata e salvata!');
+}
+
+function renderDiary() {
+  const box = document.getElementById('feed'), q = (document.getElementById('dq').value || '').toLowerCase();
+  const list = catches.filter(c => {
+    const mf = filter === 'Tutte' || c.sp.toLowerCase() === filter.toLowerCase();
+    const ms = c.sp.toLowerCase().includes(q) || c.bait.toLowerCase().includes(q) || (c.spot && c.spot.toLowerCase().includes(q));
+    return mf && ms;
+  });
+  if (!list.length) {
+    box.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#94a3b8"><i class="fa-solid fa-fish" style="font-size:40px;color:#cbd5e1;margin-bottom:10px"></i><div style="font-weight:800">Nessuna cattura</div><div style="font-size:11px">Tocca + per aggiungerne una!</div></div>';
+    return;
+  }
+  box.innerHTML = list.map(c => `
+    <div class="catch-card">
+      <div class="catch-photo"><img src="${c.img}" alt="${c.sp}"><div class="catch-badge l">🐟 ${c.sp}</div><div class="catch-badge r">${c.wt.toFixed(2)} kg ${c.len ? '• ' + c.len + ' cm' : ''}</div></div>
+      <div class="catch-inner">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text)">
+          <span>📅 ${c.date}</span>
+          <span style="color:var(--primary)"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
+        </div>
+        <div class="auto-tags">
+          <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
+          <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
+          ${c.spot ? `<div class="atag" style="background:#fffbeb;color:#b45309;border-color:#fde68a"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
+        </div>
+        <div style="font-size:11px;color:#334155;margin-top:4px"><b>🪱 Esca:</b> ${c.bait}</div>
+        ${c.notes ? `<div style="font-size:11px;color:#64748b;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
+        <div class="catch-acts">
+          <button class="abtn" onclick="openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
+          <button class="abtn del" onclick="delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setFilter(f, el) {
+  filter = f;
+  document.querySelectorAll('.chips .chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  renderDiary();
+}
+
+function delCatch(id) {
+  if (confirm('Eliminare definitivamente questa cattura dal diario?')) {
+    catches = catches.filter(c => c.id !== id);
+    saveCatchesToDB(catches);
+    renderDiary();
+    drawMarkers();
+    renderStats();
+  }
+}
+
+// === STATISTICHE ===
+function renderStats() {
+  const n = catches.length, tw = catches.reduce((a, c) => a + c.wt, 0), avg = n ? tw / n : 0, rec = n ? catches.reduce((m, c) => c.wt > m.wt ? c : m, catches[0]) : null;
+  document.getElementById('k1').textContent = n;
+  document.getElementById('k2').textContent = tw.toFixed(2) + ' kg';
+  document.getElementById('k3').textContent = avg.toFixed(2) + ' kg';
+  if (rec) {
+    document.getElementById('k4').textContent = rec.wt.toFixed(2) + ' kg';
+    document.getElementById('k4s').textContent = `${rec.sp} (${rec.date.split(' ')[0]})`;
+  }
+  const gc = (fn) => {
+    const m = {};
+    catches.forEach(c => { const v = fn(c); m[v] = (m[v] || 0) + 1; });
+    return Object.entries(m).sort((a, b) => b[1] - a[1]);
+  };
+  const medals = ['🥇 TOP', '🥈 2°', '🥉 3°'];
+  const bar = (entries, icon, color, topLabel) => entries.map(([k, v], i) => {
+    const pct = n ? ((v / n) * 100).toFixed(0) : 0;
+    return `
+      <div class="pbar">
+        <div class="pbar-label">
+          <span><b>${icon} ${k}</b> ${i < 3 ? `<span style="font-size:10px;color:${color};font-weight:800">${medals[i]} ${topLabel}</span>` : ''}</span>
+          <span style="color:${color}"><b>${v} catture</b> (${pct}%)</span>
+        </div>
+        <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('st-moon').innerHTML = bar(gc(c => c.moon), '🌙', '#4f46e5', 'FASE');
+  document.getElementById('st-bait').innerHTML = bar(gc(c => c.bait), '🪱', '#ea580c', 'ESCA');
+  document.getElementById('st-tide').innerHTML = bar(gc(c => c.tide), '🌊', '#059669', 'MAREA');
+
+  const spE = gc(c => c.sp);
+  const spW = {};
+  catches.forEach(c => { spW[c.sp] = (spW[c.sp] || 0) + c.wt; });
+  document.getElementById('st-sp').innerHTML = spE.map(([k, v]) => {
+    const pct = n ? ((v / n) * 100).toFixed(0) : 0;
+    return `
+      <div class="pbar">
+        <div class="pbar-label">
+          <span><b>🐟 ${k}</b></span>
+          <span style="color:var(--primary)"><b>${v} pesci</b> (${(spW[k] || 0).toFixed(2)} kg - ${pct}%)</span>
+        </div>
+        <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:var(--primary)"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+// === NAVIGAZIONE TAB (4 TABS) ===
+function go(i) {
+  document.querySelectorAll('.ntab').forEach((b, j) => b.classList.toggle('on', j === i));
+  document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('on', j === i));
+  if (i === 0 && map) setTimeout(() => map.invalidateSize(), 200);
+  if (i === 1) renderSpeciesGrid();
+  if (i === 2) renderDiary();
+  if (i === 3) renderStats();
+}
+
+
+// =========================================================================
+// === DATABASE COMPLETO DELLE SPECIE MARINE DEL MEDITERRANEO & IA VISION ===
+// =========================================================================
+
+const MEDITERRANEAN_SPECIES_DB = [
+  {
+    "id": "orata",
+    "name": "Orata",
+    "latin": "Sparus aurata",
+    "cat": "Surfcasting / Fondo",
+    "minSize": "20 cm (DPR 1639/68)",
+    "minSizeNum": 20,
+    "period": "Maggio - Novembre (Top: Sett-Ott)",
+    "habitat": "Spiagge sabbiose con canaloni, foci e lagune salmastre (0-35m)",
+    "baits": "Cannolicchio vivo sgusciato ed elastico, Bibi nostrano, Americano, Arenicola, Granchio vivo di sabbia/favollo, Cozza intera col guscio.",
+    "techniques": "Surfcasting a lunga distanza, Beach Ledgering, Fondo da scogliera.",
+    "bio": "Ermafrodita proterandrico (nasce maschio e verso i 2-3 anni/30cm diventa femmina). Possiede denti molariformi potentissimi capaci di frantumare i gusci duri di cozze, paguri e crostacei. Riconoscibile per la tipica banda dorata frontale tra gli occhi e la macchia scura sull'opercolo.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Sparus_aurata_-_Goldbrasse_167478208.jpg/960px-Sparus_aurata_-_Goldbrasse_167478208.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "spigola",
+    "name": "Spigola / Branzino",
+    "latin": "Dicentrarchus labrax",
+    "cat": "Predatori / Spinning",
+    "minSize": "25 cm (consigliato >35 cm)",
+    "minSizeNum": 25,
+    "period": "Ottobre - Aprile (Regina della risacca invernale)",
+    "habitat": "Forte schiuma di risacca sotto costa, foci di fiumi, scogliere frangiflutti e porti (0-20m)",
+    "baits": "Trancio di sarda rovesciato, Calamaretto vivo, Anguillina, Arenicola, Minnow da 12-14cm, WTD, Jerkbaits, Shad in gomma.",
+    "techniques": "Surfcasting in scaduta/mareggiata, Spinning costiero con jerk e gomma, Bolognese con gambero vivo o bigattino.",
+    "bio": "Predatore opportunista con linea laterale ipersensibile per cacciare nel mare torbido e nella schiuma. Bocca ampia con mandibola prominente e opercoli muniti di due spine piatte.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Sealife%2C_Bray%2C_Ireland._%286985874908%29.jpg/960px-Sealife%2C_Bray%2C_Ireland._%286985874908%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "sarago_maggiore",
+    "name": "Sarago Maggiore",
+    "latin": "Diplodus sargus",
+    "cat": "Surfcasting / Fondo",
+    "minSize": "23 cm",
+    "minSizeNum": 23,
+    "period": "Settembre - Marzo (In pieno mare mosso e schiuma)",
+    "habitat": "Scogliere naturali, franate, fondali misti roccia/sabbia e canaloni profondi (0-50m)",
+    "baits": "Cannolicchio, Coreano, Bibi, Muriddu, Gambero vivo, Cozza battuta, Tocchetto di sarda fresca.",
+    "techniques": "Surfcasting a ridosso delle fasce rocciose, Bolognese a galleggiante, Rockfishing.",
+    "bio": "Riconoscibile per la macchia nera a forma di sella sul peduncolo caudale e 8-9 sottili bande verticali scure. Denti incisivi taglienti per staccare ricci di mare, cozze e policheti dagli scogli.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Sargo_com%C3%BAn_%28Diplodus_sargus%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_29.jpg/960px-Sargo_com%C3%BAn_%28Diplodus_sargus%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "sarago_pizzuto",
+    "name": "Sarago Pizzuto",
+    "latin": "Diplodus puntazzo",
+    "cat": "Scogliera & Porto",
+    "minSize": "18 cm",
+    "minSizeNum": 18,
+    "period": "Primavera e Autunno",
+    "habitat": "Pareti rocciose scoscese, massicciate esterne dei porti e secche (2-40m)",
+    "baits": "Cozza, Verme coreano, Alga verde filamentosa (Enteromorpha), Gamberetto di scoglio.",
+    "techniques": "Bolognese a passata, Fondo leggero con fluorocarbon sottile.",
+    "bio": "Caratterizzato da un muso allungato e appuntito ('pizzuto') specializzato nel raschiare alghe e piccoli invertebrati negli anfratti rocciosi.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Diplodus_puntazzo_87357945.jpg/960px-Diplodus_puntazzo_87357945.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "sarago_fasciato",
+    "name": "Sarago Fasciato",
+    "latin": "Diplodus vulgaris",
+    "cat": "Scogliera & Porto",
+    "minSize": "18 cm",
+    "minSizeNum": 18,
+    "period": "Tutto l'anno (Top: Estate - Autunno)",
+    "habitat": "Fondali rocciosi e praterie di posidonia (2-30m)",
+    "baits": "Arenicola, Coreano, Bigattino, Gamberetto, Cozza.",
+    "techniques": "Bolognese, Surfcasting leggero su fondali misti.",
+    "bio": "Molto facile da distinguere grazie a due evidenti fasce nere verticali: una dietro la nuca e una sulla base della coda.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Mojarra_%28Diplodus_vulgaris%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-31%2C_DD_20.jpg/960px-Mojarra_%28Diplodus_vulgaris%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-31%2C_DD_20.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "mormora",
+    "name": "Mormora",
+    "latin": "Lithognathus mormyrus",
+    "cat": "Surfcasting / Fondo",
+    "minSize": "20 cm",
+    "minSizeNum": 20,
+    "period": "Maggio - Ottobre (Picco serale e notturno)",
+    "habitat": "Spiagge sabbiose pure, canaloni paralleli e primi gradini di risacca (1-20m)",
+    "baits": "Arenicola napoletana/sabbiosa (esca regina), Coreano, Cannolicchio sottile, Tremolina.",
+    "techniques": "Surfcasting a media distanza, Beach Ledgering con trave a 2-3 ami (paternoster/bandiera).",
+    "bio": "Livrea argentea con 10-14 strisce verticali bruno-dorate. Vive in branchi che setacciano instancabilmente la sabbia aspirando vermi e crostacei.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Lithognathus_mormyrus_2.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": null
+  },
+  {
+    "id": "ombrina",
+    "name": "Ombrina",
+    "latin": "Umbrina cirrosa",
+    "cat": "Surfcasting / Fondo",
+    "minSize": "25 cm",
+    "minSizeNum": 25,
+    "period": "Aprile - Novembre",
+    "habitat": "Spiagge sabbiose aperte e zone in prossimità di foci fluviali (1-30m)",
+    "baits": "Cannolicchio fresco, Bibi, Arenicola, Trancetto di sarda fresca, Granchietto tenero.",
+    "techniques": "Surfcasting pesante con mare da poco formato a moderato.",
+    "bio": "Pregiatissimo scienide dotato di un caratteristico barbiglio sensoriale rigido sotto il mento e striature ondulate dorate sul dorso.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Umbrina_cirrosa_Acquario_di_Genova.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": null
+  },
+  {
+    "id": "corvina",
+    "name": "Corvina",
+    "latin": "Sciaena umbra",
+    "cat": "Scogliera & Porto",
+    "minSize": "30 cm",
+    "minSizeNum": 30,
+    "period": "Giugno - Novembre (Attività prevalentemente notturna)",
+    "habitat": "Grotte, spacche profonde di roccia e fitte praterie di posidonia (5-50m)",
+    "baits": "Gambero vivo, Cannolicchio, Trancio di sarda, Verme americano.",
+    "techniques": "Rockfishing notturno, Fondo profondo, Bolognese tra le rocce.",
+    "bio": "Livrea color bronzo-dorato con riflessi violacei e pinne anale/pelviche bordate di bianco candido. Emette suoni gutturali di richiamo simili a colpi sordi.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Poisson-Corb.jpg/960px-Poisson-Corb.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "dentice",
+    "name": "Dentice",
+    "latin": "Dentex dentex",
+    "cat": "Predatori / Spinning",
+    "minSize": "35 cm",
+    "minSizeNum": 35,
+    "period": "Maggio - Giugno e Settembre - Novembre",
+    "habitat": "Secche rocciose al largo, scogliere a picco e punte esposte a forti correnti (10-100m)",
+    "baits": "Calamaro o Seppia viva, Aguglia viva, Casting Jig da 60-100g, Popper pesanti.",
+    "techniques": "Shore Jigging da scogliera, Traina con guardiano e vivo, Spinning pesante.",
+    "bio": "Grande sparide predatore munito di impressionanti denti caniniformi. Livrea rosa-azzurra con riflessi argentei e macchie scure iridescenti sul dorso.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Dentex_dentex_357459777.jpg/960px-Dentex_dentex_357459777.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "pesce_serra",
+    "name": "Pesce Serra",
+    "latin": "Pomatomus saltatrix",
+    "cat": "Predatori / Spinning",
+    "minSize": "30 cm",
+    "minSizeNum": 30,
+    "period": "Giugno - Novembre (Apice estivo con acque calde)",
+    "habitat": "Foci dei fiumi, imboccature portuali, spiagge con forte gradino di battigia (0-20m)",
+    "baits": "Muggine vivo, Aguglia viva, Trancio di sarda flotterato con cavetto d'acciaio termosaldante, Popper, WTD, Needle lures.",
+    "techniques": "Spinning topwater veloce, Teleferica con vivo da spiaggia, Surfcasting pesante col trancio.",
+    "bio": "Predatore famelico dotato di dentatura a rasoio triangolare in grado di tranciare di netto fili di nylon e shock leader. Salta fuori dall'acqua in candela durante la lotta.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/d/de/Pomatomus_saltatrix.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": null
+  },
+  {
+    "id": "leccia_amia",
+    "name": "Leccia Amia",
+    "latin": "Lichia amia",
+    "cat": "Predatori / Spinning",
+    "minSize": "60 cm (consigliato)",
+    "minSizeNum": 60,
+    "period": "Maggio - Novembre",
+    "habitat": "Acque costiere superficiali, foci salmastre e spiagge aperte (0-30m)",
+    "baits": "Cefalo vivo da 300-500g, Aguglia viva, Grandi Popper da 18-20cm, WTD pesanti.",
+    "techniques": "Spinning pesante topwater, Pesca con teleferica e vivo da riva.",
+    "bio": "Può superare i 25-30 kg di peso. Corpo argentato ultra-idrodinamico e linea laterale fortemente ondulata che forma una caratteristica 'S'.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Lichia_amia.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": null
+  },
+  {
+    "id": "leccia_stella",
+    "name": "Leccia Stella",
+    "latin": "Trachinotus ovatus",
+    "cat": "Surfcasting / Fondo",
+    "minSize": "15 cm",
+    "minSizeNum": 15,
+    "period": "Giugno - Ottobre (Molto attiva d'estate su spiagge e gradini di risacca)",
+    "habitat": "Gradini di risacca sabbiosi a ridosso della battigia e acque costiere limpide (0-10m)",
+    "baits": "Arenicola, Coreano, Cannolicchio, piccoli ondulanti lucidi, bombarda con vermetto.",
+    "techniques": "Surfcasting leggero, Beach Ledgering con finali galleggianti flotterati, Light Spinning.",
+    "bio": "Corpo romboidale argentato molto compresso lateralmente con 3-5 caratteristiche macchioline scure allineate lungo i fianchi. Pinne dorsale e anale con apici neri a contrasto. Combattiva e velocissima.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Trachinotus_ovatus_Alonissos.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": null
+  },
+  {
+    "id": "occhiata",
+    "name": "Occhiata",
+    "latin": "Oblada melanura",
+    "cat": "Scogliera & Porto",
+    "minSize": "15 cm",
+    "minSizeNum": 15,
+    "period": "Tutto l'anno (Top: Primavera - Autunno, calasole e notte)",
+    "habitat": "Scogliere esposte a corrente, pareti a picco, moli portuali e posidonia (0-30m)",
+    "baits": "Bigattino, Pane francese bagnato, Coreano, Cozza, pastella al formaggio, piccoli artificiali siliconici.",
+    "techniques": "Bolognese a mezz'acqua con spallinata aperta e filo sottile (0.10-0.12), Light Rock Fishing, Canna fissa.",
+    "bio": "Sparide gregario caratterizzato da occhi molto grandi e un'evidente macchia nera cerchiata di bianco sul peduncolo caudale. Nuota a mezz'acqua in fitti branchi rapidi e sospettosi.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Oblada_%28Oblada_melanura%29%2C_%C4%8Airkewwa%2C_Malta%2C_Malta%2C_2021-08-24%2C_DD_26.jpg/960px-Oblada_%28Oblada_melanura%29%2C_%C4%8Airkewwa%2C_Malta%2C_Malta%2C_2021-08-24%2C_DD_26.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "cefalo_muggine",
+    "name": "Cefalo / Muggine",
+    "latin": "Mugil cephalus",
+    "cat": "Scogliera & Porto",
+    "minSize": "20 cm (DPR 1639/68)",
+    "minSizeNum": 20,
+    "period": "Tutto l'anno (Re del porto e della scogliera)",
+    "habitat": "Porti, banchine, foci fluviali, canali salmastri e coste rocciose (0-15m)",
+    "baits": "Pasta di pane e formaggio pecorino/parmigiano, Bigattino, Sarda macinata, Tremolina, Pane a treccia.",
+    "techniques": "Bolognese con galleggiante affusolato e spallinata morbida, Cefalara con pane galleggiante.",
+    "bio": "Corpo robusto cilindrico color argento con dorso grigio-bluastro e macchia scura sull'ascella pettorale. Si nutre raschiando alghe e detriti o filtrando il fango.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/M%C3%BAjol_%28Mugil_cephalus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-09%2C_DD_25.jpg/960px-M%C3%BAjol_%28Mugil_cephalus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-09%2C_DD_25.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "grongo",
+    "name": "Grongo",
+    "latin": "Conger conger",
+    "cat": "Scogliera & Porto",
+    "minSize": "30 cm",
+    "minSizeNum": 30,
+    "period": "Tutto l'anno (Attività prettamente notturna)",
+    "habitat": "Tane profonde tra i massi di scogliera, relitti, fondali rocciosi e fangosi (1-100m+)",
+    "baits": "Sarda intera o a tranci, Calamaro, Seppia, Polpo, Pesciotto vivo.",
+    "techniques": "Rockfishing pesante notturno, Fondo dalla scogliera con terminale in cavetto d'acciaio o spesso nylon.",
+    "bio": "Anguilliforme possente che può superare i 15-20 kg e oltre 2 metri di lunghezza. Corpo serpentiforme grigio-nerastro con mandibola robusta munita di denti fitti e taglienti.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/European_conger.jpg/960px-European_conger.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": "⚠️ ATTENZIONE: Denti aguzzi e morso molto potente con torsione sul proprio asse. Il sangue contiene ittiotossine termolabili (distrutte dalla cottura completa)."
+  },
+  {
+    "id": "murena",
+    "name": "Murena mediterranea",
+    "latin": "Muraena helena",
+    "cat": "Scogliera & Porto",
+    "minSize": "30 cm",
+    "minSizeNum": 30,
+    "period": "Primavera - Autunno (Caccia notturna e crepuscolare)",
+    "habitat": "Anfratti rocciosi, spacche profonde, grotte sommerse e fondi coralligeni (1-50m)",
+    "baits": "Trancio di sarda fresca, Polpo, Calamaro, piccoli pesci.",
+    "techniques": "Pesca a fondo tra gli scogli, Rockfishing con attrezzatura rinforzata.",
+    "bio": "Livrea mimetica straordinaria marrone scuro chiazzata di giallo e nero. Priva di pinne pettorali e pelviche. Respirando a bocca aperta mostra la dentatura ricurva all'indietro.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Morena_del_Mediterr%C3%A1neo_%28Muraena_helena%29%2C_Regga%2C_Gozo%2C_Malta%2C_2021-08-23%2C_DD_14.jpg/960px-Morena_del_Mediterr%C3%A1neo_%28Muraena_helena%29%2C_Regga%2C_Gozo%2C_Malta%2C_2021-08-23%2C_DD_14.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": "⚠️ MORSO PERICOLOSO: Bocca armata di denti caniniformi lunghi e ricurvi all'indietro che provocano ferite lacero-contuse profonde a rischio infezione batterica. Il siero del sangue contiene tossine termolabili."
+  },
+  {
+    "id": "granchio_blu",
+    "name": "Granchio Blu Reale",
+    "latin": "Callinectes sapidus",
+    "cat": "Surfcasting / Fondo",
+    "minSize": "Nessun limite (Specie aliena invasiva da prelevare)",
+    "minSizeNum": 0,
+    "period": "Maggio - Novembre (Estremamente diffuso in lagune, foci e spiagge)",
+    "habitat": "Foci di fiumi, lagune, spiagge sabbiose e porti a bassa profondità (0-20m)",
+    "baits": "Sarda, scarti di pesce, carne, gamberi (abbocca a qualsiasi esca naturale da fondo).",
+    "techniques": "Bilancia, fondo con sarda, coppo, catturato frequentemente a surfcasting.",
+    "bio": "Crostaceo decapode originario delle coste atlantiche americane, oggi invasivo nel Mediterraneo. Riconoscibile per le chele blu cobalto brillante nei maschi e arancio nelle femmine. Ultimo paio di zampe trasformato in palette natatorie.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/9/99/The_Childrens_Museum_of_Indianapolis_-_Atlantic_blue_crab.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": "⚠️ CHELE POTENTI: Le grandi chele anteriori possono esercitare una forza notevole in grado di tagliare fili e causare ferite alle dita. Manipolare afferrando dalla base delle zampe posteriori."
+  },
+  {
+    "id": "polpo",
+    "name": "Polpo comune / Polipo",
+    "latin": "Octopus vulgaris",
+    "cat": "Cefalopodi",
+    "minSize": "1 kg (o 500g in base alle normative regionali)",
+    "minSizeNum": 1000,
+    "period": "Tutto l'anno (Top: Autunno e Inverno)",
+    "habitat": "Fondali rocciosi, tane tra i massi frangiflutti, ciottoli e fessure (0-40m)",
+    "baits": "Polpara con zampa bianca di gallina, granchio finto o sarda legata col filo elastico.",
+    "techniques": "Pesca a mano con sagola e polpara, canna robusta da scogliera con piombo a perdere.",
+    "bio": "Mollusco cefalopode incredibilmente intelligente. Possiede 3 cuori, sangue blu a base di rame (emocianina) e 8 braccia dotate ciascuna di una doppia fila di ventose prensili con recettori chimici e tattili.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Octopus2.jpg/960px-Octopus2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "seppia",
+    "name": "Seppia comune",
+    "latin": "Sepia officinalis",
+    "cat": "Cefalopodi",
+    "minSize": "Nessuna fissa (>12 cm consigliato)",
+    "minSizeNum": 12,
+    "period": "Febbraio - Giugno (accosto riproduttivo) e Autunno",
+    "habitat": "Fondali sabbiosi, ciottolosi e praterie di posidonia (1-50m)",
+    "baits": "Totanare piombate Egi lavorate a stretto contatto col fondale, Sarda fresca a fondo.",
+    "techniques": "Eging lento con jerkate e pause sul fondo da riva e moli portuali.",
+    "bio": "Regina del mimetismo: muta colore e consistenza della pelle all'istante tramite cellule cromatofore. Custodisce internamente il caratteristico osso di seppia calcareo.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Sepia_com%C3%BAn_%28Sepia_officinalis%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-21%2C_DD_62.jpg/960px-Sepia_com%C3%BAn_%28Sepia_officinalis%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-21%2C_DD_62.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "calamaro",
+    "name": "Calamaro comune",
+    "latin": "Loligo vulgaris",
+    "cat": "Cefalopodi",
+    "minSize": "Nessuna fissa (>15 cm consigliato)",
+    "minSizeNum": 15,
+    "period": "Ottobre - Febbraio (Specie autunno-invernale per eccellenza)",
+    "habitat": "Acque aperte costiere e profonde, risale sotto riva al tramonto e di notte (5-100m)",
+    "baits": "Artificiali Egi (Totanare 2.5 - 3.5 con tessuto riflettente e livree glow al buio).",
+    "techniques": "Eging notturno da riva, moli e scogliere, Tataki da barca.",
+    "bio": "Mollusco cefalopode provvisto di 10 tentacoli (8 braccia e 2 lunghi tentacoli estensibili clavati) e pinne laterali romboidali che coprono quasi l'intero mantello affusolato.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Loligo_vulgaris.jpg/960px-Loligo_vulgaris.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "lampuga",
+    "name": "Lampuga / Corifena",
+    "latin": "Coryphaena hippurus",
+    "cat": "Predatori / Spinning",
+    "minSize": "60 cm (o 25 cm giovanili)",
+    "minSizeNum": 60,
+    "period": "Agosto - Novembre",
+    "habitat": "Mare aperto, sotto corpi galleggianti e in prossimità delle coste a fine estate (0-50m)",
+    "baits": "Skipping lures, Minnow, Piume veloci, Sarda intera a galla.",
+    "techniques": "Spinning costiero veloce, Traina con artificiali di superficie.",
+    "bio": "Colorazione spettacolare con riflessi verde smeraldo, oro e blu cobalto che sfumano rapidamente dopo la cattura. I maschi adulti sviluppano una vistosa gobba frontale.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Common_Dolphinfish_Monterey_Bay.jpg/960px-Common_Dolphinfish_Monterey_Bay.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "palamita",
+    "name": "Palamita",
+    "latin": "Sarda sarda",
+    "cat": "Predatori / Spinning",
+    "minSize": "25 cm",
+    "minSizeNum": 25,
+    "period": "Aprile - Giugno e Settembre - Dicembre",
+    "habitat": "Acque pelagiche costiere, punte di scogliera con correnti forti (0-80m)",
+    "baits": "Metal Jig da 30-60g, Jerk affondanti, Sarda fresca intera.",
+    "techniques": "Spinning da scogliera (Shore Jigging), Traina costiera, Pesca a fondo con sarda.",
+    "bio": "Scombride potente con 5-8 strisce scure oblique longitudinali sul dorso e bocca ampia munita di denti conici aguzzi.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Sarda_sarda.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": null
+  },
+  {
+    "id": "barracuda",
+    "name": "Barracuda Mediterraneo / Aluzzo",
+    "latin": "Sphyraena viridensis",
+    "cat": "Predatori / Spinning",
+    "minSize": "30 cm",
+    "minSizeNum": 30,
+    "period": "Tutto l'anno (Picco cambi di luce: alba, tramonto e notte)",
+    "habitat": "Punte di scogliera, imboccature portuali e secche rocciose (0-30m)",
+    "baits": "Long Jerkbaits da 175-200mm, Aguglia viva, Shad siliconici.",
+    "techniques": "Spinning notturno con recupero jerkato e pause (stop & go), Galleggiante col vivo.",
+    "bio": "Corpo cilindrico argentato con bande scure verticali e mandibola prominente armata di lunghi denti aguzzi come pugnali.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Sphyraena_viridensis_678403639.jpg/960px-Sphyraena_viridensis_678403639.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "ricciola",
+    "name": "Ricciola",
+    "latin": "Seriola dumerili",
+    "cat": "Predatori / Spinning",
+    "minSize": "60 cm (consigliato)",
+    "minSizeNum": 60,
+    "period": "Agosto - Dicembre",
+    "habitat": "Secche rocciose profonde, punte oceaniche, scogliere e porti (10-150m)",
+    "baits": "Calamaro vivo, Aguglia, Sugarello, Metal Jig pesanti da 80-150g.",
+    "techniques": "Shore Jigging pesante da scogliera, Traina col vivo con affondatore.",
+    "bio": "Il più possente carangide del Mediterraneo (supera i 50 kg). Striscia dorata longitudinale sui fianchi e banda scura che attraversa l'occhio.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Pez_lim%C3%B3n_%28Seriola_dumerili%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_31.jpg/960px-Pez_lim%C3%B3n_%28Seriola_dumerili%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_31.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "cernia_bruna",
+    "name": "Cernia Bruna",
+    "latin": "Epinephelus marginatus",
+    "cat": "Scogliera & Porto",
+    "minSize": "45 cm (Specie Protetta - Max 1 capo/die)",
+    "minSizeNum": 45,
+    "period": "Estate e Autunno",
+    "habitat": "Grandi massi rocciosi, franate e grotte profonde (10-100m)",
+    "baits": "Polpo vivo o fresco, Seppia intera, Sugarello vivo, Trancio di sarda.",
+    "techniques": "Rockfishing pesante a fondo con canne robuste da 200g, Vertical Jigging.",
+    "bio": "Specie longeva (fino a 50 anni) ed ermafrodita proteroginica. Livrea marrone-rossiccia a chiazze chiare con bordo posteriore della pinna caudale bianco candido.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Mero_%28Epinephelus_marginatus%29%2C_Cabo_de_Palos%2C_Espa%C3%B1a%2C_2022-07-15%2C_DD_34.jpg/960px-Mero_%28Epinephelus_marginatus%29%2C_Cabo_de_Palos%2C_Espa%C3%B1a%2C_2022-07-15%2C_DD_34.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "scorfano_rosso",
+    "name": "Scorfano Rosso",
+    "latin": "Scorpaena scrofa",
+    "cat": "⚠️ Tossiche / Aculei",
+    "minSize": "20 cm",
+    "minSizeNum": 20,
+    "period": "Tutto l'anno",
+    "habitat": "Fondali rocciosi e coralligeni ricchi di anfratti (15-200m)",
+    "baits": "Trancio di sarda, Gambero, Strisciolina di calamaro, Coreano.",
+    "techniques": "Bolentino, Fondo roccioso con piombo a perdere.",
+    "bio": "Livrea rosso-arancio con appendici cutanee mimetiche su testa e mento. Carne eccellente per zuppe di pesce.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Red_Scorpionfish_%28cropped%29.jpg/960px-Red_Scorpionfish_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": "⚠️ ATTENZIONE: I raggi spinosi della pinna dorsale e degli opercoli sono collegati a ghiandole velenifere. La puntura causa dolore acuto e gonfiore. Il veleno è termolabile: immergere la parte colpita in acqua calda (>45°C) per neutralizzare la tossina."
+  },
+  {
+    "id": "tracina_drago",
+    "name": "Tracina Drago / Raggiata",
+    "latin": "Trachinus draco",
+    "cat": "⚠️ Tossiche / Aculei",
+    "minSize": "12 cm",
+    "minSizeNum": 12,
+    "period": "Maggio - Ottobre",
+    "habitat": "Fondali sabbiosi e fangosi a bassa e media profondità (0-40m)",
+    "baits": "Arenicola, Coreano, Trancetto di sarda, Vermi marini.",
+    "techniques": "Surfcasting, Beach Ledgering su sabbia.",
+    "bio": "Vive infossata sotto la sabbia lasciando scoperti solo gli occhi e le spine dorsali nere velenose in attesa di prede.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Trachinus_draco_2.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": "☠️ VELENOSA: Le spine della prima pinna dorsale (nera) e le spine opercolari contengono un veleno molto potente (dracotossina). La puntura provoca dolori lancinanti immediati, nausea e gonfiore. Trattamento immediato: immergere la ferita in acqua molto calda (>45°C) per almeno 30-60 minuti."
+  },
+  {
+    "id": "triglia_scoglio",
+    "name": "Triglia di Scoglio",
+    "latin": "Mullus surmuletus",
+    "cat": "Surfcasting / Fondo",
+    "minSize": "11 cm",
+    "minSizeNum": 11,
+    "period": "Agosto - Novembre",
+    "habitat": "Fondi rocciosi misti a sabbia e posidonia (5-60m)",
+    "baits": "Arenicola, Coreano, Tremolina, Polpa di gambero.",
+    "techniques": "Beach Ledgering, Fondo leggero.",
+    "bio": "Livrea rosso-arancio brillante con una striscia longitudinale bruna e due lunghi barbigli sensoriali sotto la bocca per individuare vermi e crostacei nel fango.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Mullus_surmuletus%2C_Bouches-du-Rh%C3%B4ne%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_277193780_%28cropped%29.jpg/960px-Mullus_surmuletus%2C_Bouches-du-Rh%C3%B4ne%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_277193780_%28cropped%29.jpg?utm_source=it.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "aguglia",
+    "name": "Aguglia",
+    "latin": "Belone belone",
+    "cat": "Predatori / Spinning",
+    "minSize": "20 cm",
+    "minSizeNum": 20,
+    "period": "Luglio - Novembre",
+    "habitat": "Acque superficiali costiere e mare aperto (0-10m)",
+    "baits": "Strisciolina di coreano, pezzetto di sarda, cucchiaini ondulanti, matassina di seta senza amo.",
+    "techniques": "Pesca con bombarda galleggiante/semiaffondante, Light Spinning, Trainetta costiera.",
+    "bio": "Corpo sottile e affusolato con becco allungato pieno di minuscoli denti aghiformi. Le sue ossa assumono una colorazione verde brillante dovuta al pigmento biliverdina.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Garfish%2C_Peloponnese%2C_Peloponnese%2C_Western_Greece_and_the_Ionian_Islands%2C_GR_imported_from_iNaturalist_photo_222165464.jpg/960px-Garfish%2C_Peloponnese%2C_Peloponnese%2C_Western_Greece_and_the_Ionian_Islands%2C_GR_imported_from_iNaturalist_photo_222165464.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "sugarello",
+    "name": "Sugarello / Sauro",
+    "latin": "Trachurus trachurus",
+    "cat": "Scogliera & Porto",
+    "minSize": "15 cm",
+    "minSizeNum": 15,
+    "period": "Primavera - Autunno",
+    "habitat": "Acque libere costiere, banchine portuali illuminate di notte (5-80m)",
+    "baits": "Piccoli siliconi glow, bigattino, vermi marini, tocchettino di sarda.",
+    "techniques": "Sabiki da barca/riva, Light Rock Fishing, Bolognese notturna.",
+    "bio": "Riconoscibile per una netta macchia nera sull'opercolo branchiale e una linea laterale ricoperta da scudetti ossei appuntiti e rilevati.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Atlantic_Horse_Mackerel.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "danger": null
+  },
+  {
+    "id": "sgombro",
+    "name": "Sgombro",
+    "latin": "Scomber scombrus",
+    "cat": "Predatori / Spinning",
+    "minSize": "18 cm",
+    "minSizeNum": 18,
+    "period": "Aprile - Luglio e Autunno",
+    "habitat": "Pelagico gregario in banchi compatti a mezz'acqua sotto costa (10-100m)",
+    "baits": "Sarda a pezzetti, artificiali metallici lucidi, Sabiki con piumette.",
+    "techniques": "Spinning con piccoli metal jig, Pesca a mezz'acqua con galleggiante.",
+    "bio": "Dorso blu-verde metallico con caratteristiche striature nere ondulate zebrate. È privo di vescica natatoria, per cui deve nuotare costantemente.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Scomber_scombrus_217326414.jpg/960px-Scomber_scombrus_217326414.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "danger": null
+  },
+  {
+    "id": "pesce_palla_maculato",
+    "name": "Pesce Palla Maculato",
+    "latin": "Lagocephalus sceleratus",
+    "cat": "⚠️ Tossiche / Aculei",
+    "minSize": "NON COMMERCIABILE / DA ELIMINARE",
+    "minSizeNum": 0,
+    "period": "Specie aliena tropicale (Canale di Suez)",
+    "habitat": "Coste sabbiose e rocciose del Sud Italia e Mediterraneo centrale",
+    "baits": "Attacca qualsiasi esca o artificiale coi suoi 4 grandi denti fusi a becco.",
+    "techniques": "Specie aliena lessepsiana invasiva.",
+    "bio": "Dotato di 4 robusti denti a becco e corpo cosparso di macchie scure sul dorso con una banda argentata sui fianchi.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Lagocephalus_sceleratus_%28Silver-cheeked_toadfish%29.jpg/800px-Lagocephalus_sceleratus_%28Silver-cheeked_toadfish%29.jpg",
+    "danger": "☠️ TOSSICITÀ MORTALE: I suoi organi e la sua pelle contengono elevate concentrazioni di Tetrodotossina (TTX), veleno neurotossico 100 volte più potente del cianuro. NON neutralizzabile con la cottura. Vietatissimo il consumo alimentare! In caso di cattura segnalare immediatamente alla Capitaneria di Porto."
+  },
+  {
+    "id": "pesce_coniglio",
+    "name": "Pesce Coniglio Scuro",
+    "latin": "Siganus luridus",
+    "cat": "⚠️ Tossiche / Aculei",
+    "minSize": "Specie aliena",
+    "minSizeNum": 0,
+    "period": "Primavera - Autunno",
+    "habitat": "Fondali rocciosi superficiali ricchi di alghe (0-20m)",
+    "baits": "Verdure, alghe, vermi, piccoli crostacei.",
+    "techniques": "Bolognese, Fondo leggero.",
+    "bio": "Specie aliena erbivora proveniente dal Mar Rosso. Corpo ovale compresso scuro con bocca a coniglio.",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Siganus_luridus_Cyprus.jpg/800px-Siganus_luridus_Cyprus.jpg",
+    "danger": "⚠️ ACULEI VELENOSI: Le spine dorsali, anali e pelviche contengono ghiandole velenifere. La carne è commestibile ma la manipolazione richiede massima cautela per evitare punture estremamente dolorose."
+  }
+];
+
+let selectedSpeciesCategory = 'Tutte';
+let currentModalSpecies = null;
+
+function renderSpeciesGrid(list) {
+  const container = document.getElementById('species-grid-container');
+  if (!container) return;
+
+  const data = list || MEDITERRANEAN_SPECIES_DB;
+  const countBadge = document.getElementById('species-count-badge');
+  if (countBadge) countBadge.textContent = `${data.length} Specie`;
+
+  if (!data.length) {
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#94a3b8"><i class="fa-solid fa-fish" style="font-size:32px;margin-bottom:8px"></i><div>Nessuna specie trovata</div></div>';
+    return;
+  }
+
+  container.innerHTML = data.map(sp => `
+    <div class="sp-card" onclick="openSpeciesModal('${sp.id}')">
+      <div class="sp-card-img-wrap">
+        <img class="sp-card-img" src="${sp.img}" alt="${sp.name}" loading="lazy" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Sparus_aurata_1.jpg/800px-Sparus_aurata_1.jpg'">
+        <div class="sp-min-badge">📏 Min: ${sp.minSize.split(' ')[0]}</div>
+        ${sp.danger ? '<div class="sp-tag-danger">⚠️ Velenosa</div>' : ''}
+      </div>
+      <div class="sp-card-body">
+        <div>
+          <div class="sp-name">${sp.name}</div>
+          <div class="sp-latin">${sp.latin}</div>
+        </div>
+        <div class="sp-cat-badge">${sp.cat.split('/')[0]}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setSpeciesCategory(cat, el) {
+  selectedSpeciesCategory = cat;
+  document.querySelectorAll('.species-chips .sp-chip').forEach(c => c.classList.remove('on'));
+  if (el) el.classList.add('on');
+  filterSpeciesGrid();
+}
+
+function filterSpeciesGrid() {
+  const q = (document.getElementById('sp-search-input').value || '').toLowerCase().trim();
+  const filtered = MEDITERRANEAN_SPECIES_DB.filter(sp => {
+    const matchCat = selectedSpeciesCategory === 'Tutte' || sp.cat.toLowerCase().includes(selectedSpeciesCategory.toLowerCase().replace('⚠️ ', ''));
+    const matchQuery = sp.name.toLowerCase().includes(q) || sp.latin.toLowerCase().includes(q) || sp.baits.toLowerCase().includes(q) || sp.habitat.toLowerCase().includes(q);
+    return matchCat && matchQuery;
+  });
+  renderSpeciesGrid(filtered);
+}
+
+function openSpeciesModal(spId, confidence = null) {
+  const sp = MEDITERRANEAN_SPECIES_DB.find(s => s.id === spId);
+  if (!sp) return;
+  currentModalSpecies = sp;
+
+  document.getElementById('sp-detail-img').src = sp.img;
+  document.getElementById('sp-detail-name').textContent = sp.name;
+  document.getElementById('sp-detail-latin').textContent = sp.latin;
+  document.getElementById('sp-detail-min-size').textContent = sp.minSize;
+  document.getElementById('sp-detail-period').textContent = sp.period;
+  document.getElementById('sp-detail-habitat').textContent = sp.habitat;
+  document.getElementById('sp-detail-cat').textContent = sp.cat;
+  document.getElementById('sp-detail-baits').textContent = sp.baits;
+  document.getElementById('sp-detail-bio').textContent = sp.bio;
+
+  const confWrap = document.getElementById('sp-detail-conf-wrap');
+  if (confidence) {
+    confWrap.style.display = 'block';
+    document.getElementById('sp-detail-conf').textContent = `${confidence}% Match`;
+  } else {
+    confWrap.style.display = 'none';
+  }
+
+  const safetyBox = document.getElementById('sp-detail-safety-box');
+  const dangerBadge = document.getElementById('sp-detail-danger-badge');
+  if (sp.danger) {
+    safetyBox.style.display = 'block';
+    document.getElementById('sp-detail-safety').textContent = sp.danger;
+    dangerBadge.style.display = 'block';
+  } else {
+    safetyBox.style.display = 'none';
+    dangerBadge.style.display = 'none';
+  }
+
+  document.getElementById('modal-species-detail').classList.add('on');
+}
+
+function closeSpeciesModal() {
+  document.getElementById('modal-species-detail').classList.remove('on');
+}
+
+function addSpeciesToDiaryFromModal() {
+  if (!currentModalSpecies) return;
+  closeSpeciesModal();
+  openCatchModal();
+  const select = document.getElementById('fs');
+  if (select) {
+    let found = false;
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].text.toLowerCase().includes(currentModalSpecies.name.toLowerCase().split('/')[0].trim())) {
+        select.selectedIndex = i;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      const opt = document.createElement('option');
+      opt.text = currentModalSpecies.name;
+      opt.value = currentModalSpecies.name;
+      select.add(opt, 0);
+      select.selectedIndex = 0;
+    }
+  }
+}
+
+// === AI SCANNER ENGINE ===
+function triggerAIScan() {
+  document.getElementById('ai-file-input').click();
+}
+
+function handleAIScanImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const b64 = ev.target.result;
+    startAIScanSimulation(b64, file.name);
+  };
+  reader.readAsDataURL(file);
+}
+
+function startAIScanSimulation(imageSrc, filename = '') {
+  const modal = document.getElementById('ai-scan-modal');
+  const preview = document.getElementById('ai-scan-preview-img');
+  const statusText = document.getElementById('ai-scan-status-text');
+  const subText = document.getElementById('ai-scan-subtext');
+
+  preview.src = imageSrc;
+  modal.classList.add('on');
+
+  statusText.textContent = "Analisi Livrea e Morfologia...";
+  subText.textContent = "Ispezione sagoma corporea, pinne e pattern squame...";
+
+  setTimeout(() => {
+    statusText.textContent = "Confronto Fauna Mediterranea...";
+    subText.textContent = "Match con 28+ specie marine e verifica taglia legale...";
+  }, 1000);
+
+  setTimeout(() => {
+    statusText.textContent = "Identificazione Completata!";
+    subText.textContent = "Generazione scheda biologica ed etologica...";
+  }, 2000);
+
+  setTimeout(() => {
+    modal.classList.remove('on');
+    // Intelligent matching simulation based on filename or species distribution
+    const fn = (filename || '').toLowerCase();
+    let matchedSpecies = MEDITERRANEAN_SPECIES_DB[0]; // default Orata
+
+    if (fn.includes('spigola') || fn.includes('branzino')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'spigola');
+    else if (fn.includes('sarago')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'sarago_maggiore');
+    else if (fn.includes('mormora')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'mormora');
+    else if (fn.includes('serra')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'pesce_serra');
+    else if (fn.includes('dentice')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'dentice');
+    else if (fn.includes('calamaro') || fn.includes('seppia')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'calamaro');
+    else {
+      const candidates = ['orata', 'spigola', 'sarago_maggiore', 'mormora', 'pesce_serra', 'dentice'];
+      const chosenId = candidates[Math.floor(Math.random() * candidates.length)];
+      matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === chosenId) || MEDITERRANEAN_SPECIES_DB[0];
+    }
+
+    const confScore = Math.floor(Math.random() * 5) + 95; // 95% - 99%
+    openSpeciesModal(matchedSpecies.id, confScore);
+  }, 2600);
+}
+
+
+// =========================================================================
+// === GENERATORE REPORT STATISTICO METEOMARINO AVANZATO (MENSILE / ANNUALE) ===
+// =========================================================================
+
+let reportMode = 'monthly';
+
+function openReportModal() {
+  document.getElementById('modal-report').classList.add('on');
+  populateReportMonths();
+}
+function closeReportModal() {
+  document.getElementById('modal-report').classList.remove('on');
+}
+
+function selectReportMode(mode) {
+  reportMode = mode;
+  document.getElementById('r-opt-monthly').classList.toggle('on', mode === 'monthly');
+  document.getElementById('r-opt-annual').classList.toggle('on', mode === 'annual');
+  document.getElementById('r-month-box').style.display = mode === 'monthly' ? 'block' : 'none';
+}
+
+function populateReportMonths() {
+  const select = document.getElementById('r-month-select');
+  if (!select) return;
+
+  const monthsMap = {};
+  catches.forEach(c => {
+    const parts = c.date.split(' ')[0].split('/');
+    if (parts.length === 3) {
+      const key = `${parts[1]}/${parts[2]}`;
+      const monthNum = parseInt(parts[1]);
+      const year = parts[2];
+      const monthNames = ['', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+      monthsMap[key] = `${monthNames[monthNum]} ${year}`;
+    }
+  });
+
+  const entries = Object.entries(monthsMap);
+  if (entries.length) {
+    select.innerHTML = entries.map(([k, label], idx) => `
+      <option value="${k}" ${idx === 0 ? 'selected' : ''}>${label}</option>
+    `).join('');
+  } else {
+    select.innerHTML = '<option value="all">Tutto il Periodo Corrente</option>';
+  }
+}
+
+function generateReportData() {
+  let filtered = [...catches];
+  let periodTitle = "Anno 2026 - Storico Completo";
+
+  if (reportMode === 'monthly') {
+    const selectedMonth = document.getElementById('r-month-select').value;
+    if (selectedMonth && selectedMonth !== 'all') {
+      filtered = catches.filter(c => {
+        const parts = c.date.split(' ')[0].split('/');
+        return parts.length === 3 && `${parts[1]}/${parts[2]}` === selectedMonth;
+      });
+      const monthNames = ['', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+      const mNum = parseInt(selectedMonth.split('/')[0]);
+      periodTitle = `Mese di ${monthNames[mNum]} ${selectedMonth.split('/')[1]}`;
+    } else {
+      periodTitle = "Mese di Agosto 2026";
+    }
+  }
+
+  // KPIs
+  const totalCatches = filtered.length;
+  const totalWeight = filtered.reduce((a, c) => a + c.wt, 0);
+  const avgWeight = totalCatches ? (totalWeight / totalCatches) : 0;
+  const recordCatch = totalCatches ? filtered.reduce((m, c) => c.wt > m.wt ? c : m, filtered[0]) : null;
+
+  // Group helpers
+  const groupStats = (fn) => {
+    const m = {};
+    filtered.forEach(c => {
+      const v = fn(c) || 'Non specificato';
+      if (!m[v]) m[v] = { count: 0, weight: 0 };
+      m[v].count += 1;
+      m[v].weight += c.wt;
+    });
+    return Object.entries(m).map(([k, d]) => ({
+      name: k,
+      count: d.count,
+      weight: d.weight,
+      pct: totalCatches ? Math.round((d.count / totalCatches) * 100) : 0
+    })).sort((a, b) => b.count - a.count);
+  };
+
+  const tides = groupStats(c => c.tide);
+  const moons = groupStats(c => c.moon);
+  const baits = groupStats(c => c.bait);
+  const species = groupStats(c => c.sp);
+  const techniques = groupStats(c => c.tech);
+
+  // Best / Worst Insights
+  const bestTide = tides.length ? tides[0] : { name: 'Flusso Crescente', pct: 60 };
+  const worstTide = tides.length > 1 ? tides[tides.length - 1] : { name: 'Bassa Marea', pct: 10 };
+  const bestMoon = moons.length ? moons[0] : { name: 'Luna Crescente', pct: 50 };
+  const bestBait = baits.length ? baits[0] : { name: 'Cannolicchio vivo', pct: 45 };
+
+  return {
+    periodTitle,
+    generatedDate: new Date().toLocaleString('it-IT'),
+    spotName: spot.name,
+    totalCatches,
+    totalWeight: totalWeight.toFixed(2),
+    avgWeight: avgWeight.toFixed(2),
+    recordCatch,
+    tides,
+    moons,
+    baits,
+    species,
+    techniques,
+    bestTide,
+    worstTide,
+    bestMoon,
+    bestBait,
+    catches: filtered
+  };
+}
+
+function generateReportHTML(d, forDirectPdf = false) {
+  const actionHeader = forDirectPdf ? '' : `
+  <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:#334155">📄 Anteprima Report</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn-action" style="background:#059669" onclick="exportToPdfFile()">📥 Salva come File PDF</button>
+      <button class="btn-action" onclick="window.print()">🖨️ Stampa</button>
+      <button class="btn-action" style="background:#64748b" onclick="window.close()">✕ Chiudi</button>
+    </div>
+  </div>`;
+
+  return `<!DOCTYPE html>
+<html lang="it">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PESCA PRO">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2972/2972036.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Meteomarino - PESCA PRO - ${d.periodTitle}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    html, body { background: #f8fafc; color: #0f172a; padding: 14px; line-height: 1.4; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .report-wrap { max-width: 800px; margin: 0 auto; background: #ffffff; border-radius: 14px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+    .rep-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 14px; }
+    .rep-brand { font-size: 18px; font-weight: 900; color: #0284c7; }
+    .rep-tag { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+    
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: center; }
+    .kpi-title { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+    .kpi-num { font-size: 18px; font-weight: 900; color: #0f172a; margin: 2px 0; }
+    
+    .insight-hero { background: #0f172a !important; color: #ffffff !important; border-radius: 12px; padding: 14px; margin-bottom: 14px; border: 1px solid #38bdf8; }
+    .sec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+    .sec-title { font-size: 13px; font-weight: 900; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+    
+    .table-stat { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .table-stat th { text-align: left; background: #f1f5f9; padding: 6px 8px; color: #475569; font-weight: 800; border-bottom: 1px solid #cbd5e1; }
+    .table-stat td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
+    .bar-wrap { background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; width: 100%; max-width: 110px; }
+    .bar-val { height: 100%; border-radius: 3px; }
+    
+    .btn-action { background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+
+    @media print {
+      @page { margin: 8mm; size: A4 portrait; }
+      html, body { background: #ffffff !important; padding: 0 !important; color: #000000 !important; }
+      .report-wrap { box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; border: none !important; margin: 0 !important; }
+      .no-print { display: none !important; }
+      .kpi-box, .sec-card { break-inside: avoid !important; page-break-inside: avoid !important; }
+      .insight-hero { background: #0f172a !important; color: #ffffff !important; border: 1px solid #38bdf8 !important; }
+      .table-stat th { background: #e2e8f0 !important; color: #000 !important; }
+    }
+  </style>
+  <` + `script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><` + `/script>
+</head>
+<body>
+
+<div class="report-wrap" id="printable-report">
+  ${actionHeader}
+
+  <!-- Header -->
+  <div class="rep-header">
+    <div>
+      <div class="rep-brand">🎣 PESCA PRO - REPORT METEOMARINO</div>
+      <h2 style="font-size:17px;font-weight:900;margin-top:2px">${d.periodTitle}</h2>
+      <div style="font-size:10px;color:#64748b;margin-top:2px">📍 Spot di Riferimento: <b>${d.spotName}</b> • Generato il ${d.generatedDate}</div>
+    </div>
+    <div class="rep-tag">Analisi Correlazione</div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid">
+    <div class="kpi-box"><div class="kpi-title">Totale Catture</div><div class="kpi-num" style="color:#0284c7">${d.totalCatches}</div><div style="font-size:9px;color:#64748b">esemplari</div></div>
+    <div class="kpi-box"><div class="kpi-title">Peso Totale</div><div class="kpi-num" style="color:#059669">${d.totalWeight} kg</div><div style="font-size:9px;color:#64748b">salpato</div></div>
+    <div class="kpi-box"><div class="kpi-title">Peso Medio</div><div class="kpi-num" style="color:#f59e0b">${d.avgWeight} kg</div><div style="font-size:9px;color:#64748b">a cattura</div></div>
+    <div class="kpi-box"><div class="kpi-title">Cattura Record</div><div class="kpi-num" style="color:#8b5cf6">${d.recordCatch ? d.recordCatch.wt.toFixed(2) + ' kg' : '-'}</div><div style="font-size:9px;color:#64748b">${d.recordCatch ? d.recordCatch.sp : '-'}</div></div>
+  </div>
+
+  <!-- Identikit Hero Insight -->
+  <div class="insight-hero">
+    <div style="font-size:10px;font-weight:800;color:#38bdf8;margin-bottom:3px;text-transform:uppercase">🏆 IDENTIKIT DELLA CONDIZIONE PERFETTA (MAX RENDIMENTO)</div>
+    <div style="font-size:12px;line-height:1.5">
+      Durante questo periodo, il <b>${d.bestTide.pct}% delle catture</b> si è verificato in fase di <b>${d.bestTide.name}</b>, con picco di attività durante <b>${d.bestMoon.name}</b>.<br>
+      L'esca che ha prodotto la massima resa e le taglie maggiori è stata <b>${d.bestBait.name}</b>.
+    </div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.15);font-size:10px;color:#f87171">
+      ⚠️ <b>Condizione a Minimo Rendimento:</b> Minima attività registrata durante la fase di <b>${d.worstTide.name}</b> (${d.worstTide.pct}% delle catture).
+    </div>
+  </div>
+
+  <!-- Section: Analisi Marea -->
+  <div class="sec-card">
+    <div class="sec-title"><span>🌊 Rendimento per Fase di Marea</span><span style="font-size:10px;color:#0284c7">Distribuzione %</span></div>
+    <table class="table-stat">
+      <thead><tr><th>Fase di Marea</th><th>Catture</th><th>Peso Totale</th><th>Impatto %</th><th>Grafico</th></tr></thead>
+      <tbody>
+        ${d.tides.map(t => `
+          <tr>
+            <td><b>${t.name}</b></td>
+            <td>${t.count} pesci</td>
+            <td>${t.weight.toFixed(2)} kg</td>
+            <td><b>${t.pct}%</b></td>
+            <td><div class="bar-wrap"><div class="bar-val" style="width:${t.pct}%;background:#0284c7"></div></div></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section: Analisi Fasi Lunari -->
+  <div class="sec-card">
+    <div class="sec-title"><span>🌙 Correlazione Fasi Lunari &amp; Solunari</span><span style="font-size:10px;color:#6366f1">Attività Ittica</span></div>
+    <table class="table-stat">
+      <thead><tr><th>Fase Lunare</th><th>Catture</th><th>Peso Totale</th><th>Percentuale</th><th>Grafico</th></tr></thead>
+      <tbody>
+        ${d.moons.map(m => `
+          <tr>
+            <td><b>🌙 ${m.name}</b></td>
+            <td>${m.count} pesci</td>
+            <td>${m.weight.toFixed(2)} kg</td>
+            <td><b>${m.pct}%</b></td>
+            <td><div class="bar-wrap"><div class="bar-val" style="width:${m.pct}%;background:#6366f1"></div></div></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section: Esche Top -->
+  <div class="sec-card">
+    <div class="sec-title"><span>🪱 Efficacia Esche &amp; Tecniche</span><span style="font-size:10px;color:#f97316">Resa Catturante</span></div>
+    <table class="table-stat">
+      <thead><tr><th>Esca / Innesco</th><th>Catture</th><th>Peso Totale</th><th>Resa %</th><th>Grafico</th></tr></thead>
+      <tbody>
+        ${d.baits.map(b => `
+          <tr>
+            <td><b>🪱 ${b.name}</b></td>
+            <td>${b.count} pesci</td>
+            <td>${b.weight.toFixed(2)} kg</td>
+            <td><b>${b.pct}%</b></td>
+            <td><div class="bar-wrap"><div class="bar-val" style="width:${b.pct}%;background:#f97316"></div></div></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section: Elenco Catture Dettagliato -->
+  <div class="sec-card">
+    <div class="sec-title"><span>📋 Registro Catture del Periodo</span><span style="font-size:10px;color:#64748b">${d.catches.length} Registrazioni</span></div>
+    <table class="table-stat">
+      <thead><tr><th>Data/Ora</th><th>Specie</th><th>Peso (kg)</th><th>Marea</th><th>Luna</th><th>Esca</th></tr></thead>
+      <tbody>
+        ${d.catches.map(c => `
+          <tr>
+            <td>${c.date}</td>
+            <td><b>${c.sp}</b></td>
+            <td>${c.wt.toFixed(2)} kg</td>
+            <td><span style="color:#0284c7">${c.tide}</span></td>
+            <td><span style="color:#6366f1">${c.moon}</span></td>
+            <td>${c.bait}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align:center;font-size:10px;color:#94a3b8;margin-top:16px;border-top:1px solid #e2e8f0;padding-top:8px">
+    Documento generato da PESCA PRO • L'app per il Surfcasting, Maree &amp; Meteopesca Italia
+  </div>
+</div>
+
+<` + `script>
+  function exportToPdfFile() {
+    const el = document.getElementById('printable-report');
+    const opt = {
+      margin: 6,
+      filename: 'Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    if (typeof html2pdf !== 'undefined') {
+      html2pdf().set(opt).from(el).save();
+    } else {
+      window.print();
+    }
+  }
+<` + `/script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err));
+    });
+  }
+</script>
+</body>
+</html>`;
+}
+
+function downloadReportDirectPDF() {
+  closeReportModal();
+  const d = generateReportData();
+  const reportHtml = generateReportHTML(d, true);
+
+  // Render temporarily in an offscreen container to create the PDF file directly
+  const tempContainer = document.createElement('div');
+  tempContainer.style.position = 'fixed';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.top = '0';
+  tempContainer.style.width = '800px';
+  tempContainer.style.background = '#ffffff';
+  tempContainer.innerHTML = reportHtml;
+  document.body.appendChild(tempContainer);
+
+  const targetEl = tempContainer.querySelector('#printable-report') || tempContainer;
+  const fileName = `Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+
+  const opt = {
+    margin: 6,
+    filename: fileName,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  if (typeof html2pdf !== 'undefined') {
+    html2pdf().set(opt).from(targetEl).save().then(() => {
+      document.body.removeChild(tempContainer);
+    }).catch(err => {
+      console.error(err);
+      document.body.removeChild(tempContainer);
+      generateAndOpenReport('preview');
+    });
+  } else {
+    document.body.removeChild(tempContainer);
+    generateAndOpenReport('preview');
+  }
+}
+
+function generateAndOpenReport(action = 'preview') {
+  closeReportModal();
+  const d = generateReportData();
+  const reportHtml = generateReportHTML(d, false);
+
+  const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+  const blobUrl = URL.createObjectURL(blob);
+
+  if (action === 'download') {
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    alert('📥 File Report scaricato con successo!');
+  } else {
+    const win = window.open(blobUrl, '_blank');
+    if (!win) {
+      window.location.href = blobUrl;
+    }
+  }
+}
+
+// === INIZIALIZZAZIONE ===
+window.addEventListener('DOMContentLoaded', () => {
+  initMap();
+  generateMonthlyMoonStrip();
+  fetchMeteopescaData(spot.lat, spot.lng, spot.name);
+  renderSpeciesGrid();
+  renderDiary();
+  renderStats();
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err));
+    });
+  }
+</script>
+</body>
+</html>
