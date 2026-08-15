@@ -2159,15 +2159,100 @@ function toggleSearch() {
   }
 }
 
+
+let searchDebounceTimer = null;
+
 function filterLoc(q) {
-  const box = document.getElementById('sr'), ql = q.trim().toLowerCase();
-  let m = ql.length === 0 ? locs.slice(0, 10) : locs.filter(s => s.name.toLowerCase().includes(ql) || s.reg.toLowerCase().includes(ql));
-  if (!m.length) {
-    box.innerHTML = `<div class="res-row" onclick="searchOnline('${q}')"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary)"></i> Cerca "<b>${q}</b>" online tra tutti i comuni d'Italia...</div>`;
-    return;
+  const box = document.getElementById('sr');
+  const ql = (q || '').trim().toLowerCase();
+  
+  // Local matches
+  let matches = ql.length === 0 ? locs.slice(0, 10) : locs.filter(s => s.name.toLowerCase().includes(ql) || s.reg.toLowerCase().includes(ql));
+  
+  box.innerHTML = matches.map(s => `
+    <div class="res-row" onclick="pickLoc('${s.name}')">
+      <i class="fa-solid fa-location-dot" style="color:var(--primary)"></i>
+      <div>
+        <b>${s.name}</b> <span style="font-size:10px;color:#64748b">(${s.reg})</span>
+      </div>
+    </div>
+  `).join('');
+
+  if (ql.length >= 2) {
+    box.innerHTML += `<div class="res-row" id="online-search-loading" style="color:var(--primary)"><i class="fa-solid fa-spinner fa-spin"></i> Ricerca in tutta Italia per "${q}"...</div>`;
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      fetchOnlineLocations(q);
+    }, 300);
   }
-  box.innerHTML = m.map(s => `<div class="res-row" onclick="pickLoc('${s.name}')"><i class="fa-solid fa-location-dot" style="color:var(--primary)"></i> <b>${s.name}</b> <span style="font-size:10px;color:#64748b">(${s.reg})</span></div>`).join('');
 }
+
+async function fetchOnlineLocations(q) {
+  try {
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=it&format=json&country_code=IT`);
+    const d = await r.json();
+    const box = document.getElementById('sr');
+    const loadingRow = document.getElementById('online-search-loading');
+    if (loadingRow) loadingRow.remove();
+
+    if (d.results && d.results.length) {
+      d.results.forEach(x => {
+        const placeName = `${x.name} (${x.admin1 || x.country || 'Italia'})`;
+        if (!locs.some(l => l.name === placeName)) {
+          locs.push({ name: placeName, reg: x.admin1 || 'Italia', lat: x.latitude, lng: x.longitude, seaBase: 26.5 });
+        }
+        const row = document.createElement('div');
+        row.className = 'res-row';
+        row.style.background = '#f0fdf4';
+        row.style.borderLeft = '3px solid #10b981';
+        row.innerHTML = `<i class="fa-solid fa-earth-europe" style="color:#059669"></i> <div><b>${x.name}</b> <span style="font-size:10px;color:#059669">(${x.admin1 || 'Italia'})</span></div>`;
+        row.onclick = () => {
+          spot = { name: placeName, reg: x.admin1 || 'Italia', lat: x.latitude, lng: x.longitude, seaBase: 26.5 };
+          pickLoc(placeName);
+        };
+        box.appendChild(row);
+      });
+    }
+  } catch(e) {
+    console.log('Online search error:', e);
+  }
+}
+
+function autoGeolocateOnStartup() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        // Query OpenStreetMap Nominatim reverse geocoder
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+          .then(r => r.json())
+          .then(data => {
+            const cityName = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "Posizione Rilevata";
+            const ns = { name: `${cityName} (GPS)`, reg: data.address?.state || "Italia", lat: lat, lng: lng, seaBase: 26.5 };
+            spot = ns;
+            document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> ${spot.name}`;
+            if (map) map.setView([lat, lng], 14);
+            drawMarkers();
+            fetchMeteopescaData(lat, lng, spot.name);
+          })
+          .catch(() => {
+            const ns = { name: "Posizione GPS Attuale", reg: "Italia", lat: lat, lng: lng, seaBase: 26.5 };
+            spot = ns;
+            document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> ${spot.name}`;
+            if (map) map.setView([lat, lng], 14);
+            drawMarkers();
+            fetchMeteopescaData(lat, lng, spot.name);
+          });
+      },
+      err => {
+        console.log("GPS auto-detection (pending authorization):", err);
+      },
+      { timeout: 7000, enableHighAccuracy: true }
+    );
+  }
+}
+
 
 function pickLoc(n) {
   const s = locs.find(l => l.name === n);
@@ -2480,6 +2565,32 @@ function deleteSpotItem(id) {
   }
 }
 
+
+function getTidePhaseForDate(date) {
+  const h = date.getHours() + date.getMinutes() / 60;
+  // Approximation of semi-diurnal Mediterranean tidal cycle (6.2h per cycle)
+  const cycleHour = (h % 12.4);
+  if (cycleHour < 3.1) return 'Flusso Crescente (Salita)';
+  if (cycleHour < 6.2) return 'Culmine Alta Marea';
+  if (cycleHour < 9.3) return 'Riflusso Calante (Discesa)';
+  return 'Bassa Marea';
+}
+
+function updateCatchSolunarParams() {
+  const dtVal = document.getElementById('fdt').value;
+  const d = dtVal ? new Date(dtVal) : new Date();
+  const moon = getAstronomicalMoon(d);
+  const tide = getTidePhaseForDate(d);
+  const spotName = document.getElementById('fsp').value || spot.name;
+  
+  const dStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  
+  const autoInfo = document.getElementById('auto-info');
+  if (autoInfo) {
+    autoInfo.innerHTML = `🌙 <b>${moon.name}</b> (${moon.illum}%) • 🌊 <b>${tide}</b> • 📍 ${spotName} • 📅 ${dStr}`;
+  }
+}
+
 // === CATCH DIARY ===
 function pickPhoto(e) {
   const f = e.target.files[0];
@@ -2517,6 +2628,11 @@ function openCatchModal(ex) {
   const p = document.getElementById('pp');
   p.style.display = 'none';
   document.getElementById('pph').style.display = 'block';
+
+  const now = new Date();
+  // Format local ISO string for datetime-local
+  const nowIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
   if (ex) {
     document.getElementById('mch').textContent = 'Modifica ✏️';
     document.getElementById('eid').value = ex.id;
@@ -2526,8 +2642,13 @@ function openCatchModal(ex) {
     document.getElementById('fl').value = ex.len || '';
     document.getElementById('ft').value = ex.tech;
     document.getElementById('fb').value = ex.bait;
-    document.getElementById('fsp').value = ex.spot || '';
+    document.getElementById('fsp').value = ex.spot || spot.name;
     document.getElementById('fn').value = ex.notes || '';
+    if (ex.rawDate) {
+      document.getElementById('fdt').value = ex.rawDate;
+    } else {
+      document.getElementById('fdt').value = nowIso;
+    }
     if (ex.img) {
       p.src = ex.img;
       p.style.display = 'block';
@@ -2538,17 +2659,22 @@ function openCatchModal(ex) {
     document.getElementById('mch').textContent = 'Registra Cattura 🎣';
     document.getElementById('eid').value = '';
     document.getElementById('fq').value = '1';
+    document.getElementById('fdt').value = nowIso;
     document.getElementById('fsp').value = spot.name;
   }
+  updateCatchSolunarParams();
 }
 function closeCatchModal() { document.getElementById('mc').classList.remove('on'); }
 
 function saveCatch(e) {
   e.preventDefault();
   const eid = document.getElementById('eid').value;
-  const now = new Date();
-  const moon = getAstronomicalMoon(now);
-  const d = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const dtVal = document.getElementById('fdt').value;
+  const selDate = dtVal ? new Date(dtVal) : new Date();
+  const moon = getAstronomicalMoon(selDate);
+  const tide = getTidePhaseForDate(selDate);
+  const dStr = `${String(selDate.getDate()).padStart(2,'0')}/${String(selDate.getMonth()+1).padStart(2,'0')}/${selDate.getFullYear()} ${String(selDate.getHours()).padStart(2,'0')}:${String(selDate.getMinutes()).padStart(2,'0')}`;
+  
   const obj = {
     id: eid ? parseInt(eid) : Date.now(),
     sp: document.getElementById('fs').value,
@@ -2559,8 +2685,9 @@ function saveCatch(e) {
     bait: document.getElementById('fb').value,
     spot: document.getElementById('fsp').value || spot.name,
     moon: moon.name,
-    tide: 'Flusso Crescente (Salita)',
-    date: d,
+    tide: tide,
+    date: dStr,
+    rawDate: dtVal,
     lat: spot.lat + (Math.random() - .5) * .02,
     lng: spot.lng + (Math.random() - .5) * .02,
     img: photoB64 || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80',
@@ -2593,7 +2720,7 @@ function renderDiary() {
   }
   box.innerHTML = list.map(c => `
     <div class="catch-card">
-      <div class="catch-photo"><img src="${c.img}" alt="${c.sp}"><div class="catch-badge l">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div><div class="catch-badge r">${c.qty && c.qty > 1 ? c.qty + ' capi • ' : ''}${c.wt.toFixed(2)} kg ${c.len ? '• ' + c.len + ' cm' : ''}</div></div>
+      <div class="catch-photo"><img src="${c.img}" alt="${c.sp}"><div class="catch-badge l">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div><div class="catch-badge r">${c.qty && c.qty > 1 ? c.qty + 'x • ' : ''}${c.wt.toFixed(2)} kg ${c.len ? '• ' + c.len + ' cm' : ''}</div></div>
       <div class="catch-inner">
         <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text)">
           <span>📅 ${c.date}</span>
@@ -3765,6 +3892,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderSpeciesGrid();
   renderDiary();
   renderStats();
+  autoGeolocateOnStartup();
 });
 </script>
 <script>
