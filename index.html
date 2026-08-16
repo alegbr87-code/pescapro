@@ -1328,6 +1328,48 @@
       transform: translateX(20px);
     }
     
+
+    /* === STILI DI STAMPA UFFICIALI REPORT PESCA PRO === */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+      body * {
+        visibility: hidden !important;
+      }
+      #modal-report-viewer, #modal-report-viewer * {
+        visibility: visible !important;
+      }
+      #modal-report-viewer {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100vw !important;
+        height: auto !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+        z-index: 999999 !important;
+      }
+      #modal-report-viewer > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      #modal-report-viewer #viewer-content {
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      .no-print, .bnav, .header, #modal-report-viewer-header {
+        display: none !important;
+      }
+    }
+    
 </style>
 </head>
 <body>
@@ -1883,19 +1925,19 @@
 
         <!-- Action Buttons -->
         <div style="display:flex;flex-direction:column;gap:10px">
-          <!-- 1. Direct PDF Generation & Download -->
-          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #059669, #047857);font-size:13px;padding:12px" onclick="executeDirectPdfDownload()">
-            <i class="fa-solid fa-file-pdf" style="font-size:16px"></i> Scarica File PDF Diretto
+          <!-- 1. Open & Save as PDF / Print -->
+          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #0284c7, #0369a1);font-size:14px;padding:13px;font-weight:900" onclick="openReportViewer()">
+            <i class="fa-solid fa-file-pdf" style="font-size:17px"></i> Apri e Salva in PDF
           </button>
 
-          <!-- 2. Open & Print / Save to iOS Files -->
-          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #0284c7, #0369a1);font-size:13px;padding:12px" onclick="openReportViewer()">
-            <i class="fa-solid fa-file-lines" style="font-size:16px"></i> Visualizza &amp; Stampa Report
+          <!-- 2. Open in New Tab -->
+          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #059669, #047857);font-size:13px;padding:11px" onclick="openReportInNewWindow()">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Apri in Nuova Scheda Stampabile
           </button>
 
           <!-- 3. Direct HTML Offline Document Download -->
-          <button type="button" class="submit-btn" style="background:#f1f5f9;color:#334155;border:1.5px solid #cbd5e1;font-size:12px" onclick="executeDirectHtmlDownload()">
-            <i class="fa-solid fa-download"></i> Scarica Documento Offline (.HTML)
+          <button type="button" class="submit-btn" style="background:#f1f5f9;color:#334155;border:1.5px solid #cbd5e1;font-size:12px;padding:10px" onclick="executeDirectHtmlDownload()">
+            <i class="fa-solid fa-download"></i> Scarica File HTML Autonomo
           </button>
         </div>
       </div>
@@ -4079,6 +4121,48 @@ function generateReportHTML(d, forDirectPdf = false) {
     }
     input:checked + .slider:before {
       transform: translateX(20px);
+    }
+    
+
+    /* === STILI DI STAMPA UFFICIALI REPORT PESCA PRO === */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+      body * {
+        visibility: hidden !important;
+      }
+      #modal-report-viewer, #modal-report-viewer * {
+        visibility: visible !important;
+      }
+      #modal-report-viewer {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100vw !important;
+        height: auto !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+        z-index: 999999 !important;
+      }
+      #modal-report-viewer > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      #modal-report-viewer #viewer-content {
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      .no-print, .bnav, .header, #modal-report-viewer-header {
+        display: none !important;
+      }
     }
     
 </style>
