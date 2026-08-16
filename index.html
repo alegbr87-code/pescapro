@@ -1881,15 +1881,20 @@
         </div>
 
         <!-- Action Buttons -->
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #059669, #047857)" onclick="downloadReportDirectPDF()">
-            <i class="fa-solid fa-file-pdf"></i> Scarica File PDF Diretto
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <!-- 1. Direct PDF Generation & Download -->
+          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #059669, #047857);font-size:13px;padding:12px" onclick="executeDirectPdfDownload()">
+            <i class="fa-solid fa-file-pdf" style="font-size:16px"></i> Scarica File PDF Diretto
           </button>
-          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #0284c7, #0369a1)" onclick="generateAndOpenReport('preview')">
-            <i class="fa-solid fa-eye"></i> Visualizza &amp; Stampa a Schermo Intero
+
+          <!-- 2. Open & Print / Save to iOS Files -->
+          <button type="button" class="submit-btn" style="background:linear-gradient(135deg, #0284c7, #0369a1);font-size:13px;padding:12px" onclick="openReportViewer()">
+            <i class="fa-solid fa-file-lines" style="font-size:16px"></i> Visualizza &amp; Stampa Report
           </button>
-          <button type="button" class="submit-btn" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1" onclick="generateAndOpenReport('download')">
-            <i class="fa-solid fa-file-arrow-down"></i> Scarica File HTML Autonomo
+
+          <!-- 3. Direct HTML Offline Document Download -->
+          <button type="button" class="submit-btn" style="background:#f1f5f9;color:#334155;border:1.5px solid #cbd5e1;font-size:12px" onclick="executeDirectHtmlDownload()">
+            <i class="fa-solid fa-download"></i> Scarica Documento Offline (.HTML)
           </button>
         </div>
       </div>
