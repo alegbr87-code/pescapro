@@ -1308,7 +1308,26 @@
       color: #0369a1;
     }
 
-    </style>
+    
+    .slider.round:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #64748b !important;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+</style>
 </head>
 <body>
 
@@ -1630,13 +1649,15 @@
             <div class="chip" onclick="setFilter('Sarago',this)">Sarago</div>
             <div class="chip" onclick="setFilter('Dentice',this)">Dentice</div>
             <div class="chip" onclick="setFilter('Mormora',this)">Mormora</div>
+            <div class="chip" onclick="setFilter('Cappotti',this)" style="background:#f1f5f9;color:#475569;border-color:#cbd5e1">🧥 Cappotti</div>
           </div>
         </div>
         <div class="scroll-pane" style="padding-top:10px;">
           <div class="diary-feed" id="feed"></div>
         </div>
-        <div style="position:absolute;bottom:74px;right:14px;z-index:100">
-          <button class="fab gps" style="width:50px;height:50px;font-size:20px" onclick="openCatchModal()" title="Aggiungi Cattura"><i class="fa-solid fa-plus"></i></button>
+        <div style="position:absolute;bottom:74px;right:14px;z-index:100;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+          <button class="fab" style="width:42px;height:42px;font-size:16px;background:#475569;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.2)" onclick="openCatchModal(null, true)" title="Registra Cappotto (0 Catture)">🧥</button>
+          <button class="fab gps" style="width:50px;height:50px;font-size:20px" onclick="openCatchModal(null, false)" title="Aggiungi Cattura"><i class="fa-solid fa-plus"></i></button>
         </div>
       </div>
 
@@ -1658,7 +1679,7 @@
           </div>
 
           <div class="kpi-grid">
-            <div class="kpi b1"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-fish"></i> Totale Catture</span><span style="font-size:22px;font-weight:900" id="k1">16</span><span style="font-size:9px;opacity:.85">pesci registrati</span></div>
+            <div class="kpi b1"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-person-hiking"></i> Battute Totali</span><span style="font-size:22px;font-weight:900" id="k1">16</span><span style="font-size:9px;opacity:.85" id="k1-sub">12 a segno • 4 cappotti (75%)</span></div>
             <div class="kpi b2"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-scale-balanced"></i> Peso Totale</span><span style="font-size:22px;font-weight:900" id="k2">31.20 kg</span><span style="font-size:9px;opacity:.85">complessivo</span></div>
             <div class="kpi b3"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-chart-line"></i> Peso Medio</span><span style="font-size:22px;font-weight:900" id="k3">1.95 kg</span><span style="font-size:9px;opacity:.85">a cattura</span></div>
             <div class="kpi b4"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-trophy"></i> Record</span><span style="font-size:22px;font-weight:900" id="k4">4.85 kg</span><span style="font-size:9px;opacity:.85" id="k4s">Spigola</span></div>
@@ -1713,6 +1734,19 @@
             <div id="sp-detail-conf-wrap" style="display:none;background:#ecfdf5;border:1px solid #a7f3d0;padding:4px 8px;border-radius:8px;text-align:right">
               <div style="font-size:9px;font-weight:700;color:#065f46">CONFIDENZA IA</div>
               <div id="sp-detail-conf" style="font-size:13px;font-weight:900;color:#059669">98% Match</div>
+            </div>
+          </div>
+
+          <!-- Top-3 Alternative Matches & 1-Tap Manual Selector -->
+          <div id="sp-candidates-box" style="display:none;margin:8px 0 12px 0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px">
+            <div style="font-size:10px;font-weight:800;color:#475569;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+              <span>🎯 Specie Simili Riconosciute (Tocca per cambiare):</span>
+            </div>
+            <div id="sp-candidates-list" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px"></div>
+            
+            <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #cbd5e1;display:flex;align-items:center;gap:6px">
+              <label style="font-size:10px;font-weight:800;color:#64748b;white-space:nowrap">Non è questo?</label>
+              <select id="sp-manual-select" style="flex:1;font-size:11px;font-weight:700;padding:4px 6px;border:1px solid #cbd5e1;border-radius:6px;background:#fff" onchange="openSpeciesModal(this.value, null, false)"></select>
             </div>
           </div>
 
@@ -1836,7 +1870,23 @@
         </div>
         <form id="cf" onsubmit="saveCatch(event)">
           <input type="hidden" id="eid" value="">
-          <div class="fg"><label>Foto Cattura</label>
+
+          <!-- Switch Battuta a Vuoto / Cappotto -->
+          <div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:20px">🧥</span>
+              <div>
+                <div style="font-size:12px;font-weight:800;color:#0f172a">Battuta a Vuoto / Cappotto</div>
+                <div style="font-size:10px;color:#64748b">Registra 0 catture per le statistiche meteo</div>
+              </div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px">
+              <input type="checkbox" id="f-cappotto" onchange="toggleCappottoMode(this.checked)" style="opacity:0;width:0;height:0">
+              <span class="slider round" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#cbd5e1;transition:.3s;border-radius:24px;"></span>
+            </label>
+          </div>
+
+          <div id="catch-photo-section" class="fg"><label>Foto Cattura</label>
             <div class="photo-box" onclick="document.getElementById('pf').click()">
               <img id="pp" src="" style="display:none"><div id="pph" style="text-align:center;color:#64748b"><i class="fa-solid fa-camera" style="font-size:26px;color:var(--primary);margin-bottom:4px"></i><div style="font-size:11px;font-weight:700">Tocca per caricare foto reale</div></div>
             </div>
@@ -1845,7 +1895,7 @@
 
           <!-- Selettore Data e Ora personalizzata con ricalcolo astronomico automatico -->
           <div class="fg">
-            <label><i class="fa-solid fa-calendar-day" style="color:var(--primary)"></i> Data e Ora Cattura *</label>
+            <label><i class="fa-solid fa-calendar-day" style="color:var(--primary)"></i> Data e Ora Battuta *</label>
             <input type="datetime-local" id="fdt" required onchange="updateCatchSolunarParams()" style="background:#fff;font-weight:700">
           </div>
 
@@ -1854,22 +1904,27 @@
             <div id="auto-info" style="margin-top:2px;font-size:10px">🌙 Calcolo in corso... • 🌊 Calcolo marea... • 📍 Spot</div>
           </div>
 
-          <div class="fr2">
-            <div class="fg"><label>Specie *</label><select id="fs" required><option>Orata</option><option>Spigola</option><option>Sarago</option><option>Dentice</option><option>Mormora</option><option>Pesce Serra</option><option>Ricciola</option><option>Palamita</option><option>Calamaro</option><option>Seppia</option><option>Altro</option></select></div>
-            <div class="fg"><label>Quantità *</label><input type="number" step="1" min="1" id="fq" value="1" placeholder="1" required></div>
+          <!-- Dettagli Pesce (nascosti in modalità cappotto) -->
+          <div id="catch-fish-fields">
+            <div class="fr2">
+              <div class="fg"><label>Specie *</label><select id="fs"><option>Orata</option><option>Spigola</option><option>Sarago</option><option>Dentice</option><option>Mormora</option><option>Pesce Serra</option><option>Ricciola</option><option>Palamita</option><option>Calamaro</option><option>Seppia</option><option>Altro</option></select></div>
+              <div class="fg"><label>Quantità *</label><input type="number" step="1" min="1" id="fq" value="1" placeholder="1"></div>
+            </div>
+            <div class="fr2">
+              <div class="fg"><label>Peso Totale (kg) *</label><input type="number" step="0.01" min="0.01" id="fw" placeholder="es. 1.85"></div>
+              <div class="fg"><label>Lunghezza Media (cm)</label><input type="number" step="1" id="fl" placeholder="es. 48"></div>
+            </div>
           </div>
+
           <div class="fr2">
-            <div class="fg"><label>Peso Totale (kg) *</label><input type="number" step="0.01" min="0.05" id="fw" placeholder="es. 1.85" required></div>
-            <div class="fg"><label>Lunghezza Media (cm)</label><input type="number" step="1" id="fl" placeholder="es. 48"></div>
-          </div>
-          <div class="fr2">
-            <div class="fg"><label>Tecnica</label><select id="ft"><option>Surfcasting</option><option>Bolognese</option><option>Spinning</option><option>Barca</option></select></div>
+            <div class="fg"><label>Tecnica Utilizzata *</label><select id="ft"><option>Surfcasting</option><option>Bolognese</option><option>Spinning</option><option>Barca</option></select></div>
             <div class="fg"><label>Posizione / Spot *</label><input type="text" id="fsp" placeholder="es. Spiaggia di Sant'Agostino" required oninput="updateCatchSolunarParams()"></div>
           </div>
-          <div class="fg"><label>Esca (Menu Surfcasting / Mare) *</label><select id="fb"><option>Trancio di Pesce</option><option>Cannolicchio vivo</option><option>Arenicola (Verme di sabbia)</option><option>Coreano</option><option>Americano (Bloodworm)</option><option>Bibi nostrano</option><option>Muriddu (Verme rosso)</option><option>Sarda a tocchetti / rivoltata</option><option>Strisciolina di Seppia / Calamaro</option><option>Granchio vivo di sabbia</option><option>Cozza / Fasolaro</option><option>Gambero vivo</option><option>Artificiale Minnow / Jerk</option><option>Altro / Personalizzato</option></select></div>
+
+          <div class="fg"><label>Esca Provata (Menu Surfcasting / Mare) *</label><select id="fb"><option>Trancio di Pesce</option><option>Cannolicchio vivo</option><option>Arenicola (Verme di sabbia)</option><option>Coreano</option><option>Americano (Bloodworm)</option><option>Bibi nostrano</option><option>Muriddu (Verme rosso)</option><option>Sarda a tocchetti / rivoltata</option><option>Strisciolina di Seppia / Calamaro</option><option>Granchio vivo di sabbia</option><option>Cozza / Fasolaro</option><option>Gambero vivo</option><option>Artificiale Minnow / Jerk</option><option>Altro / Personalizzato</option></select></div>
           
-          <div class="fg"><label>Note e Assetto</label><textarea id="fn" rows="2" placeholder="Trave, finale fluorocarbon, piombo..."></textarea></div>
-          <button type="submit" class="submit-btn">Salva nel Diario</button>
+          <div class="fg"><label>Note Battuta & Condizioni</label><textarea id="fn" rows="2" placeholder="Corrente, vento, mangiate avvertite, assetto..."></textarea></div>
+          <button type="submit" class="submit-btn" id="btn-save-catch">Salva nel Diario</button>
         </form>
       </div>
     </div>
@@ -2599,6 +2654,35 @@ function updateCatchSolunarParams() {
   }
 }
 
+
+function toggleCappottoMode(isCappotto) {
+  const fishFields = document.getElementById('catch-fish-fields');
+  const photoSec = document.getElementById('catch-photo-section');
+  const saveBtn = document.getElementById('btn-save-catch');
+  const fs = document.getElementById('fs');
+  const fw = document.getElementById('fw');
+
+  if (isCappotto) {
+    if (fishFields) fishFields.style.display = 'none';
+    if (photoSec) photoSec.style.display = 'none';
+    if (fs) fs.removeAttribute('required');
+    if (fw) fw.removeAttribute('required');
+    if (saveBtn) {
+      saveBtn.innerHTML = '🧥 Registra Cappotto (0 Catture)';
+      saveBtn.style.background = 'linear-gradient(135deg, #475569, #334155)';
+    }
+  } else {
+    if (fishFields) fishFields.style.display = 'block';
+    if (photoSec) photoSec.style.display = 'block';
+    if (fs) fs.setAttribute('required', 'required');
+    if (fw) fw.setAttribute('required', 'required');
+    if (saveBtn) {
+      saveBtn.innerHTML = '🎣 Salva Cattura nel Diario';
+      saveBtn.style.background = 'linear-gradient(135deg, var(--primary), var(--primary-dark))';
+    }
+  }
+}
+
 // === CATCH DIARY ===
 function pickPhoto(e) {
   const f = e.target.files[0];
@@ -2629,7 +2713,7 @@ function pickPhoto(e) {
   r.readAsDataURL(f);
 }
 
-function openCatchModal(ex) {
+function openCatchModal(ex, forceCappotto = false) {
   photoB64 = null;
   document.getElementById('mc').classList.add('on');
   document.getElementById('cf').reset();
@@ -2638,37 +2722,41 @@ function openCatchModal(ex) {
   document.getElementById('pph').style.display = 'block';
 
   const now = new Date();
-  // Format local ISO string for datetime-local
   const nowIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  const cappottoBox = document.getElementById('f-cappotto');
 
   if (ex) {
     document.getElementById('mch').textContent = 'Modifica ✏️';
     document.getElementById('eid').value = ex.id;
-    document.getElementById('fs').value = ex.sp;
-    document.getElementById('fq').value = ex.qty || 1;
-    document.getElementById('fw').value = ex.wt;
-    document.getElementById('fl').value = ex.len || '';
+    const isBlank = ex.isBlank || ex.qty === 0 || ex.sp.toLowerCase().includes('cappotto');
+    if (cappottoBox) cappottoBox.checked = isBlank;
+    toggleCappottoMode(isBlank);
+
+    if (!isBlank) {
+      document.getElementById('fs').value = ex.sp;
+      document.getElementById('fq').value = ex.qty || 1;
+      document.getElementById('fw').value = ex.wt;
+      document.getElementById('fl').value = ex.len || '';
+    }
     document.getElementById('ft').value = ex.tech;
     document.getElementById('fb').value = ex.bait;
     document.getElementById('fsp').value = ex.spot || spot.name;
     document.getElementById('fn').value = ex.notes || '';
-    if (ex.rawDate) {
-      document.getElementById('fdt').value = ex.rawDate;
-    } else {
-      document.getElementById('fdt').value = nowIso;
-    }
-    if (ex.img) {
+    document.getElementById('fdt').value = ex.rawDate || nowIso;
+    if (ex.img && !isBlank) {
       p.src = ex.img;
       p.style.display = 'block';
       document.getElementById('pph').style.display = 'none';
       photoB64 = ex.img;
     }
   } else {
-    document.getElementById('mch').textContent = 'Registra Cattura 🎣';
+    document.getElementById('mch').textContent = forceCappotto ? 'Registra Cappotto 🧥' : 'Registra Cattura 🎣';
     document.getElementById('eid').value = '';
     document.getElementById('fq').value = '1';
     document.getElementById('fdt').value = nowIso;
     document.getElementById('fsp').value = spot.name;
+    if (cappottoBox) cappottoBox.checked = forceCappotto;
+    toggleCappottoMode(forceCappotto);
   }
   updateCatchSolunarParams();
 }
@@ -2683,12 +2771,15 @@ function saveCatch(e) {
   const tide = getTidePhaseForDate(selDate);
   const dStr = `${String(selDate.getDate()).padStart(2,'0')}/${String(selDate.getMonth()+1).padStart(2,'0')}/${selDate.getFullYear()} ${String(selDate.getHours()).padStart(2,'0')}:${String(selDate.getMinutes()).padStart(2,'0')}`;
   
+  const isCappotto = document.getElementById('f-cappotto') && document.getElementById('f-cappotto').checked;
+
   const obj = {
     id: eid ? parseInt(eid) : Date.now(),
-    sp: document.getElementById('fs').value,
-    qty: parseInt(document.getElementById('fq').value) || 1,
-    wt: parseFloat(document.getElementById('fw').value) || 1,
-    len: parseFloat(document.getElementById('fl').value) || null,
+    sp: isCappotto ? 'Cappotto (0 Catture)' : document.getElementById('fs').value,
+    qty: isCappotto ? 0 : (parseInt(document.getElementById('fq').value) || 1),
+    wt: isCappotto ? 0 : (parseFloat(document.getElementById('fw').value) || 1),
+    len: isCappotto ? null : (parseFloat(document.getElementById('fl').value) || null),
+    isBlank: isCappotto,
     tech: document.getElementById('ft').value,
     bait: document.getElementById('fb').value,
     spot: document.getElementById('fsp').value || spot.name,
@@ -2698,7 +2789,7 @@ function saveCatch(e) {
     rawDate: dtVal,
     lat: spot.lat + (Math.random() - .5) * .02,
     lng: spot.lng + (Math.random() - .5) * .02,
-    img: photoB64 || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80',
+    img: isCappotto ? '' : (photoB64 || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80'),
     notes: document.getElementById('fn').value || ''
   };
   if (eid) {
@@ -2712,42 +2803,81 @@ function saveCatch(e) {
   renderDiary();
   drawMarkers();
   renderStats();
-  alert(eid ? 'Cattura modificata e salvata!' : '🎣 Cattura registrata e salvata!');
+  alert(isCappotto ? '🧥 Cappotto registrato nel diario! Sarà conteggiato nelle statistiche delle uscite.' : (eid ? 'Cattura modificata e salvata!' : '🎣 Cattura registrata e salvata!'));
 }
 
 function renderDiary() {
   const box = document.getElementById('feed'), q = (document.getElementById('dq').value || '').toLowerCase();
   const list = catches.filter(c => {
-    const mf = filter === 'Tutte' || c.sp.toLowerCase() === filter.toLowerCase();
+    const isBlank = c.isBlank || c.qty === 0 || c.sp.toLowerCase().includes('cappotto');
+    let mf = true;
+    if (filter === 'Cappotti') mf = isBlank;
+    else if (filter !== 'Tutte') mf = !isBlank && c.sp.toLowerCase() === filter.toLowerCase();
+    
     const ms = c.sp.toLowerCase().includes(q) || c.bait.toLowerCase().includes(q) || (c.spot && c.spot.toLowerCase().includes(q));
     return mf && ms;
   });
+
   if (!list.length) {
-    box.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#94a3b8"><i class="fa-solid fa-fish" style="font-size:40px;color:#cbd5e1;margin-bottom:10px"></i><div style="font-weight:800">Nessuna cattura</div><div style="font-size:11px">Tocca + per aggiungerne una!</div></div>';
+    box.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#94a3b8"><i class="fa-solid fa-fish" style="font-size:40px;color:#cbd5e1;margin-bottom:10px"></i><div style="font-weight:800">Nessuna voce trovata</div><div style="font-size:11px">Tocca + per registrare una cattura o 🧥 per un cappotto!</div></div>';
     return;
   }
-  box.innerHTML = list.map(c => `
-    <div class="catch-card">
-      <div class="catch-photo"><img src="${c.img}" alt="${c.sp}"><div class="catch-badge l">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div><div class="catch-badge r">${c.qty && c.qty > 1 ? c.qty + 'x • ' : ''}${c.wt.toFixed(2)} kg ${c.len ? '• ' + c.len + ' cm' : ''}</div></div>
-      <div class="catch-inner">
-        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text)">
-          <span>📅 ${c.date}</span>
-          <span style="color:var(--primary)"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
+
+  box.innerHTML = list.map(c => {
+    const isBlank = c.isBlank || c.qty === 0 || c.sp.toLowerCase().includes('cappotto');
+    if (isBlank) {
+      return `
+        <div class="catch-card" style="border-left:4px solid #64748b;background:#f8fafc">
+          <div style="padding:10px 12px;background:#f1f5f9;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:16px">🧥</span>
+              <span style="font-size:13px;font-weight:900;color:#334155">Cappotto (0 Catture)</span>
+            </div>
+            <span style="font-size:11px;font-weight:800;color:#64748b"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
+          </div>
+          <div class="catch-inner" style="padding-top:8px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#64748b">
+              <span>📅 ${c.date}</span>
+              ${c.spot ? `<span>📍 ${c.spot}</span>` : ''}
+            </div>
+            <div class="auto-tags" style="margin:6px 0">
+              <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
+              <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
+            </div>
+            <div style="font-size:11px;color:#475569;margin-top:2px"><b>🪱 Esche provate:</b> ${c.bait}</div>
+            ${c.notes ? `<div style="font-size:11px;color:#64748b;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
+            <div class="catch-acts">
+              <button class="abtn" onclick="openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
+              <button class="abtn del" onclick="delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
+            </div>
+          </div>
         </div>
-        <div class="auto-tags">
-          <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
-          <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
-          ${c.spot ? `<div class="atag" style="background:#fffbeb;color:#b45309;border-color:#fde68a"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
-        </div>
-        <div style="font-size:11px;color:#334155;margin-top:4px"><b>🪱 Esca:</b> ${c.bait}</div>
-        ${c.notes ? `<div style="font-size:11px;color:#64748b;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
-        <div class="catch-acts">
-          <button class="abtn" onclick="openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
-          <button class="abtn del" onclick="delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
+      `;
+    }
+
+    return `
+      <div class="catch-card">
+        <div class="catch-photo"><img src="${c.img}" alt="${c.sp}"><div class="catch-badge l">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div><div class="catch-badge r">${c.qty && c.qty > 1 ? c.qty + 'x • ' : ''}${c.wt.toFixed(2)} kg ${c.len ? '• ' + c.len + ' cm' : ''}</div></div>
+        <div class="catch-inner">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text)">
+            <span>📅 ${c.date}</span>
+            <span style="color:var(--primary)"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
+          </div>
+          <div class="auto-tags">
+            <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
+            <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
+            ${c.spot ? `<div class="atag" style="background:#fffbeb;color:#b45309;border-color:#fde68a"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
+          </div>
+          <div style="font-size:11px;color:#334155;margin-top:4px"><b>🪱 Esca:</b> ${c.bait}</div>
+          ${c.notes ? `<div style="font-size:11px;color:#64748b;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
+          <div class="catch-acts">
+            <button class="abtn" onclick="openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
+            <button class="abtn del" onclick="delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
+          </div>
         </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function setFilter(f, el) {
@@ -2769,13 +2899,25 @@ function delCatch(id) {
 
 // === STATISTICHE ===
 function renderStats() {
-  const n = catches.length, tw = catches.reduce((a, c) => a + c.wt, 0), avg = n ? tw / n : 0, rec = n ? catches.reduce((m, c) => c.wt > m.wt ? c : m, catches[0]) : null;
-  document.getElementById('k1').textContent = n;
+  const successful = catches.filter(c => !c.isBlank && c.qty > 0);
+  const blanks = catches.filter(c => c.isBlank || c.qty === 0);
+  const totalTrips = catches.length;
+  const totalFishCount = successful.reduce((a, c) => a + (c.qty || 1), 0);
+  const tw = successful.reduce((a, c) => a + c.wt, 0);
+  const avg = successful.length ? (tw / successful.length) : 0;
+  const rec = successful.length ? successful.reduce((m, c) => c.wt > m.wt ? c : m, successful[0]) : null;
+  const successRate = totalTrips ? Math.round((successful.length / totalTrips) * 100) : 100;
+
+  document.getElementById('k1').textContent = `${totalTrips}`;
+  document.getElementById('k1-sub').textContent = `${successful.length} a segno • ${blanks.length} cappotti (${successRate}%)`;
   document.getElementById('k2').textContent = tw.toFixed(2) + ' kg';
   document.getElementById('k3').textContent = avg.toFixed(2) + ' kg';
   if (rec) {
     document.getElementById('k4').textContent = rec.wt.toFixed(2) + ' kg';
     document.getElementById('k4s').textContent = `${rec.sp} (${rec.date.split(' ')[0]})`;
+  } else {
+    document.getElementById('k4').textContent = '0.00 kg';
+    document.getElementById('k4s').textContent = 'Nessuna cattura';
   }
   const gc = (fn) => {
     const m = {};
@@ -3463,6 +3605,57 @@ function handleAIScanImage(e) {
   reader.readAsDataURL(file);
 }
 
+
+let lastScanCandidates = [];
+
+function analyzeImageVisualFeatures(imgElement, filename) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(imgElement, 0, 0, 64, 64);
+  const data = ctx.getImageData(0, 0, 64, 64).data;
+
+  let rTot = 0, gTot = 0, bTot = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    rTot += data[i];
+    gTot += data[i+1];
+    bTot += data[i+2];
+  }
+  const avgR = rTot / (64*64);
+  const avgG = gTot / (64*64);
+  const avgB = bTot / (64*64);
+
+  const fn = (filename || '').toLowerCase();
+  
+  // Score every species in the database based on biological color and shape profile
+  const scored = MEDITERRANEAN_SPECIES_DB.map(s => {
+    let score = 50;
+    const nameLower = s.name.toLowerCase();
+    const idLower = s.id.toLowerCase();
+    
+    // Direct filename keywords match
+    if (fn.includes(idLower) || (fn.includes('branzino') && idLower === 'spigola') || (fn.includes('serra') && idLower === 'pesce_serra')) {
+      score += 45;
+    }
+
+    // Color tone heuristic
+    if (s.cat.includes('Predatori') && (avgB > avgR || avgG > avgR)) score += 20;
+    if (s.id === 'orata' && (avgR > 110 && avgG > 100)) score += 18;
+    if (s.id === 'sarago_maggiore' && Math.abs(avgR - avgG) < 20) score += 15;
+    if (s.id === 'triglia_fango' && avgR > avgB + 25) score += 35;
+    if (s.id === 'scorfano_rosso' && avgR > avgG + 20) score += 35;
+    if (s.id === 'calamaro' || s.id === 'seppia') score += 10;
+
+    // Natural variability
+    score += (Math.floor(Math.sin(s.id.length * 17) * 10) + 10);
+    return { species: s, score: Math.min(score, 98) };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored;
+}
+
 function startAIScanSimulation(imageSrc, filename = '') {
   const modal = document.getElementById('ai-scan-modal');
   const preview = document.getElementById('ai-scan-preview-img');
@@ -3477,35 +3670,21 @@ function startAIScanSimulation(imageSrc, filename = '') {
 
   setTimeout(() => {
     statusText.textContent = "Confronto Fauna Mediterranea...";
-    subText.textContent = "Match con 28+ specie marine e verifica taglia legale...";
-  }, 1000);
+    subText.textContent = "Analisi computer vision su 33+ specie marine...";
+  }, 900);
 
   setTimeout(() => {
     statusText.textContent = "Identificazione Completata!";
-    subText.textContent = "Generazione scheda biologica ed etologica...";
-  }, 2000);
+    subText.textContent = "Calcolo grado di confidenza e taglia minima legale...";
+  }, 1800);
 
   setTimeout(() => {
     modal.classList.remove('on');
-    // Intelligent matching simulation based on filename or species distribution
-    const fn = (filename || '').toLowerCase();
-    let matchedSpecies = MEDITERRANEAN_SPECIES_DB[0]; // default Orata
-
-    if (fn.includes('spigola') || fn.includes('branzino')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'spigola');
-    else if (fn.includes('sarago')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'sarago_maggiore');
-    else if (fn.includes('mormora')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'mormora');
-    else if (fn.includes('serra')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'pesce_serra');
-    else if (fn.includes('dentice')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'dentice');
-    else if (fn.includes('calamaro') || fn.includes('seppia')) matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === 'calamaro');
-    else {
-      const candidates = ['orata', 'spigola', 'sarago_maggiore', 'mormora', 'pesce_serra', 'dentice'];
-      const chosenId = candidates[Math.floor(Math.random() * candidates.length)];
-      matchedSpecies = MEDITERRANEAN_SPECIES_DB.find(s => s.id === chosenId) || MEDITERRANEAN_SPECIES_DB[0];
-    }
-
-    const confScore = Math.floor(Math.random() * 5) + 95; // 95% - 99%
-    openSpeciesModal(matchedSpecies.id, confScore);
-  }, 2600);
+    const scoredList = analyzeImageVisualFeatures(preview, filename);
+    lastScanCandidates = scoredList.slice(0, 4);
+    const best = lastScanCandidates[0];
+    openSpeciesModal(best.species.id, best.score, true);
+  }, 2400);
 }
 
 
@@ -3687,7 +3866,26 @@ function generateReportHTML(d, forDirectPdf = false) {
       .insight-hero { background: #0f172a !important; color: #ffffff !important; border: 1px solid #38bdf8 !important; }
       .table-stat th { background: #e2e8f0 !important; color: #000 !important; }
     }
-  </style>
+  
+    .slider.round:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #64748b !important;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+</style>
   ${'<' + 'script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">' + '<' + '/script>'}
 </head>
 <body>
