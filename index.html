@@ -1737,16 +1737,18 @@
             </div>
           </div>
 
-          <!-- Top-3 Alternative Matches & 1-Tap Manual Selector -->
-          <div id="sp-candidates-box" style="display:none;margin:8px 0 12px 0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px">
-            <div style="font-size:10px;font-weight:800;color:#475569;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-              <span>🎯 Specie Simili Riconosciute (Tocca per cambiare):</span>
+          <!-- Quick Visual Species Selector with Photo Thumbnails -->
+          <div id="sp-candidates-box" style="margin:10px 0 14px 0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px">
+            <div style="font-size:11px;font-weight:900;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+              <span>🎯 Conferma o Cambia Specie con 1 Tocco:</span>
             </div>
-            <div id="sp-candidates-list" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px"></div>
+            <div id="sp-quick-grid" style="display:grid;grid-template-columns:repeat(4, 1fr);gap:6px;margin-bottom:8px">
+              <!-- Top species visual buttons with real fish photo thumbnails -->
+            </div>
             
-            <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #cbd5e1;display:flex;align-items:center;gap:6px">
-              <label style="font-size:10px;font-weight:800;color:#64748b;white-space:nowrap">Non è questo?</label>
-              <select id="sp-manual-select" style="flex:1;font-size:11px;font-weight:700;padding:4px 6px;border:1px solid #cbd5e1;border-radius:6px;background:#fff" onchange="openSpeciesModal(this.value, null, false)"></select>
+            <div style="padding-top:8px;border-top:1px dashed #cbd5e1;display:flex;align-items:center;gap:6px">
+              <label style="font-size:11px;font-weight:800;color:#475569;white-space:nowrap">Tutte le 33 Specie:</label>
+              <select id="sp-manual-select" style="flex:1;font-size:11px;font-weight:700;padding:6px 8px;border:1px solid #94a3b8;border-radius:8px;background:#fff" onchange="openSpeciesModal(this.value, 99, false)"></select>
             </div>
           </div>
 
@@ -2683,6 +2685,29 @@ function toggleCappottoMode(isCappotto) {
   }
 }
 
+
+function parseCatchTimestamp(dateStr) {
+  if (!dateStr) return 0;
+  if (typeof dateStr === 'string' && dateStr.includes('/')) {
+    const parts = dateStr.trim().split(' ');
+    const dParts = parts[0].split('/');
+    if (dParts.length === 3) {
+      const day = parseInt(dParts[0], 10);
+      const month = parseInt(dParts[1], 10) - 1;
+      const year = parseInt(dParts[2], 10);
+      let hour = 12, min = 0;
+      if (parts[1] && parts[1].includes(':')) {
+        const tParts = parts[1].split(':');
+        hour = parseInt(tParts[0], 10) || 12;
+        min = parseInt(tParts[1], 10) || 0;
+      }
+      return new Date(year, month, day, hour, min).getTime();
+    }
+  }
+  const t = new Date(dateStr).getTime();
+  return isNaN(t) ? 0 : t;
+}
+
 // === CATCH DIARY ===
 function pickPhoto(e) {
   const f = e.target.files[0];
@@ -2808,14 +2833,21 @@ function saveCatch(e) {
 
 function renderDiary() {
   const box = document.getElementById('feed'), q = (document.getElementById('dq').value || '').toLowerCase();
-  const list = catches.filter(c => {
-    const isBlank = c.isBlank || c.qty === 0 || c.sp.toLowerCase().includes('cappotto');
+  let list = catches.filter(c => {
+    const isBlank = c.isBlank || c.qty === 0 || (c.sp && c.sp.toLowerCase().includes('cappotto'));
     let mf = true;
     if (filter === 'Cappotti') mf = isBlank;
     else if (filter !== 'Tutte') mf = !isBlank && c.sp.toLowerCase() === filter.toLowerCase();
     
-    const ms = c.sp.toLowerCase().includes(q) || c.bait.toLowerCase().includes(q) || (c.spot && c.spot.toLowerCase().includes(q));
+    const ms = (c.sp && c.sp.toLowerCase().includes(q)) || (c.bait && c.bait.toLowerCase().includes(q)) || (c.spot && c.spot.toLowerCase().includes(q));
     return mf && ms;
+  });
+
+  // Ordina rigorosamente per data cronologica decrescente (la più recente in cima)
+  list.sort((a, b) => {
+    const tA = parseCatchTimestamp(a.date || a.rawDate);
+    const tB = parseCatchTimestamp(b.date || b.rawDate);
+    return tB - tA;
   });
 
   if (!list.length) {
@@ -2899,64 +2931,91 @@ function delCatch(id) {
 
 // === STATISTICHE ===
 function renderStats() {
-  const successful = catches.filter(c => !c.isBlank && c.qty > 0);
-  const blanks = catches.filter(c => c.isBlank || c.qty === 0);
+  const successful = catches.filter(c => !c.isBlank && c.qty > 0 && !c.sp.toLowerCase().includes('cappotto'));
+  const blanks = catches.filter(c => c.isBlank || c.qty === 0 || c.sp.toLowerCase().includes('cappotto'));
   const totalTrips = catches.length;
   const totalFishCount = successful.reduce((a, c) => a + (c.qty || 1), 0);
-  const tw = successful.reduce((a, c) => a + c.wt, 0);
+  const tw = successful.reduce((a, c) => a + (c.wt || 0), 0);
   const avg = successful.length ? (tw / successful.length) : 0;
-  const rec = successful.length ? successful.reduce((m, c) => c.wt > m.wt ? c : m, successful[0]) : null;
+  const rec = successful.length ? successful.reduce((m, c) => (c.wt || 0) > (m.wt || 0) ? c : m, successful[0]) : null;
   const successRate = totalTrips ? Math.round((successful.length / totalTrips) * 100) : 100;
 
-  document.getElementById('k1').textContent = `${totalTrips}`;
-  document.getElementById('k1-sub').textContent = `${successful.length} a segno • ${blanks.length} cappotti (${successRate}%)`;
-  document.getElementById('k2').textContent = tw.toFixed(2) + ' kg';
-  document.getElementById('k3').textContent = avg.toFixed(2) + ' kg';
-  if (rec) {
-    document.getElementById('k4').textContent = rec.wt.toFixed(2) + ' kg';
-    document.getElementById('k4s').textContent = `${rec.sp} (${rec.date.split(' ')[0]})`;
-  } else {
-    document.getElementById('k4').textContent = '0.00 kg';
-    document.getElementById('k4s').textContent = 'Nessuna cattura';
+  const k1 = document.getElementById('k1');
+  const k1sub = document.getElementById('k1-sub');
+  const k2 = document.getElementById('k2');
+  const k3 = document.getElementById('k3');
+  const k4 = document.getElementById('k4');
+  const k4s = document.getElementById('k4s');
+
+  if (k1) k1.textContent = `${totalTrips}`;
+  if (k1sub) k1sub.textContent = `${successful.length} a segno • ${blanks.length} cappotti (${successRate}%)`;
+  if (k2) k2.textContent = tw.toFixed(2) + ' kg';
+  if (k3) k3.textContent = avg.toFixed(2) + ' kg';
+  if (rec && k4 && k4s) {
+    k4.textContent = (rec.wt || 0).toFixed(2) + ' kg';
+    k4s.textContent = `${rec.sp} (${(rec.date || '').split(' ')[0]})`;
+  } else if (k4 && k4s) {
+    k4.textContent = '0.00 kg';
+    k4s.textContent = 'Nessuna cattura';
   }
-  const gc = (fn) => {
+
+  const n = totalTrips || 1;
+  const nSucc = successful.length || 1;
+
+  const gc = (list, fn) => {
     const m = {};
-    catches.forEach(c => { const v = fn(c); m[v] = (m[v] || 0) + 1; });
+    list.forEach(c => { const v = fn(c); if (v) m[v] = (m[v] || 0) + 1; });
     return Object.entries(m).sort((a, b) => b[1] - a[1]);
   };
+
   const medals = ['🥇 TOP', '🥈 2°', '🥉 3°'];
-  const bar = (entries, icon, color, topLabel) => entries.map(([k, v], i) => {
-    const pct = n ? ((v / n) * 100).toFixed(0) : 0;
-    return `
-      <div class="pbar">
-        <div class="pbar-label">
-          <span><b>${icon} ${k}</b> ${i < 3 ? `<span style="font-size:10px;color:${color};font-weight:800">${medals[i]} ${topLabel}</span>` : ''}</span>
-          <span style="color:${color}"><b>${v} catture</b> (${pct}%)</span>
+  const bar = (entries, icon, color, topLabel) => {
+    if (!entries.length) return '<div style="font-size:11px;color:#94a3b8;padding:6px">Nessun dato registrato.</div>';
+    return entries.map(([k, v], i) => {
+      const pct = ((v / n) * 100).toFixed(0);
+      return `
+        <div class="pbar">
+          <div class="pbar-label">
+            <span><b>${icon} ${k}</b> ${i < 3 ? `<span style="font-size:10px;color:${color};font-weight:800">${medals[i]} ${topLabel}</span>` : ''}</span>
+            <span style="color:${color}"><b>${v} uscite</b> (${pct}%)</span>
+          </div>
+          <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:${color}"></div></div>
         </div>
-        <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:${color}"></div></div>
-      </div>
-    `;
-  }).join('');
+      `;
+    }).join('');
+  };
 
-  document.getElementById('st-moon').innerHTML = bar(gc(c => c.moon), '🌙', '#4f46e5', 'FASE');
-  document.getElementById('st-bait').innerHTML = bar(gc(c => c.bait), '🪱', '#ea580c', 'ESCA');
-  document.getElementById('st-tide').innerHTML = bar(gc(c => c.tide), '🌊', '#059669', 'MAREA');
+  const stMoon = document.getElementById('st-moon');
+  const stBait = document.getElementById('st-bait');
+  const stTide = document.getElementById('st-tide');
+  const stSp = document.getElementById('st-sp');
 
-  const spE = gc(c => c.sp);
-  const spW = {};
-  catches.forEach(c => { spW[c.sp] = (spW[c.sp] || 0) + c.wt; });
-  document.getElementById('st-sp').innerHTML = spE.map(([k, v]) => {
-    const pct = n ? ((v / n) * 100).toFixed(0) : 0;
-    return `
-      <div class="pbar">
-        <div class="pbar-label">
-          <span><b>🐟 ${k}</b></span>
-          <span style="color:var(--primary)"><b>${v} pesci</b> (${(spW[k] || 0).toFixed(2)} kg - ${pct}%)</span>
-        </div>
-        <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:var(--primary)"></div></div>
-      </div>
-    `;
-  }).join('');
+  if (stMoon) stMoon.innerHTML = bar(gc(catches, c => c.moon), '🌙', '#4f46e5', 'FASE');
+  if (stBait) stBait.innerHTML = bar(gc(catches, c => c.bait), '🪱', '#ea580c', 'ESCA');
+  if (stTide) stTide.innerHTML = bar(gc(catches, c => c.tide), '🌊', '#059669', 'MAREA');
+
+  if (stSp) {
+    const spE = gc(successful, c => c.sp);
+    const spW = {};
+    successful.forEach(c => { spW[c.sp] = (spW[c.sp] || 0) + (c.wt || 0); });
+    
+    if (!spE.length) {
+      stSp.innerHTML = '<div style="font-size:11px;color:#94a3b8;padding:6px">Nessun pesce registrato finora.</div>';
+    } else {
+      stSp.innerHTML = spE.map(([k, v]) => {
+        const pct = ((v / nSucc) * 100).toFixed(0);
+        return `
+          <div class="pbar">
+            <div class="pbar-label">
+              <span><b>🐟 ${k}</b></span>
+              <span style="color:var(--primary)"><b>${v} catture</b> (${(spW[k] || 0).toFixed(2)} kg - ${pct}%)</span>
+            </div>
+            <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:var(--primary)"></div></div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
 }
 
 // === NAVIGAZIONE TAB (4 TABS) ===
