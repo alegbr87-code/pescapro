@@ -1678,11 +1678,43 @@
             </div>
           </div>
 
-          <div class="kpi-grid">
-            <div class="kpi b1"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-person-hiking"></i> Battute Totali</span><span style="font-size:22px;font-weight:900" id="k1">16</span><span style="font-size:9px;opacity:.85" id="k1-sub">12 a segno • 4 cappotti (75%)</span></div>
-            <div class="kpi b3" style="background:linear-gradient(135deg, #4f46e5, #4338ca)"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-hourglass-half"></i> Ore Pescate</span><span style="font-size:22px;font-weight:900" id="k-hours">64.0 h</span><span style="font-size:9px;opacity:.85" id="k-hours-sub">Resa: 0.49 kg/h</span></div>
-            <div class="kpi b2"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-scale-balanced"></i> Peso Totale</span><span style="font-size:22px;font-weight:900" id="k2">31.20 kg</span><span style="font-size:9px;opacity:.85">complessivo pescato</span></div>
-            <div class="kpi b4"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-trophy"></i> Record</span><span style="font-size:22px;font-weight:900" id="k4">4.85 kg</span><span style="font-size:9px;opacity:.85" id="k4s">Spigola</span></div>
+          <div class="kpi-grid" style="grid-template-columns:repeat(2, 1fr);gap:8px">
+            <!-- 1. Battute Totali -->
+            <div class="kpi b1">
+              <span style="font-size:10px;opacity:.9"><i class="fa-solid fa-person-hiking"></i> Battute Totali</span>
+              <span style="font-size:22px;font-weight:900" id="k1">16</span>
+              <span style="font-size:9px;opacity:.85" id="k1-sub">12 a segno • 4 cappotti (75%)</span>
+            </div>
+
+            <!-- 2. Ore Complessive di Pesca -->
+            <div class="kpi" style="background:linear-gradient(135deg, #4f46e5, #3730a3);color:#fff">
+              <span style="font-size:10px;opacity:.9"><i class="fa-solid fa-hourglass-half"></i> Ore Pescate</span>
+              <span style="font-size:22px;font-weight:900" id="k-hours">64.0 h</span>
+              <span style="font-size:9px;opacity:.85" id="k-hours-sub">Media: 4.0h a battuta</span>
+            </div>
+
+            <!-- 3. Peso Totale -->
+            <div class="kpi b2">
+              <span style="font-size:10px;opacity:.9"><i class="fa-solid fa-scale-balanced"></i> Peso Totale</span>
+              <span style="font-size:22px;font-weight:900" id="k2">31.20 kg</span>
+              <span style="font-size:9px;opacity:.85" id="k-yield">Resa: 0.49 kg / ora</span>
+            </div>
+
+            <!-- 4. Peso Medio -->
+            <div class="kpi b3">
+              <span style="font-size:10px;opacity:.9"><i class="fa-solid fa-chart-line"></i> Peso Medio</span>
+              <span style="font-size:22px;font-weight:900" id="k3">1.95 kg</span>
+              <span style="font-size:9px;opacity:.85">per cattura valida</span>
+            </div>
+
+            <!-- 5. Record Big Fish (Full Width) -->
+            <div class="kpi b4" style="grid-column: span 2;display:flex;align-items:center;justify-content:space-between;padding:10px 14px">
+              <div>
+                <span style="font-size:10px;opacity:.9"><i class="fa-solid fa-trophy"></i> Record / Preda Più Grande</span>
+                <div style="font-size:9px;opacity:.85" id="k4s">Spigola (11/08/2026)</div>
+              </div>
+              <span style="font-size:22px;font-weight:900" id="k4">4.85 kg</span>
+            </div>
           </div>
           <div class="stat-box"><h4><span><i class="fa-solid fa-moon" style="color:#6366f1"></i> Fasi Lunari più Redditizie</span></h4><div id="st-moon"></div></div>
           <div class="stat-box"><h4><span><i class="fa-solid fa-worm" style="color:#f97316"></i> Esche più Catturanti</span></h4><div id="st-bait"></div></div>
@@ -2988,12 +3020,14 @@ function renderStats() {
   const successRate = totalTrips ? Math.round((successful.length / totalTrips) * 100) : 100;
   const totalHours = catches.reduce((a, c) => a + (c.hours || 4.0), 0);
   const yieldPerHour = totalHours > 0 ? (tw / totalHours).toFixed(2) : '0.00';
+  const avgHoursPerTrip = totalTrips > 0 ? (totalHours / totalTrips).toFixed(1) : '4.0';
 
   const k1 = document.getElementById('k1');
   const k1sub = document.getElementById('k1-sub');
   const kHours = document.getElementById('k-hours');
   const kHoursSub = document.getElementById('k-hours-sub');
   const k2 = document.getElementById('k2');
+  const kYield = document.getElementById('k-yield');
   const k3 = document.getElementById('k3');
   const k4 = document.getElementById('k4');
   const k4s = document.getElementById('k4s');
@@ -3001,8 +3035,9 @@ function renderStats() {
   if (k1) k1.textContent = `${totalTrips}`;
   if (k1sub) k1sub.textContent = `${successful.length} a segno • ${blanks.length} cappotti (${successRate}%)`;
   if (kHours) kHours.textContent = `${totalHours.toFixed(1)} h`;
-  if (kHoursSub) kHoursSub.textContent = `Resa: ${yieldPerHour} kg/h • ${(totalHours / (totalTrips || 1)).toFixed(1)}h/uscita`;
+  if (kHoursSub) kHoursSub.textContent = `Media: ${avgHoursPerTrip}h a battuta`;
   if (k2) k2.textContent = tw.toFixed(2) + ' kg';
+  if (kYield) kYield.textContent = `Resa: ${yieldPerHour} kg / ora`;
   if (k3) k3.textContent = avg.toFixed(2) + ' kg';
   if (rec && k4 && k4s) {
     k4.textContent = (rec.wt || 0).toFixed(2) + ' kg';
@@ -3867,10 +3902,16 @@ function generateReportData() {
   }
 
   // KPIs
-  const totalCatches = filtered.length;
-  const totalWeight = filtered.reduce((a, c) => a + c.wt, 0);
-  const avgWeight = totalCatches ? (totalWeight / totalCatches) : 0;
-  const recordCatch = totalCatches ? filtered.reduce((m, c) => c.wt > m.wt ? c : m, filtered[0]) : null;
+  const successful = filtered.filter(c => !c.isBlank && c.qty > 0 && !c.sp.toLowerCase().includes('cappotto'));
+  const blanks = filtered.filter(c => c.isBlank || c.qty === 0 || c.sp.toLowerCase().includes('cappotto'));
+  const totalTrips = filtered.length;
+  const totalFishCount = successful.reduce((a, c) => a + (c.qty || 1), 0);
+  const totalWeight = successful.reduce((a, c) => a + (c.wt || 0), 0);
+  const avgWeight = successful.length ? (totalWeight / successful.length) : 0;
+  const recordCatch = successful.length ? successful.reduce((m, c) => (c.wt || 0) > (m.wt || 0) ? c : m, successful[0]) : null;
+  const totalHours = filtered.reduce((a, c) => a + (c.hours || 4.0), 0);
+  const yieldPerHour = totalHours > 0 ? (totalWeight / totalHours).toFixed(2) : '0.00';
+  const successRate = totalTrips ? Math.round((successful.length / totalTrips) * 100) : 100;
 
   // Group helpers
   const groupStats = (fn) => {
@@ -3905,7 +3946,13 @@ function generateReportData() {
     periodTitle,
     generatedDate: new Date().toLocaleString('it-IT'),
     spotName: spot.name,
-    totalCatches,
+    totalTrips,
+    successfulCount: successful.length,
+    blanksCount: blanks.length,
+    successRate,
+    totalHours: totalHours.toFixed(1),
+    yieldPerHour,
+    totalFishCount,
     totalWeight: totalWeight.toFixed(2),
     avgWeight: avgWeight.toFixed(2),
     recordCatch,
