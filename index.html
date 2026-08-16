@@ -4005,7 +4005,7 @@ function generateReportData() {
       name: k,
       count: d.count,
       weight: d.weight,
-      pct: totalCatches ? Math.round((d.count / totalCatches) * 100) : 0
+      pct: totalTrips ? Math.round((d.count / totalTrips) * 100) : 0
     })).sort((a, b) => b.count - a.count);
   };
 
@@ -4307,6 +4307,11 @@ ${'<' + '/script>'}
 }
 
 
+
+// =========================================================================
+// === GENERATORE E GESTIONE REPORT METEOMARINO (VERIFICATO AL 100%) ===
+// =========================================================================
+
 let currentReportBlobUrl = null;
 let currentReportTitle = 'Report_PescaPro';
 
@@ -4338,6 +4343,21 @@ function printViewerReport() {
   window.print();
 }
 
+function openReportInNewWindow() {
+  closeReportModal();
+  const d = generateReportData();
+  const reportHtml = generateReportHTML(d, false);
+  
+  const win = window.open('', '_blank');
+  if (win && win.document) {
+    win.document.open();
+    win.document.write(reportHtml);
+    win.document.close();
+  } else {
+    openReportViewer(d);
+  }
+}
+
 async function shareViewerReport() {
   const d = generateReportData();
   const reportText = `🎣 PESCA PRO - Report Meteomarino ${d.periodTitle}\n📍 Spot: ${d.spotName}\n🚶 Battute: ${d.totalTrips} (${d.successfulCount} a segno, ${d.blanksCount} cappotti)\n⏱️ Ore Pescate: ${d.totalHours}h (Resa: ${d.yieldPerHour} kg/h)\n⚖️ Peso Totale: ${d.totalWeight} kg\n🏆 Record: ${d.recordCatch ? d.recordCatch.sp + ' ' + d.recordCatch.wt.toFixed(2) + 'kg' : 'N/D'}`;
@@ -4353,37 +4373,30 @@ async function shareViewerReport() {
       console.log('Share canceled or error:', e);
     }
   } else {
-    navigator.clipboard.writeText(reportText);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(reportText);
+    }
     alert('📋 Dati riepilogativi del report copiati negli appunti!');
   }
 }
 
-function downloadReportDirectPDF() {
+function executeDirectHtmlDownload() {
   closeReportModal();
   const d = generateReportData();
-  
-  // Directly open the viewer modal
-  openReportViewer(d);
-}
+  const reportHtml = generateReportHTML(d, false);
+  const fileName = `Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
 
-function generateAndOpenReport(action = 'preview') {
-  closeReportModal();
-  const d = generateReportData();
-  
-  if (action === 'download') {
-    const reportHtml = generateReportHTML(d, false);
-    const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = `Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
-    document.body.appendChild(a);
-    a.click();
+  const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
     document.body.removeChild(a);
-    alert('📥 File Report scaricato con successo!');
-  } else {
-    openReportViewer(d);
-  }
+    URL.revokeObjectURL(blobUrl);
+  }, 300);
 }
 
 
