@@ -1680,8 +1680,8 @@
 
           <div class="kpi-grid">
             <div class="kpi b1"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-person-hiking"></i> Battute Totali</span><span style="font-size:22px;font-weight:900" id="k1">16</span><span style="font-size:9px;opacity:.85" id="k1-sub">12 a segno • 4 cappotti (75%)</span></div>
-            <div class="kpi b2"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-scale-balanced"></i> Peso Totale</span><span style="font-size:22px;font-weight:900" id="k2">31.20 kg</span><span style="font-size:9px;opacity:.85">complessivo</span></div>
-            <div class="kpi b3"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-chart-line"></i> Peso Medio</span><span style="font-size:22px;font-weight:900" id="k3">1.95 kg</span><span style="font-size:9px;opacity:.85">a cattura</span></div>
+            <div class="kpi b3" style="background:linear-gradient(135deg, #4f46e5, #4338ca)"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-hourglass-half"></i> Ore Pescate</span><span style="font-size:22px;font-weight:900" id="k-hours">64.0 h</span><span style="font-size:9px;opacity:.85" id="k-hours-sub">Resa: 0.49 kg/h</span></div>
+            <div class="kpi b2"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-scale-balanced"></i> Peso Totale</span><span style="font-size:22px;font-weight:900" id="k2">31.20 kg</span><span style="font-size:9px;opacity:.85">complessivo pescato</span></div>
             <div class="kpi b4"><span style="font-size:10px;opacity:.9"><i class="fa-solid fa-trophy"></i> Record</span><span style="font-size:22px;font-weight:900" id="k4">4.85 kg</span><span style="font-size:9px;opacity:.85" id="k4s">Spigola</span></div>
           </div>
           <div class="stat-box"><h4><span><i class="fa-solid fa-moon" style="color:#6366f1"></i> Fasi Lunari più Redditizie</span></h4><div id="st-moon"></div></div>
@@ -1895,14 +1895,23 @@
             <input type="file" id="pf" accept="image/*" style="display:none" onchange="pickPhoto(event)">
           </div>
 
-          <!-- Selettore Data e Ora personalizzata con ricalcolo astronomico automatico -->
-          <div class="fg">
-            <label><i class="fa-solid fa-calendar-day" style="color:var(--primary)"></i> Data e Ora Battuta *</label>
-            <input type="datetime-local" id="fdt" required onchange="updateCatchSolunarParams()" style="background:#fff;font-weight:700">
+          <!-- Selettore Data e Ora Inizio e Fine Battuta -->
+          <div class="fr2">
+            <div class="fg">
+              <label><i class="fa-solid fa-play" style="color:#059669"></i> Inizio Battuta *</label>
+              <input type="datetime-local" id="fdt" required onchange="updateCatchSolunarParams()" style="background:#fff;font-weight:700">
+            </div>
+            <div class="fg">
+              <label><i class="fa-solid fa-flag-checkered" style="color:#dc2626"></i> Fine Battuta</label>
+              <input type="datetime-local" id="fdt-end" onchange="updateCatchSolunarParams()" style="background:#fff;font-weight:700">
+            </div>
           </div>
 
           <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:#1e40af">
-            <b>⚡ Parametri Solunari Rilevati per la Data:</b>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <b>⚡ Parametri Solunari &amp; Meteo:</b>
+              <span id="catch-duration-badge" style="background:#dbeafe;color:#1e40af;font-weight:800;padding:2px 6px;border-radius:6px;font-size:10px">⏱️ 4h 00m</span>
+            </div>
             <div id="auto-info" style="margin-top:2px;font-size:10px">🌙 Calcolo in corso... • 🌊 Calcolo marea... • 📍 Spot</div>
           </div>
 
@@ -2643,6 +2652,7 @@ function getTidePhaseForDate(date) {
 
 function updateCatchSolunarParams() {
   const dtVal = document.getElementById('fdt').value;
+  const dtEndVal = document.getElementById('fdt-end') ? document.getElementById('fdt-end').value : '';
   const d = dtVal ? new Date(dtVal) : new Date();
   const moon = getAstronomicalMoon(d);
   const tide = getTidePhaseForDate(d);
@@ -2650,6 +2660,24 @@ function updateCatchSolunarParams() {
   
   const dStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   
+  const durBadge = document.getElementById('catch-duration-badge');
+  if (durBadge) {
+    if (dtVal && dtEndVal) {
+      const s = new Date(dtVal).getTime();
+      const e = new Date(dtEndVal).getTime();
+      if (e > s) {
+        const mins = Math.round((e - s) / (1000 * 60));
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        durBadge.textContent = `⏱️ ${h}h ${m < 10 ? '0' + m : m}m`;
+      } else {
+        durBadge.textContent = '⏱️ ~4h 00m';
+      }
+    } else {
+      durBadge.textContent = '⏱️ ~4h 00m';
+    }
+  }
+
   const autoInfo = document.getElementById('auto-info');
   if (autoInfo) {
     autoInfo.innerHTML = `🌙 <b>${moon.name}</b> (${moon.illum}%) • 🌊 <b>${tide}</b> • 📍 ${spotName} • 📅 ${dStr}`;
@@ -2768,6 +2796,9 @@ function openCatchModal(ex, forceCappotto = false) {
     document.getElementById('fsp').value = ex.spot || spot.name;
     document.getElementById('fn').value = ex.notes || '';
     document.getElementById('fdt').value = ex.rawDate || nowIso;
+    if (document.getElementById('fdt-end')) {
+      document.getElementById('fdt-end').value = ex.rawEndDate || '';
+    }
     if (ex.img && !isBlank) {
       p.src = ex.img;
       p.style.display = 'block';
@@ -2779,6 +2810,10 @@ function openCatchModal(ex, forceCappotto = false) {
     document.getElementById('eid').value = '';
     document.getElementById('fq').value = '1';
     document.getElementById('fdt').value = nowIso;
+    // Default end time +4 hours
+    const endNow = new Date(now.getTime() + 4 * 3600000);
+    const endIso = new Date(endNow.getTime() - endNow.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    if (document.getElementById('fdt-end')) document.getElementById('fdt-end').value = endIso;
     document.getElementById('fsp').value = spot.name;
     if (cappottoBox) cappottoBox.checked = forceCappotto;
     toggleCappottoMode(forceCappotto);
@@ -2791,11 +2826,21 @@ function saveCatch(e) {
   e.preventDefault();
   const eid = document.getElementById('eid').value;
   const dtVal = document.getElementById('fdt').value;
+  const dtEndVal = document.getElementById('fdt-end') ? document.getElementById('fdt-end').value : '';
   const selDate = dtVal ? new Date(dtVal) : new Date();
   const moon = getAstronomicalMoon(selDate);
   const tide = getTidePhaseForDate(selDate);
   const dStr = `${String(selDate.getDate()).padStart(2,'0')}/${String(selDate.getMonth()+1).padStart(2,'0')}/${selDate.getFullYear()} ${String(selDate.getHours()).padStart(2,'0')}:${String(selDate.getMinutes()).padStart(2,'0')}`;
   
+  let hours = 4.0;
+  if (dtVal && dtEndVal) {
+    const s = new Date(dtVal).getTime();
+    const e = new Date(dtEndVal).getTime();
+    if (e > s) {
+      hours = Math.round(((e - s) / (1000 * 3600)) * 10) / 10;
+    }
+  }
+
   const isCappotto = document.getElementById('f-cappotto') && document.getElementById('f-cappotto').checked;
 
   const obj = {
@@ -2812,6 +2857,8 @@ function saveCatch(e) {
     tide: tide,
     date: dStr,
     rawDate: dtVal,
+    rawEndDate: dtEndVal,
+    hours: hours,
     lat: spot.lat + (Math.random() - .5) * .02,
     lng: spot.lng + (Math.random() - .5) * .02,
     img: isCappotto ? '' : (photoB64 || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80'),
@@ -2869,7 +2916,7 @@ function renderDiary() {
           </div>
           <div class="catch-inner" style="padding-top:8px">
             <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#64748b">
-              <span>📅 ${c.date}</span>
+              <span>📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''}</span>
               ${c.spot ? `<span>📍 ${c.spot}</span>` : ''}
             </div>
             <div class="auto-tags" style="margin:6px 0">
@@ -2892,7 +2939,7 @@ function renderDiary() {
         <div class="catch-photo"><img src="${c.img}" alt="${c.sp}"><div class="catch-badge l">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div><div class="catch-badge r">${c.qty && c.qty > 1 ? c.qty + 'x • ' : ''}${c.wt.toFixed(2)} kg ${c.len ? '• ' + c.len + ' cm' : ''}</div></div>
         <div class="catch-inner">
           <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text)">
-            <span>📅 ${c.date}</span>
+            <span>📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''}</span>
             <span style="color:var(--primary)"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
           </div>
           <div class="auto-tags">
@@ -2939,9 +2986,13 @@ function renderStats() {
   const avg = successful.length ? (tw / successful.length) : 0;
   const rec = successful.length ? successful.reduce((m, c) => (c.wt || 0) > (m.wt || 0) ? c : m, successful[0]) : null;
   const successRate = totalTrips ? Math.round((successful.length / totalTrips) * 100) : 100;
+  const totalHours = catches.reduce((a, c) => a + (c.hours || 4.0), 0);
+  const yieldPerHour = totalHours > 0 ? (tw / totalHours).toFixed(2) : '0.00';
 
   const k1 = document.getElementById('k1');
   const k1sub = document.getElementById('k1-sub');
+  const kHours = document.getElementById('k-hours');
+  const kHoursSub = document.getElementById('k-hours-sub');
   const k2 = document.getElementById('k2');
   const k3 = document.getElementById('k3');
   const k4 = document.getElementById('k4');
@@ -2949,6 +3000,8 @@ function renderStats() {
 
   if (k1) k1.textContent = `${totalTrips}`;
   if (k1sub) k1sub.textContent = `${successful.length} a segno • ${blanks.length} cappotti (${successRate}%)`;
+  if (kHours) kHours.textContent = `${totalHours.toFixed(1)} h`;
+  if (kHoursSub) kHoursSub.textContent = `Resa: ${yieldPerHour} kg/h • ${(totalHours / (totalTrips || 1)).toFixed(1)}h/uscita`;
   if (k2) k2.textContent = tw.toFixed(2) + ' kg';
   if (k3) k3.textContent = avg.toFixed(2) + ' kg';
   if (rec && k4 && k4s) {
