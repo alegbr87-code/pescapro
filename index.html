@@ -1895,6 +1895,34 @@
       </div>
     </div>
 
+    
+    <!-- MODAL: IN-APP REPORT VIEWER (100% RELIABLE ON IPHONE & PWA) -->
+    <div class="modal" id="modal-report-viewer" style="z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(10px)">
+      <div style="background:#ffffff;width:96%;max-width:850px;height:92vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5)">
+        <!-- Top Toolbar -->
+        <div style="background:#0f172a;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;border-bottom:1px solid #334155">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">📄</span>
+            <div>
+              <div style="font-size:13px;font-weight:900;color:#38bdf8" id="viewer-title">Report Meteomarino</div>
+              <div style="font-size:10px;color:#94a3b8">Visualizzazione e Salvataggio PDF</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button onclick="printViewerReport()" style="background:#059669;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+              <i class="fa-solid fa-print"></i> Stampa / PDF
+            </button>
+            <button id="viewer-share-btn" onclick="shareViewerReport()" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+              <i class="fa-solid fa-share-nodes"></i> Condividi
+            </button>
+            <button onclick="closeReportViewer()" style="background:#334155;color:#fff;border:none;width:30px;height:30px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+          </div>
+        </div>
+        <!-- Scrollable Report Body -->
+        <div id="viewer-content" style="flex:1;overflow-y:auto;padding:16px;background:#f8fafc"></div>
+      </div>
+    </div>
+    
     <!-- MODAL: CATCH ENTRY -->
     <div class="modal" id="mc">
       <div class="sheet">
@@ -4185,55 +4213,74 @@ ${'<' + '/script>'}
 </html>`;
 }
 
+
+let currentReportBlobUrl = null;
+let currentReportTitle = 'Report_PescaPro';
+
+function openReportViewer(reportData) {
+  closeReportModal();
+  const d = reportData || generateReportData();
+  currentReportTitle = `Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}`;
+  
+  const titleEl = document.getElementById('viewer-title');
+  if (titleEl) titleEl.textContent = `Report: ${d.periodTitle}`;
+
+  // Generate printable inner markup
+  const innerHtml = generateReportHTML(d, true);
+  const container = document.getElementById('viewer-content');
+  if (container) {
+    container.innerHTML = innerHtml;
+  }
+
+  const modal = document.getElementById('modal-report-viewer');
+  if (modal) modal.classList.add('on');
+}
+
+function closeReportViewer() {
+  const modal = document.getElementById('modal-report-viewer');
+  if (modal) modal.classList.remove('on');
+}
+
+function printViewerReport() {
+  window.print();
+}
+
+async function shareViewerReport() {
+  const d = generateReportData();
+  const reportText = `🎣 PESCA PRO - Report Meteomarino ${d.periodTitle}\n📍 Spot: ${d.spotName}\n🚶 Battute: ${d.totalTrips} (${d.successfulCount} a segno, ${d.blanksCount} cappotti)\n⏱️ Ore Pescate: ${d.totalHours}h (Resa: ${d.yieldPerHour} kg/h)\n⚖️ Peso Totale: ${d.totalWeight} kg\n🏆 Record: ${d.recordCatch ? d.recordCatch.sp + ' ' + d.recordCatch.wt.toFixed(2) + 'kg' : 'N/D'}`;
+  
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `Report Pesca Pro - ${d.periodTitle}`,
+        text: reportText,
+        url: window.location.href
+      });
+    } catch(e) {
+      console.log('Share canceled or error:', e);
+    }
+  } else {
+    navigator.clipboard.writeText(reportText);
+    alert('📋 Dati riepilogativi del report copiati negli appunti!');
+  }
+}
+
 function downloadReportDirectPDF() {
   closeReportModal();
   const d = generateReportData();
-  const reportHtml = generateReportHTML(d, true);
-
-  // Render temporarily in an offscreen container to create the PDF file directly
-  const tempContainer = document.createElement('div');
-  tempContainer.style.position = 'fixed';
-  tempContainer.style.left = '-9999px';
-  tempContainer.style.top = '0';
-  tempContainer.style.width = '800px';
-  tempContainer.style.background = '#ffffff';
-  tempContainer.innerHTML = reportHtml;
-  document.body.appendChild(tempContainer);
-
-  const targetEl = tempContainer.querySelector('#printable-report') || tempContainer;
-  const fileName = `Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-
-  const opt = {
-    margin: 6,
-    filename: fileName,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  if (typeof html2pdf !== 'undefined') {
-    html2pdf().set(opt).from(targetEl).save().then(() => {
-      document.body.removeChild(tempContainer);
-    }).catch(err => {
-      console.error(err);
-      document.body.removeChild(tempContainer);
-      generateAndOpenReport('preview');
-    });
-  } else {
-    document.body.removeChild(tempContainer);
-    generateAndOpenReport('preview');
-  }
+  
+  // Directly open the viewer modal
+  openReportViewer(d);
 }
 
 function generateAndOpenReport(action = 'preview') {
   closeReportModal();
   const d = generateReportData();
-  const reportHtml = generateReportHTML(d, false);
-
-  const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
-  const blobUrl = URL.createObjectURL(blob);
-
+  
   if (action === 'download') {
+    const reportHtml = generateReportHTML(d, false);
+    const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
     a.download = `Report_PescaPro_${d.periodTitle.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
@@ -4242,12 +4289,10 @@ function generateAndOpenReport(action = 'preview') {
     document.body.removeChild(a);
     alert('📥 File Report scaricato con successo!');
   } else {
-    const win = window.open(blobUrl, '_blank');
-    if (!win) {
-      window.location.href = blobUrl;
-    }
+    openReportViewer(d);
   }
 }
+
 
 // === INIZIALIZZAZIONE ===
 window.addEventListener('DOMContentLoaded', () => {
