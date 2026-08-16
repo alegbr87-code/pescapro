@@ -4032,6 +4032,7 @@ function generateReportData() {
     totalHours: totalHours.toFixed(1),
     yieldPerHour,
     totalFishCount,
+    totalCatches: totalFishCount,
     totalWeight: totalWeight.toFixed(2),
     avgWeight: avgWeight.toFixed(2),
     recordCatch,
@@ -4183,12 +4184,13 @@ function generateReportHTML(d, forDirectPdf = false) {
     <div class="rep-tag">Analisi Correlazione</div>
   </div>
 
-  <!-- KPI Grid -->
-  <div class="kpi-grid">
-    <div class="kpi-box"><div class="kpi-title">Totale Catture</div><div class="kpi-num" style="color:#0284c7">${d.totalCatches}</div><div style="font-size:9px;color:#64748b">esemplari</div></div>
-    <div class="kpi-box"><div class="kpi-title">Peso Totale</div><div class="kpi-num" style="color:#059669">${d.totalWeight} kg</div><div style="font-size:9px;color:#64748b">salpato</div></div>
-    <div class="kpi-box"><div class="kpi-title">Peso Medio</div><div class="kpi-num" style="color:#f59e0b">${d.avgWeight} kg</div><div style="font-size:9px;color:#64748b">a cattura</div></div>
-    <div class="kpi-box"><div class="kpi-title">Cattura Record</div><div class="kpi-num" style="color:#8b5cf6">${d.recordCatch ? d.recordCatch.wt.toFixed(2) + ' kg' : '-'}</div><div style="font-size:9px;color:#64748b">${d.recordCatch ? d.recordCatch.sp : '-'}</div></div>
+  <!-- KPI Grid: 5 Indicatori Completi e Precisi -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(5, 1fr);gap:8px;margin-bottom:16px">
+    <div class="kpi-box"><div class="kpi-title">Battute Totali</div><div class="kpi-num" style="color:#0f172a">${d.totalTrips}</div><div style="font-size:9px;color:#059669">${d.successfulCount} a segno (${d.successRate}%)</div></div>
+    <div class="kpi-box" style="background:#eef2ff;border-color:#c7d2fe"><div class="kpi-title" style="color:#4338ca">Ore Pescate</div><div class="kpi-num" style="color:#3730a3">${d.totalHours} h</div><div style="font-size:9px;color:#4338ca">Resa: ${d.yieldPerHour} kg/h</div></div>
+    <div class="kpi-box"><div class="kpi-title">Totale Catture</div><div class="kpi-num" style="color:#0284c7">${d.totalFishCount}</div><div style="font-size:9px;color:#64748b">esemplari presi</div></div>
+    <div class="kpi-box"><div class="kpi-title">Peso Complessivo</div><div class="kpi-num" style="color:#059669">${d.totalWeight} kg</div><div style="font-size:9px;color:#64748b">Media: ${d.avgWeight} kg</div></div>
+    <div class="kpi-box"><div class="kpi-title">Record Periodo</div><div class="kpi-num" style="color:#8b5cf6">${d.recordCatch ? (d.recordCatch.wt || 0).toFixed(2) + ' kg' : '0.00 kg'}</div><div style="font-size:9px;color:#64748b">${d.recordCatch ? d.recordCatch.sp : 'N/D'}</div></div>
   </div>
 
   <!-- Identikit Hero Insight -->
