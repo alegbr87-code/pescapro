@@ -1,5 +1,5 @@
 {
-  "name": "PESCA PRO - Meteopesca & Maree",
+  "name": "PESCA PRO - Meteopesca & Maree Italia",
   "short_name": "PESCA PRO",
   "start_url": "./index.html",
   "display": "standalone",
@@ -8,7 +8,18 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2972/2972036.png",
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
