@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v4-report';
+const CACHE_NAME = 'pescapro-v5-ai-icon';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
