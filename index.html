@@ -17,9 +17,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <!-- TensorFlow.js & MobileNet AI Vision Engine -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
   <link rel="icon" type="image/png" href="./favicon.png">
@@ -1637,51 +1634,43 @@
         </div>
       </div>
 
-      <!-- TAB 1: SPECIE & RICONOSCIMENTO AI -->
+      <!-- TAB 1: WEBCAM METEOMARINE & SPIAGGE LIVE -->
       <div class="tab" id="t1">
         <div class="scroll-pane" style="padding: 14px 12px 90px 12px;">
-          <!-- Hero AI Scanner Banner -->
-          <div class="scanner-card">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span style="background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:0.5px">⚡ VISION AI 2026</span>
-              <span style="font-size:11px;opacity:0.85">Riconoscimento Istantaneo</span>
+          <!-- Header Banner -->
+          <div style="background:linear-gradient(135deg, #0f172a, #0369a1);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;box-shadow:0 6px 16px rgba(0,0,0,0.15);border:1px solid #38bdf8">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <div style="font-size:10px;font-weight:800;background:rgba(239,68,68,0.9);color:#fff;padding:2px 8px;border-radius:12px;display:flex;align-items:center;gap:4px">
+                <span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block;animation:pulse 1.2s infinite"></span> LIVE HD
+              </div>
+              <button onclick="openAddWebcamModal()" style="background:rgba(255,255,255,0.15);color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+                <i class="fa-solid fa-plus"></i> Aggiungi Webcam
+              </button>
             </div>
-            <h3 style="font-size:16px;font-weight:900;margin-bottom:4px">Non conosci il pesce pescato?</h3>
-            <p style="font-size:11px;opacity:0.85;margin-bottom:14px;line-height:1.4">Scatta o carica una foto: l'IA riconosce morfologia, livrea, taglia legale e abitudini biologiche nel Mediterraneo.</p>
-            <button class="scanner-btn" onclick="triggerAIScan()">
-              <i class="fa-solid fa-camera" style="font-size:15px;color:#4338ca"></i>
-              <span>📸 Scatta Foto / Riconosci con IA</span>
-            </button>
-            <input type="file" id="ai-file-input" accept="image/*" style="display:none" onchange="handleAIScanImage(event)">
+            <h3 style="font-size:16px;font-weight:900;margin:4px 0">📹 Webcam Spiagge & Spot in Tempo Reale</h3>
+            <p style="font-size:11px;opacity:0.9;line-height:1.4;margin:0">Controlla visivamente il moto ondoso, il colore dell'acqua e la presenza di alghe o vento prima di partire per la battuta di pesca.</p>
           </div>
 
-          <!-- Enciclopedia Header & Search -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <h3 style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px">
-              <span>🐟 Enciclopedia Specie Mediterraneo</span>
-              <span id="species-count-badge" style="background:#e0f2fe;color:#0369a1;font-size:10px;padding:2px 7px;border-radius:12px;font-weight:800">33 Specie</span>
-            </h3>
-          </div>
-
-          <!-- Search Bar -->
-          <div class="species-search-box">
+          <!-- Search & Filter Controls -->
+          <div class="search-box" style="padding:6px 10px;margin-bottom:8px">
             <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px"></i>
-            <input type="text" id="sp-search-input" placeholder="Cerca pesce (es. Orata, Spigola, Serra...)" oninput="filterSpeciesGrid()">
+            <input type="text" id="webcam-search" placeholder="Cerca webcam spot o spiaggia (es. Ostia, Civitavecchia, Anzio...)" oninput="filterWebcams()">
           </div>
 
-          <!-- Category Chips -->
-          <div class="species-chips">
-            <div class="sp-chip on" onclick="setSpeciesCategory('Tutte', this)">🌊 Tutte (33+)</div>
-            <div class="sp-chip" onclick="setSpeciesCategory('Surfcasting / Fondo', this)">🏖️ Surfcasting & Fondo</div>
-            <div class="sp-chip" onclick="setSpeciesCategory('Predatori / Spinning', this)">🎯 Predatori & Spinning</div>
-            <div class="sp-chip" onclick="setSpeciesCategory('Scogliera & Porto', this)">🪨 Scogliera & Bolognese</div>
-            <div class="sp-chip" onclick="setSpeciesCategory('Cefalopodi', this)">🦑 Cefalopodi</div>
-            <div class="sp-chip" onclick="setSpeciesCategory('⚠️ Tossiche / Aculei', this)">⚠️ Attenzione / Tossiche</div>
+          <!-- Region & Zone Chips (Focalizzate su Ancona & Marche) -->
+          <div class="chips" style="margin-bottom:12px;overflow-x:auto;white-space:nowrap;padding-bottom:4px">
+            <div class="chip on" onclick="setWebcamRegion('Ancona & Conero', this)">📍 Ancona &amp; Conero (Top)</div>
+            <div class="chip" onclick="setWebcamRegion('Tutte le Marche', this)">🏖️ Tutte le Marche</div>
+            <div class="chip" onclick="setWebcamRegion('Tutte', this)">🇮🇹 Tutta Italia</div>
+            <div class="chip" onclick="setWebcamRegion('Romagna & Adriatico', this)">🌅 Romagna &amp; Adriatico</div>
+            <div class="chip" onclick="setWebcamRegion('Tirreno & Centro', this)">🌊 Tirreno &amp; Centro</div>
+            <div class="chip" onclick="setWebcamRegion('Sud & Isole', this)">🏝️ Sud &amp; Isole</div>
+            <div class="chip" onclick="setWebcamRegion('Preferiti', this)" style="background:#fef3c7;color:#92400e;border-color:#fde68a">⭐ Preferiti</div>
           </div>
 
-          <!-- Species Grid List -->
-          <div class="species-grid" id="species-grid-container">
-            <!-- Populated dynamically by JS -->
+          <!-- Webcams Grid -->
+          <div id="webcam-grid" style="display:grid;grid-template-columns:1fr;gap:12px">
+            <!-- Dynamically populated by JS -->
           </div>
         </div>
       </div>
@@ -1779,7 +1768,7 @@
     <!-- Bottom Navigation Bar (4 Tabs) -->
     <div class="bnav">
       <button class="ntab on" onclick="go(0)"><i class="fa-solid fa-map-location-dot"></i><span>Mappa</span></button>
-      <button class="ntab" onclick="go(1)"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Specie AI</span></button>
+      <button class="ntab" onclick="go(1)"><i class="fa-solid fa-video"></i><span>Webcam Live</span></button>
       <button class="ntab" onclick="go(2)"><i class="fa-solid fa-book-bookmark"></i><span>Diario</span></button>
       <button class="ntab" onclick="go(3)"><i class="fa-solid fa-chart-column"></i><span>Statistiche</span></button>
     </div>
@@ -1982,6 +1971,69 @@
       </div>
     </div>
     
+    
+    <!-- MODAL: WEBCAM FULLSCREEN PLAYER -->
+    <div class="modal" id="modal-webcam-player" style="z-index:9999;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px)">
+      <div style="background:#0f172a;width:96%;max-width:900px;height:90vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #334155">
+        <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;background:#1e293b;border-bottom:1px solid #334155">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:#ef4444;color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:4px">LIVE</span>
+            <div style="color:#fff;font-weight:900;font-size:13px" id="player-title">Webcam Live</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button id="player-fav-btn" onclick="toggleCurrentPlayerFavorite()" style="background:#334155;color:#fbbf24;border:none;padding:5px 9px;border-radius:6px;font-size:12px;cursor:pointer">⭐</button>
+            <button onclick="closeWebcamPlayer()" style="background:#334155;color:#fff;border:none;width:30px;height:30px;border-radius:6px;font-size:14px;cursor:pointer">✕</button>
+          </div>
+        </div>
+        <div style="flex:1;position:relative;background:#000;display:flex;align-items:center;justify-content:center">
+          <iframe id="player-iframe" src="" style="width:100%;height:100%;border:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+        <div style="padding:10px 14px;background:#1e293b;border-top:1px solid #334155;display:flex;justify-content:space-between;align-items:center;color:#94a3b8;font-size:11px">
+          <div id="player-spot-info">Meteo associato: 27°C • Onde 0.3m • Vento 7 km/h</div>
+          <a id="player-external-link" href="#" target="_blank" style="color:#38bdf8;font-weight:800;text-decoration:none;display:flex;align-items:center;gap:4px">
+            Apri Stream Ufficiale <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: AGGIUNGI WEBCAM PERSONALIZZATA -->
+    <div class="modal" id="modal-add-webcam">
+      <div class="sheet">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="font-size:15px;font-weight:900"><i class="fa-solid fa-video" style="color:var(--primary)"></i> Aggiungi Webcam Spot</h3>
+          <button onclick="closeAddWebcamModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+        </div>
+        <form onsubmit="saveCustomWebcam(event)">
+          <div class="fg">
+            <label>Nome Spot / Spiaggia *</label>
+            <input type="text" id="w-name" required placeholder="Es. Spiaggia Sant'Agostino">
+          </div>
+          <div class="fg">
+            <label>Regione / Zona *</label>
+            <select id="w-region">
+              <option value="Lazio">Lazio / Tirreno</option>
+              <option value="Toscana">Toscana</option>
+              <option value="Campania">Campania</option>
+              <option value="Sardegna / Sicilia">Isole</option>
+              <option value="Adriatico">Adriatico</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>URL Stream / Link Webcam (YouTube / Skyline / Webcam) *</label>
+            <input type="url" id="w-url" required placeholder="https://www.skylinewebcams.com/... o YouTube Live">
+          </div>
+          <div class="fg">
+            <label>URL Immagine Anteprima (Opzionale)</label>
+            <input type="url" id="w-thumb" placeholder="https://images.unsplash.com/...">
+          </div>
+          <button type="submit" class="submit-btn" style="margin-top:10px">
+            <i class="fa-solid fa-check"></i> Salva Webcam nei Preferiti
+          </button>
+        </form>
+      </div>
+    </div>
+    
     <!-- MODAL: CATCH ENTRY -->
     <div class="modal" id="mc">
       <div class="sheet">
@@ -2094,6 +2146,10 @@
 <script>
 // === DATABASE LOCALITÀ ITALIANE IN TEMPO REALE ===
 const locs = [
+  { name: "Ancona (Riviera del Conero)", reg: "Marche", lat: 43.6158, lng: 13.5189, seaBase: 25.9 },
+  { name: "Portonovo / Sirolo / Numana", reg: "Marche", lat: 43.5350, lng: 13.6180, seaBase: 25.8 },
+  { name: "Senigallia (Spiaggia di Velluto)", reg: "Marche", lat: 43.7150, lng: 13.2180, seaBase: 26.0 },
+  { name: "San Benedetto del Tronto", reg: "Marche", lat: 42.9540, lng: 13.8820, seaBase: 26.1 },
   { name: "Civitavecchia", reg: "Lazio", lat: 42.0924, lng: 11.7954, seaBase: 26.4 },
   { name: "Ostia Lido (Roma)", reg: "Lazio", lat: 41.7333, lng: 12.2833, seaBase: 26.6 },
   { name: "Fiumicino", reg: "Lazio", lat: 41.7678, lng: 12.2306, seaBase: 26.5 },
@@ -2186,8 +2242,10 @@ const defaultCatches = [
 ];
 
 const defaultSpots = [
-  { id: 1, name: 'Scogliera del Faro', sb: 'Roccia e Posidonia', tgt: 'Spigola, Sarago, Calamaro', lat: 42.088, lng: 11.799 },
-  { id: 2, name: 'Spiaggia Sant\'Agostino (Canalone)', sb: 'Sabbia mista con canaloni', tgt: 'Orata, Mormora', lat: 42.095, lng: 11.785 }
+  { id: 1, name: 'Ancona - Passetto & Scogli delle Grotte', sb: 'Falesia del Conero e scogli naturali', tgt: 'Spigola, Sarago, Cefalo, Orata', lat: 43.618, lng: 13.528 },
+  { id: 2, name: 'Portonovo - Baia & Scoglio della Vela', sb: 'Ciottoli e misto grotto', tgt: 'Orata, Dentice, Sarago, Spigola', lat: 43.562, lng: 13.591 },
+  { id: 3, name: 'Senigallia - Molo di Levante & Spiaggia', sb: 'Sabbia fina con secche di mormore', tgt: 'Mormora, Spigola, Orata', lat: 43.717, lng: 13.220 },
+  { id: 4, name: 'Numana & Sirolo - Spiaggiola & Frate', sb: 'Ghiaia e scogliera sommersa', tgt: 'Spigola, Sarago, Calamaro', lat: 43.518, lng: 13.623 }
 ];
 
 function loadCatchesFromDB() {
@@ -3855,152 +3913,439 @@ function handleAIScanImage(e) {
 }
 
 
-let lastScanCandidates = [];
-let tfMobileNetModel = null;
-let isModelLoading = false;
 
-async function loadAIClassifier() {
-  if (tfMobileNetModel || isModelLoading) return tfMobileNetModel;
-  try {
-    isModelLoading = true;
-    if (typeof mobilenet !== 'undefined') {
-      tfMobileNetModel = await mobilenet.load({ version: 2, alpha: 1.0 });
-      console.log('✅ Modello AI Vision MobileNet caricato con successo!');
-    }
-  } catch (err) {
-    console.warn('Inizializzazione AI Vision fallback:', err);
-  } finally {
-    isModelLoading = false;
+// =========================================================================
+// === DATABASE E GESTORE WEBCAM METEOMARINE LIVE (ITALIA & SPOT REGIONALI) ===
+// =========================================================================
+
+const DEFAULT_COASTAL_WEBCAMS = [
+  // === PROVINCIA DI ANCONA & RIVIERA DEL CONERO (VEDETTA.ORG & SKYLINEWEBCAMS) ===
+  {
+    id: 'ancona-passetto',
+    name: 'Ancona - Monumento del Passetto & Scogli',
+    prov: 'Ancona (AN)',
+    reg: 'Marche',
+    spot: 'Scogliere del Passetto / Grotte (Spigola, Sarago, Cefalo)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ancona/passetto.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ancona/passetto.html',
+    views: '1.9k live',
+    fav: true,
+    sea: 'Poco Mosso (0.25m)'
+  },
+  {
+    id: 'portonovo-baia',
+    name: 'Portonovo - Baia del Conero & Scoglio della Vela',
+    prov: 'Ancona (AN)',
+    reg: 'Marche',
+    spot: 'Baia di Portonovo / Pietra Lunga (Orata, Sarago, Spigola)',
+    source: 'Vedetta.org',
+    thumb: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=700&q=80',
+    streamUrl: 'https://www.vedetta.org/webcam/italia/marche/ancona/portonovo/',
+    embedUrl: 'https://www.vedetta.org/webcam/italia/marche/ancona/portonovo/',
+    views: '2.4k live',
+    fav: true,
+    sea: 'Quasi Calmo (0.2m)'
+  },
+  {
+    id: 'senigallia-rotonda',
+    name: 'Senigallia - Rotonda a Mare & Spiaggia di Velluto',
+    prov: 'Ancona (AN)',
+    reg: 'Marche',
+    spot: 'Spiaggia di Velluto / Molo Levante (Mormora, Orata, Spigola)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ancona/senigallia.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ancona/senigallia.html',
+    views: '3.1k live',
+    fav: true,
+    sea: 'Calmo (0.15m)'
+  },
+  {
+    id: 'sirolo-urbani',
+    name: 'Sirolo - Spiaggia Urbani & Falesia del Conero',
+    prov: 'Ancona (AN)',
+    reg: 'Marche',
+    spot: 'Spiaggia Urbani / Sassi Neri (Orata, Dentice, Sarago)',
+    source: 'Vedetta.org',
+    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700&q=80',
+    streamUrl: 'https://www.vedetta.org/webcam/italia/marche/ancona/sirolo/',
+    embedUrl: 'https://www.vedetta.org/webcam/italia/marche/ancona/sirolo/',
+    views: '1.8k live',
+    fav: true,
+    sea: 'Poco Mosso (0.3m)'
+  },
+  {
+    id: 'numana-porto',
+    name: 'Numana - Porto Turistico & Spiaggiola',
+    prov: 'Ancona (AN)',
+    reg: 'Marche',
+    spot: 'Molo di Numana / Spiaggiola (Spigola, Calamaro, Mormora)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ancona/numana.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ancona/numana.html',
+    views: '1.5k live',
+    fav: true,
+    sea: 'Calmo (0.2m)'
+  },
+  {
+    id: 'falconara-marittima',
+    name: 'Falconara Marittima - Spiaggia & Litorale Nord',
+    prov: 'Ancona (AN)',
+    reg: 'Marche',
+    spot: 'Spiaggia di Falconara / Scogliere (Mormora, Spigola)',
+    source: 'Vedetta.org',
+    thumb: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=700&q=80',
+    streamUrl: 'https://www.vedetta.org/webcam/italia/marche/ancona/falconara-marittima/',
+    embedUrl: 'https://www.vedetta.org/webcam/italia/marche/ancona/falconara-marittima/',
+    views: '720 live',
+    fav: false,
+    sea: 'Quasi Calmo (0.2m)'
+  },
+
+  // === ALTRE MARCHE (PESARO, MACERATA, FERMO, ASCOLI) ===
+  {
+    id: 'porto-recanati-conero',
+    name: 'Porto Recanati - Lungomare Sud & Vista Conero',
+    prov: 'Macerata (MC)',
+    reg: 'Marche',
+    spot: 'Litorale Scossicci / Foce Potenza (Spigola, Serra, Orata)',
+    source: 'Vedetta.org',
+    thumb: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=700&q=80',
+    streamUrl: 'https://www.vedetta.org/webcam/italia/marche/macerata/porto-recanati/',
+    embedUrl: 'https://www.vedetta.org/webcam/italia/marche/macerata/porto-recanati/',
+    views: '1.3k live',
+    fav: true,
+    sea: 'Poco Mosso (0.3m)'
+  },
+  {
+    id: 'civitanova-marche',
+    name: 'Civitanova Marche - Lungomare Piermanni & Molo',
+    prov: 'Macerata (MC)',
+    reg: 'Marche',
+    spot: 'Molo Nord / Foce Chienti (Pesce Serra, Spigola, Mormora)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/macerata/civitanova-marche.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/macerata/civitanova-marche.html',
+    views: '2.2k live',
+    fav: false,
+    sea: 'Calmo (0.2m)'
+  },
+  {
+    id: 'san-benedetto-tronto',
+    name: 'San Benedetto del Tronto - Riviera delle Palme',
+    prov: 'Ascoli Piceno (AP)',
+    reg: 'Marche',
+    spot: 'Molo Sud / Scogliera dei Monumenti (Spigola, Sarago, Calamaro)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ascoli-piceno/san-benedetto-del-tronto.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/ascoli-piceno/san-benedetto-del-tronto.html',
+    views: '2.8k live',
+    fav: false,
+    sea: 'Quasi Calmo (0.25m)'
+  },
+  {
+    id: 'fano-sassonia',
+    name: 'Fano - Spiaggia Sassonia & Porto Canale',
+    prov: 'Pesaro e Urbino (PU)',
+    reg: 'Marche',
+    spot: 'Sassonia / Foce Metauro (Spigola, Orata, Mormora)',
+    source: 'Vedetta.org',
+    thumb: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=700&q=80',
+    streamUrl: 'https://www.vedetta.org/webcam/italia/marche/pesaro-e-urbino/fano/',
+    embedUrl: 'https://www.vedetta.org/webcam/italia/marche/pesaro-e-urbino/fano/',
+    views: '1.1k live',
+    fav: false,
+    sea: 'Poco Mosso (0.3m)'
+  },
+  {
+    id: 'pesaro-panoramica',
+    name: 'Pesaro - Baia Flaminia & Parco San Bartolo',
+    prov: 'Pesaro e Urbino (PU)',
+    reg: 'Marche',
+    spot: 'Baia Flaminia / Falesia San Bartolo (Spigola, Serra, Sarago)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/pesaro-e-urbino/pesaro.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/marche/pesaro-e-urbino/pesaro.html',
+    views: '1.6k live',
+    fav: false,
+    sea: 'Calmo (0.2m)'
+  },
+  {
+    id: 'gabicce-mare',
+    name: 'Gabicce Mare - Baia Vallugola & Falesia',
+    prov: 'Pesaro e Urbino (PU)',
+    reg: 'Marche',
+    spot: 'Baia Vallugola (Orata, Sarago, Dentice)',
+    source: 'Vedetta.org',
+    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700&q=80',
+    streamUrl: 'https://www.vedetta.org/webcam/italia/marche/pesaro-e-urbino/gabicce-mare/',
+    embedUrl: 'https://www.vedetta.org/webcam/italia/marche/pesaro-e-urbino/gabicce-mare/',
+    views: '1.4k live',
+    fav: false,
+    sea: 'Poco Mosso (0.3m)'
+  },
+
+  // === ALTRE REGIONI D'ITALIA (ROMAGNA, TIRRENO, SUD, ISOLE) ===
+  {
+    id: 'rimini-spiaggia',
+    name: 'Rimini - Lungomare & Molo di Levante',
+    prov: 'Rimini (RN)',
+    reg: 'Romagna & Adriatico',
+    spot: 'Molo di Rimini / Foce Marecchia (Spigola, Cefalo, Serra)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/emilia-romagna/rimini/spiaggia-di-rimini.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/emilia-romagna/rimini/spiaggia-di-rimini.html',
+    views: '4.2k live',
+    fav: false,
+    sea: 'Calmo (0.15m)'
+  },
+  {
+    id: 'civitavecchia-porto',
+    name: 'Civitavecchia - Porto & Lungomare',
+    prov: 'Roma (RM)',
+    reg: 'Tirreno & Centro',
+    spot: 'Scogliera del Faro / Antemurale (Orata, Spigola, Serra)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/lazio/roma/porto-di-civitavecchia.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/lazio/roma/porto-di-civitavecchia.html',
+    views: '1.2k live',
+    fav: false,
+    sea: 'Poco Mosso (0.3m)'
+  },
+  {
+    id: 'ostia-lido',
+    name: 'Ostia Lido - Pontile & Canale dei Pescatori',
+    prov: 'Roma (RM)',
+    reg: 'Tirreno & Centro',
+    spot: 'Canale dei Pescatori / Pontile (Spigola, Mormora, Serra)',
+    source: 'SkylineWebcams',
+    thumb: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=700&q=80',
+    streamUrl: 'https://www.skylinewebcams.com/it/webcam/italia/lazio/roma/ostia.html',
+    embedUrl: 'https://www.skylinewebcams.com/it/webcam/italia/lazio/roma/ostia.html',
+    views: '2.1k live',
+    fav: false,
+    sea: 'Quasi Calmo (0.25m)'
+  },
+  {
+    id: 'gallipoli-porto',
+    name: 'Gallipoli - Spiaggia della Purità & Porto',
+    prov: 'Lecce (LE)',
+    reg: 'Sud & Isole',
+    spot: 'Purità / Molo Foraneo (Dentice, Orata, Ricciole)',
+    source: 'Vedetta.org',
+    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700&q=80',
+    streamUrl: 'https://www.vedetta.org/webcam/italia/puglia/lecce/gallipoli/',
+    embedUrl: 'https://www.vedetta.org/webcam/italia/puglia/lecce/gallipoli/',
+    views: '3.6k live',
+    fav: false,
+    sea: 'Poco Mosso (0.3m)'
   }
-  return tfMobileNetModel;
+];
+
+const DB_WEBCAMS_KEY = 'PESCAPRO_USER_WEBCAMS_DB';
+let coastalWebcams = [];
+let currentSelectedWebcam = null;
+let currentWebcamFilterRegion = 'Ancona & Conero';
+
+function loadWebcamsFromDB() {
+  try {
+    const saved = localStorage.getItem(DB_WEBCAMS_KEY);
+    if (saved) {
+      coastalWebcams = JSON.parse(saved);
+      return;
+    }
+  } catch(e){}
+  coastalWebcams = [...DEFAULT_COASTAL_WEBCAMS];
 }
 
-// Mediterranean Taxonomy Mapping Matrix from ImageNet Deep Vision
-const IMAGENET_TO_MEDITERRANEAN = {
-  'sea bass': { id: 'spigola', confidence: 96 },
-  'perch': { id: 'spigola', confidence: 91 },
-  'sea bream': { id: 'orata', confidence: 97 },
-  'porgy': { id: 'sarago_maggiore', confidence: 95 },
-  'scup': { id: 'sarago_maggiore', confidence: 94 },
-  'snapper': { id: 'dentice', confidence: 93 },
-  'mutton snapper': { id: 'dentice', confidence: 95 },
-  'grouper': { id: 'cernia_bruna', confidence: 95 },
-  'gar': { id: 'aguglia', confidence: 96 },
-  'needlefish': { id: 'aguglia', confidence: 97 },
-  'barracuda': { id: 'barracuda', confidence: 96 },
-  'squid': { id: 'calamaro', confidence: 98 },
-  'cuttlefish': { id: 'seppia', confidence: 97 },
-  'octopus': { id: 'polpo', confidence: 98 },
-  'rock beauty': { id: 'donzella', confidence: 90 },
-  'anemone fish': { id: 'castagnola', confidence: 88 },
-  'eel': { id: 'grongo', confidence: 94 },
-  'conger': { id: 'grongo', confidence: 96 },
-  'flounder': { id: 'sogliola', confidence: 95 },
-  'flatfish': { id: 'sogliola', confidence: 94 },
-  'sole': { id: 'sogliola', confidence: 96 },
-  'scorpionfish': { id: 'scorfano_rosso', confidence: 97 },
-  'mullet': { id: 'muggine', confidence: 95 },
-  'mackerel': { id: 'sgombro', confidence: 96 },
-  'tuna': { id: 'palamita', confidence: 94 },
-  'amberjack': { id: 'ricciola', confidence: 97 },
-  'jack': { id: 'ricciola', confidence: 93 },
-  'bluefish': { id: 'pesce_serra', confidence: 96 }
-};
+function saveWebcamsToDB() {
+  try {
+    localStorage.setItem(DB_WEBCAMS_KEY, JSON.stringify(coastalWebcams));
+  } catch(e){}
+}
 
-async function classifyFishWithAI(imgElement, filename = '') {
-  let matchedSpecies = [];
-  const fn = (filename || '').toLowerCase();
+function renderWebcams() {
+  loadWebcamsFromDB();
+  const container = document.getElementById('webcam-grid');
+  if (!container) return;
 
-  // 1. Direct filename keyword priority
-  MEDITERRANEAN_SPECIES_DB.forEach(s => {
-    const sId = s.id.toLowerCase();
-    const sName = s.name.toLowerCase();
-    if (fn.includes(sId) || fn.includes(sName) ||
-        (fn.includes('branzino') && sId === 'spigola') ||
-        (fn.includes('serra') && sId === 'pesce_serra') ||
-        (fn.includes('mormora') && sId === 'mormora') ||
-        (fn.includes('pagello') && sId === 'pagello_fragolino')) {
-      matchedSpecies.push({ species: s, score: 98, source: 'Nome File / Tag' });
+  const query = (document.getElementById('webcam-search')?.value || '').toLowerCase().trim();
+
+  const filtered = coastalWebcams.filter(w => {
+    let matchReg = true;
+    if (currentWebcamFilterRegion === 'Preferiti') {
+      matchReg = w.fav;
+    } else if (currentWebcamFilterRegion === 'Ancona & Conero') {
+      matchReg = (w.prov && w.prov.includes('Ancona')) || w.name.toLowerCase().includes('conero') || w.name.toLowerCase().includes('ancona');
+    } else if (currentWebcamFilterRegion === 'Tutte le Marche') {
+      matchReg = w.reg === 'Marche';
+    } else if (currentWebcamFilterRegion !== 'Tutte') {
+      matchReg = w.reg === currentWebcamFilterRegion || (w.prov && w.prov.includes(currentWebcamFilterRegion));
     }
+
+    const matchQ = !query ||
+      w.name.toLowerCase().includes(query) ||
+      (w.spot && w.spot.toLowerCase().includes(query)) ||
+      (w.prov && w.prov.toLowerCase().includes(query)) ||
+      (w.source && w.source.toLowerCase().includes(query)) ||
+      w.reg.toLowerCase().includes(query);
+
+    return matchReg && matchQ;
   });
 
-  // 2. Real Deep Vision Inference via MobileNet (if available)
-  try {
-    const model = await loadAIClassifier();
-    if (model && imgElement && imgElement.complete && imgElement.naturalWidth > 0) {
-      const predictions = await model.classify(imgElement, 5);
-      console.log('🤖 Predizioni AI Grezze:', predictions);
-
-      predictions.forEach(p => {
-        const className = p.className.toLowerCase();
-        for (const [key, mapping] of Object.entries(IMAGENET_TO_MEDITERRANEAN)) {
-          if (className.includes(key)) {
-            const targetSp = MEDITERRANEAN_SPECIES_DB.find(s => s.id === mapping.id);
-            if (targetSp && !matchedSpecies.some(m => m.species.id === targetSp.id)) {
-              const finalConf = Math.min(Math.round(p.probability * 100 + 40), 98);
-              matchedSpecies.push({ species: targetSp, score: finalConf, source: `Visione Neurale: ${p.className.split(',')[0]}` });
-            }
-          }
-        }
-      });
-    }
-  } catch (err) {
-    console.warn('Errore classificazione MobileNet:', err);
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;color:#64748b;background:#fff;border-radius:12px;border:1px solid #e2e8f0">
+        <i class="fa-solid fa-video-slash" style="font-size:32px;color:#94a3b8;margin-bottom:10px"></i>
+        <div style="font-size:14px;font-weight:800;color:#0f172a">Nessuna webcam trovata</div>
+        <div style="font-size:12px;margin-top:4px">Prova a cambiare filtro o aggiungi la webcam del tuo spot preferito con il pulsante in alto.</div>
+      </div>`;
+    return;
   }
 
-  // 3. Fallback to top Mediterranean species
-  if (matchedSpecies.length === 0) {
-    const fallbackProfiles = [
-      { id: 'orata', score: 92 },
-      { id: 'spigola', score: 89 },
-      { id: 'sarago_maggiore', score: 85 },
-      { id: 'pesce_serra', score: 81 },
-      { id: 'mormora', score: 78 }
-    ];
-    fallbackProfiles.forEach(fb => {
-      const sp = MEDITERRANEAN_SPECIES_DB.find(s => s.id === fb.id);
-      if (sp && !matchedSpecies.some(m => m.species.id === sp.id)) {
-        matchedSpecies.push({ species: sp, score: fb.score, source: 'Morfologia Mediterranea' });
-      }
-    });
+  container.innerHTML = filtered.map(w => `
+    <div class="webcam-card" style="background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 14px rgba(0,0,0,0.06);display:flex;flex-direction:column">
+      <!-- Thumbnail Video Header -->
+      <div style="position:relative;width:100%;height:180px;background:#0f172a;cursor:pointer" onclick="openWebcamPlayer('${w.id}')">
+        <img src="${w.thumb}" style="width:100%;height:100%;object-fit:cover;opacity:0.9" alt="${w.name}">
+        <!-- Play Button Overlay -->
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(2,132,199,0.9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(2,132,199,0.6)">
+          <i class="fa-solid fa-play" style="margin-left:4px"></i>
+        </div>
+        <!-- Live Badges -->
+        <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px">
+          <span style="background:rgba(239,68,68,0.95);color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:4px">
+            <span style="width:6px;height:6px;border-radius:50%;background:#fff"></span> LIVE
+          </span>
+          <span style="background:rgba(15,23,42,0.75);backdrop-filter:blur(4px);color:#38bdf8;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px">
+            🌊 ${w.sea || 'Mare Calmo'}
+          </span>
+        </div>
+        <!-- Favorite Star -->
+        <button onclick="event.stopPropagation(); toggleWebcamFavorite('${w.id}')" style="position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.75);backdrop-filter:blur(4px);border:none;width:32px;height:32px;border-radius:50%;color:${w.fav ? '#fbbf24' : '#ffffff'};font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <i class="fa-${w.fav ? 'solid' : 'regular'} fa-star"></i>
+        </button>
+      </div>
+
+      <!-- Card Body Info -->
+      <div style="padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;margin-bottom:2px">${w.reg} • ${w.spot}</div>
+            <h4 style="font-size:14px;font-weight:900;color:#0f172a;margin:0">${w.name}</h4>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9">
+          <span style="font-size:11px;color:#64748b"><i class="fa-solid fa-eye" style="color:#94a3b8"></i> ${w.views}</span>
+          <div style="display:flex;gap:6px">
+            <button onclick="openWebcamPlayer('${w.id}')" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+              <i class="fa-solid fa-play"></i> Guarda Diretta
+            </button>
+            <a href="${w.streamUrl}" target="_blank" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;text-decoration:none;display:flex;align-items:center;gap:4px">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setWebcamRegion(region, element) {
+  currentWebcamFilterRegion = region;
+  document.querySelectorAll('.sp-chip, .chips .chip').forEach(c => {
+    if (c.parentElement === element.parentElement) c.classList.remove('on');
+  });
+  element.classList.add('on');
+  renderWebcams();
+}
+
+function filterWebcams() {
+  renderWebcams();
+}
+
+function toggleWebcamFavorite(id) {
+  const w = coastalWebcams.find(item => item.id === id);
+  if (w) {
+    w.fav = !w.fav;
+    saveWebcamsToDB();
+    renderWebcams();
   }
-
-  // Ensure top 4 sorted by confidence
-  matchedSpecies.sort((a, b) => b.score - a.score);
-  return matchedSpecies.slice(0, 4);
 }
 
-function startAIScanSimulation(imageSrc, filename = '') {
-  const modal = document.getElementById('ai-scan-modal');
-  const preview = document.getElementById('ai-scan-preview-img');
-  const statusText = document.getElementById('ai-scan-status-text');
-  const subText = document.getElementById('ai-scan-subtext');
+function openWebcamPlayer(id) {
+  const w = coastalWebcams.find(item => item.id === id);
+  if (!w) return;
+  currentSelectedWebcam = w;
 
-  preview.src = imageSrc;
-  modal.classList.add('on');
+  document.getElementById('player-title').textContent = w.name;
+  document.getElementById('player-iframe').src = w.streamUrl;
+  document.getElementById('player-external-link').href = w.streamUrl;
+  document.getElementById('player-spot-info').textContent = `${w.reg} • ${w.spot} • ${w.sea}`;
 
-  statusText.textContent = "Analisi Livrea e Morfologia...";
-  subText.textContent = "Scansione pattern livrea, pinne e profilo biologico...";
+  const favBtn = document.getElementById('player-fav-btn');
+  if (favBtn) favBtn.textContent = w.fav ? '⭐ Preferita' : '☆ Salva';
 
-  setTimeout(() => {
-    statusText.textContent = "Confronto Modelli Visione AI...";
-    subText.textContent = "Analisi rete neurale su fauna marina Mediterranea...";
-  }, 700);
-
-  setTimeout(async () => {
-    statusText.textContent = "Identificazione Completata!";
-    subText.textContent = "Calcolo grado di accuratezza e taglia legale...";
-
-    const candidates = await classifyFishWithAI(preview, filename);
-    lastScanCandidates = candidates;
-    const best = candidates[0];
-
-    setTimeout(() => {
-      modal.classList.remove('on');
-      openSpeciesModal(best.species.id, best.score, true);
-    }, 400);
-  }, 1400);
+  document.getElementById('modal-webcam-player').classList.add('on');
 }
+
+function closeWebcamPlayer() {
+  document.getElementById('player-iframe').src = '';
+  document.getElementById('modal-webcam-player').classList.remove('on');
+}
+
+function toggleCurrentPlayerFavorite() {
+  if (currentSelectedWebcam) {
+    toggleWebcamFavorite(currentSelectedWebcam.id);
+    const favBtn = document.getElementById('player-fav-btn');
+    if (favBtn) favBtn.textContent = currentSelectedWebcam.fav ? '⭐ Preferita' : '☆ Salva';
+  }
+}
+
+function openAddWebcamModal() {
+  document.getElementById('modal-add-webcam').classList.add('on');
+}
+
+function closeAddWebcamModal() {
+  document.getElementById('modal-add-webcam').classList.remove('on');
+}
+
+function saveCustomWebcam(e) {
+  e.preventDefault();
+  const name = document.getElementById('w-name').value;
+  const reg = document.getElementById('w-region').value;
+  const url = document.getElementById('w-url').value;
+  const thumb = document.getElementById('w-thumb').value || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80';
+
+  const newW = {
+    id: 'custom-' + Date.now(),
+    name: name,
+    reg: reg,
+    spot: 'Mio Spot Personalizzato',
+    thumb: thumb,
+    streamUrl: url,
+    embedUrl: url,
+    views: 'Personale',
+    fav: true,
+    sea: 'Live Stream'
+  };
+
+  coastalWebcams.unshift(newW);
+  saveWebcamsToDB();
+  closeAddWebcamModal();
+  renderWebcams();
+  alert('📹 Nuova Webcam salvata con successo nei tuoi preferiti!');
+}
+
 
 // === GENERATORE REPORT STATISTICO METEOMARINO AVANZATO (MENSILE / ANNUALE) ===
 // =========================================================================
@@ -4498,11 +4843,10 @@ window.addEventListener('DOMContentLoaded', () => {
   initMap();
   generateMonthlyMoonStrip();
   fetchMeteopescaData(spot.lat, spot.lng, spot.name);
-  renderSpeciesGrid();
+  renderWebcams();
   renderDiary();
   renderStats();
   autoGeolocateOnStartup();
-  loadAIClassifier();
 });
 </script>
 

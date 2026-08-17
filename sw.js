@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v5-ai-icon';
+const CACHE_NAME = 'pescapro-v7-ancona-webcams';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
