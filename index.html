@@ -1375,6 +1375,40 @@
       }
     }
     
+
+/* === STILE BANDELLE WEBCAM AD ALTO CONTRASTO === */
+.webcam-filter-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.webcam-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+.webcam-pill {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+.webcam-pill.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4) !important;
+  font-weight: 900 !important;
+}
+
 </style>
 </head>
 <body>
@@ -1638,38 +1672,46 @@
       <div class="tab" id="t1">
         <div class="scroll-pane" style="padding: 14px 12px 90px 12px;">
           <!-- Header Banner -->
-          <div style="background:linear-gradient(135deg, #0f172a, #0369a1);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;box-shadow:0 6px 16px rgba(0,0,0,0.15);border:1px solid #38bdf8">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <div style="font-size:10px;font-weight:800;background:rgba(239,68,68,0.9);color:#fff;padding:2px 8px;border-radius:12px;display:flex;align-items:center;gap:4px">
-                <span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block;animation:pulse 1.2s infinite"></span> LIVE HD
+          <div style="background:linear-gradient(135deg, #0f172a 0%, #0369a1 100%);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;box-shadow:0 6px 16px rgba(0,0,0,0.15);border:1px solid #38bdf8">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div style="font-size:10px;font-weight:900;background:#ef4444;color:#fff;padding:3px 8px;border-radius:12px;display:flex;align-items:center;gap:4px">
+                <span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block"></span> DIRETTE MARE LIVE
               </div>
-              <button onclick="openAddWebcamModal()" style="background:rgba(255,255,255,0.15);color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
-                <i class="fa-solid fa-plus"></i> Aggiungi Webcam
-              </button>
+              <div style="display:flex;gap:6px">
+                <button onclick="openAddWebcamModal()" style="background:#0284c7;color:#fff;border:1px solid #38bdf8;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2)">
+                  <i class="fa-solid fa-plus"></i> Nuova Webcam
+                </button>
+                <button onclick="confirmResetWebcams()" title="Ripristina Predefinite" style="background:rgba(255,255,255,0.15);color:#cbd5e1;border:none;padding:6px 9px;border-radius:8px;font-size:11px;cursor:pointer">
+                  <i class="fa-solid fa-arrow-rotate-left"></i>
+                </button>
+              </div>
             </div>
-            <h3 style="font-size:16px;font-weight:900;margin:4px 0">📹 Webcam Spiagge & Spot in Tempo Reale</h3>
-            <p style="font-size:11px;opacity:0.9;line-height:1.4;margin:0">Controlla visivamente il moto ondoso, il colore dell'acqua e la presenza di alghe o vento prima di partire per la battuta di pesca.</p>
+            <h3 style="font-size:16px;font-weight:900;margin:2px 0 4px 0">📹 Webcam Spiagge &amp; Spot in Tempo Reale</h3>
+            <p style="font-size:11px;opacity:0.9;line-height:1.4;margin:0">Controlla onde, vento e colore dell'acqua prima di partire. Modifica gli URL o aggiungi le webcam delle tue spiagge.</p>
           </div>
 
-          <!-- Search & Filter Controls -->
-          <div class="search-box" style="padding:6px 10px;margin-bottom:8px">
-            <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px"></i>
-            <input type="text" id="webcam-search" placeholder="Cerca webcam spot o spiaggia (es. Ostia, Civitavecchia, Anzio...)" oninput="filterWebcams()">
+          <!-- Search Bar -->
+          <div class="search-box" style="padding:7px 12px;margin-bottom:10px;background:#ffffff;border:1.5px solid #cbd5e1;border-radius:10px">
+            <i class="fa-solid fa-magnifying-glass" style="color:#64748b;font-size:13px"></i>
+            <input type="text" id="webcam-search" placeholder="Cerca webcam (es. Passetto, Portonovo, Senigallia, Sirolo...)" oninput="filterWebcams()" style="font-size:13px">
           </div>
 
-          <!-- Region & Zone Chips (Focalizzate su Ancona & Marche) -->
-          <div class="chips" style="margin-bottom:12px;overflow-x:auto;white-space:nowrap;padding-bottom:4px">
-            <div class="chip on" onclick="setWebcamRegion('Ancona & Conero', this)">📍 Ancona &amp; Conero (Top)</div>
-            <div class="chip" onclick="setWebcamRegion('Tutte le Marche', this)">🏖️ Tutte le Marche</div>
-            <div class="chip" onclick="setWebcamRegion('Tutte', this)">🇮🇹 Tutta Italia</div>
-            <div class="chip" onclick="setWebcamRegion('Romagna & Adriatico', this)">🌅 Romagna &amp; Adriatico</div>
-            <div class="chip" onclick="setWebcamRegion('Tirreno & Centro', this)">🌊 Tirreno &amp; Centro</div>
-            <div class="chip" onclick="setWebcamRegion('Sud & Isole', this)">🏝️ Sud &amp; Isole</div>
-            <div class="chip" onclick="setWebcamRegion('Preferiti', this)" style="background:#fef3c7;color:#92400e;border-color:#fde68a">⭐ Preferiti</div>
+          <!-- High-Contrast Filter Bar -->
+          <div style="margin-bottom:14px">
+            <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:4px;letter-spacing:0.5px">Filtra per Zona / Provincia:</div>
+            <div class="webcam-filter-bar" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch">
+              <button class="webcam-pill active" onclick="setWebcamRegion('Ancona & Conero', this)">📍 Ancona &amp; Conero</button>
+              <button class="webcam-pill" onclick="setWebcamRegion('Tutte le Marche', this)">🏖️ Tutte le Marche</button>
+              <button class="webcam-pill" onclick="setWebcamRegion('Tutte', this)">🇮🇹 Tutta Italia</button>
+              <button class="webcam-pill" onclick="setWebcamRegion('Romagna & Adriatico', this)">🌅 Romagna &amp; Adriatico</button>
+              <button class="webcam-pill" onclick="setWebcamRegion('Tirreno & Centro', this)">🌊 Tirreno &amp; Centro</button>
+              <button class="webcam-pill" onclick="setWebcamRegion('Sud & Isole', this)">🏝️ Sud &amp; Isole</button>
+              <button class="webcam-pill" onclick="setWebcamRegion('Preferiti', this)">⭐ Preferiti</button>
+            </div>
           </div>
 
           <!-- Webcams Grid -->
-          <div id="webcam-grid" style="display:grid;grid-template-columns:1fr;gap:12px">
+          <div id="webcam-grid" style="display:grid;grid-template-columns:1fr;gap:14px">
             <!-- Dynamically populated by JS -->
           </div>
         </div>
@@ -1972,6 +2014,7 @@
     </div>
     
     
+    
     <!-- MODAL: WEBCAM FULLSCREEN PLAYER -->
     <div class="modal" id="modal-webcam-player" style="z-index:9999;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px)">
       <div style="background:#0f172a;width:96%;max-width:900px;height:90vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #334155">
@@ -1981,6 +2024,7 @@
             <div style="color:#fff;font-weight:900;font-size:13px" id="player-title">Webcam Live</div>
           </div>
           <div style="display:flex;gap:6px">
+            <button id="player-edit-btn" onclick="openEditCurrentWebcam()" style="background:#0284c7;color:#fff;border:none;padding:5px 9px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer">✏️ Modifica</button>
             <button id="player-fav-btn" onclick="toggleCurrentPlayerFavorite()" style="background:#334155;color:#fbbf24;border:none;padding:5px 9px;border-radius:6px;font-size:12px;cursor:pointer">⭐</button>
             <button onclick="closeWebcamPlayer()" style="background:#334155;color:#fff;border:none;width:30px;height:30px;border-radius:6px;font-size:14px;cursor:pointer">✕</button>
           </div>
@@ -1997,43 +2041,69 @@
       </div>
     </div>
 
-    <!-- MODAL: AGGIUNGI WEBCAM PERSONALIZZATA -->
+    <!-- MODAL: AGGIUNGI / MODIFICA WEBCAM -->
     <div class="modal" id="modal-add-webcam">
-      <div class="sheet">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <h3 style="font-size:15px;font-weight:900"><i class="fa-solid fa-video" style="color:var(--primary)"></i> Aggiungi Webcam Spot</h3>
+      <div class="sheet" style="max-height:85vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e2e8f0">
+          <h3 style="font-size:15px;font-weight:900" id="w-form-title"><i class="fa-solid fa-video" style="color:var(--primary)"></i> Nuova Webcam Spot</h3>
           <button onclick="closeAddWebcamModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
         </div>
         <form onsubmit="saveCustomWebcam(event)">
+          <input type="hidden" id="w-id" value="">
+          
           <div class="fg">
-            <label>Nome Spot / Spiaggia *</label>
-            <input type="text" id="w-name" required placeholder="Es. Spiaggia Sant'Agostino">
+            <label style="font-weight:800">Nome Spot / Spiaggia *</label>
+            <input type="text" id="w-name" required placeholder="Es. Ancona - Passetto & Grotte" style="font-size:13px">
           </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label style="font-weight:800">Regione *</label>
+              <select id="w-region" style="font-size:13px">
+                <option value="Marche">Marche</option>
+                <option value="Romagna & Adriatico">Romagna & Adriatico</option>
+                <option value="Tirreno & Centro">Tirreno & Centro</option>
+                <option value="Sud & Isole">Sud & Isole</option>
+                <option value="Altro">Altra Zona</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label style="font-weight:800">Provincia / Sigla *</label>
+              <input type="text" id="w-prov" required placeholder="Es. Ancona (AN)" style="font-size:13px">
+            </div>
+          </div>
+
           <div class="fg">
-            <label>Regione / Zona *</label>
-            <select id="w-region">
-              <option value="Lazio">Lazio / Tirreno</option>
-              <option value="Toscana">Toscana</option>
-              <option value="Campania">Campania</option>
-              <option value="Sardegna / Sicilia">Isole</option>
-              <option value="Adriatico">Adriatico</option>
-            </select>
+            <label style="font-weight:800">URL Stream / Link Webcam (Vedetta.org / Skyline / YouTube) *</label>
+            <input type="url" id="w-url" required placeholder="https://www.vedetta.org/... o https://www.skylinewebcams.com/..." style="font-size:12px">
+            <div style="font-size:10px;color:#64748b;margin-top:2px">Puoi inserire qualsiasi link webcam, pagina Vedetta.org, SkylineWebcams o canale YouTube Live.</div>
           </div>
+
           <div class="fg">
-            <label>URL Stream / Link Webcam (YouTube / Skyline / Webcam) *</label>
-            <input type="url" id="w-url" required placeholder="https://www.skylinewebcams.com/... o YouTube Live">
+            <label style="font-weight:800">Spot di Pesca / Specie Principali</label>
+            <input type="text" id="w-spot" placeholder="Es. Scogliere / Orata, Spigola, Sarago" style="font-size:13px">
           </div>
+
           <div class="fg">
-            <label>URL Immagine Anteprima (Opzionale)</label>
-            <input type="url" id="w-thumb" placeholder="https://images.unsplash.com/...">
+            <label style="font-weight:800">URL Foto Anteprima (Opzionale)</label>
+            <input type="url" id="w-thumb" placeholder="https://images.unsplash.com/..." style="font-size:12px">
           </div>
-          <button type="submit" class="submit-btn" style="margin-top:10px">
-            <i class="fa-solid fa-check"></i> Salva Webcam nei Preferiti
-          </button>
+
+          <div class="fg">
+            <label style="font-weight:800">Fonte Webcam</label>
+            <input type="text" id="w-source" placeholder="Es. Vedetta.org, SkylineWebcams, Live Stream" style="font-size:13px">
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button type="button" onclick="closeAddWebcamModal()" style="flex:1;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:10px;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">Annulla</button>
+            <button type="submit" class="submit-btn" style="flex:2;margin:0;font-size:13px">
+              <i class="fa-solid fa-check"></i> <span id="w-submit-btn-text">Salva Webcam</span>
+            </button>
+          </div>
         </form>
       </div>
     </div>
-    
+
     <!-- MODAL: CATCH ENTRY -->
     <div class="modal" id="mc">
       <div class="sheet">
@@ -3915,7 +3985,9 @@ function handleAIScanImage(e) {
 
 
 // =========================================================================
-// === DATABASE E GESTORE WEBCAM METEOMARINE LIVE (ITALIA & SPOT REGIONALI) ===
+
+// =========================================================================
+// === DATABASE E GESTORE COMPLETO WEBCAM (AGGIUNGI, MODIFICA, ELIMINA) ===
 // =========================================================================
 
 const DEFAULT_COASTAL_WEBCAMS = [
@@ -4091,7 +4163,7 @@ const DEFAULT_COASTAL_WEBCAMS = [
     sea: 'Poco Mosso (0.3m)'
   },
 
-  // === ALTRE REGIONI D'ITALIA (ROMAGNA, TIRRENO, SUD, ISOLE) ===
+  // === ALTRE REGIONI D'ITALIA ===
   {
     id: 'rimini-spiaggia',
     name: 'Rimini - Lungomare & Molo di Levante',
@@ -4150,7 +4222,7 @@ const DEFAULT_COASTAL_WEBCAMS = [
   }
 ];
 
-const DB_WEBCAMS_KEY = 'PESCAPRO_USER_WEBCAMS_DB';
+const DB_WEBCAMS_KEY = 'PESCAPRO_USER_WEBCAMS_DB_V2';
 let coastalWebcams = [];
 let currentSelectedWebcam = null;
 let currentWebcamFilterRegion = 'Ancona & Conero';
@@ -4159,11 +4231,14 @@ function loadWebcamsFromDB() {
   try {
     const saved = localStorage.getItem(DB_WEBCAMS_KEY);
     if (saved) {
-      coastalWebcams = JSON.parse(saved);
-      return;
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        coastalWebcams = parsed;
+        return;
+      }
     }
   } catch(e){}
-  coastalWebcams = [...DEFAULT_COASTAL_WEBCAMS];
+  coastalWebcams = JSON.parse(JSON.stringify(DEFAULT_COASTAL_WEBCAMS));
 }
 
 function saveWebcamsToDB() {
@@ -4203,10 +4278,13 @@ function renderWebcams() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center;padding:40px 20px;color:#64748b;background:#fff;border-radius:12px;border:1px solid #e2e8f0">
+      <div style="text-align:center;padding:36px 18px;color:#64748b;background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
         <i class="fa-solid fa-video-slash" style="font-size:32px;color:#94a3b8;margin-bottom:10px"></i>
-        <div style="font-size:14px;font-weight:800;color:#0f172a">Nessuna webcam trovata</div>
-        <div style="font-size:12px;margin-top:4px">Prova a cambiare filtro o aggiungi la webcam del tuo spot preferito con il pulsante in alto.</div>
+        <div style="font-size:14px;font-weight:900;color:#0f172a">Nessuna webcam trovata in questo filtro</div>
+        <div style="font-size:12px;margin-top:4px">Puoi cambiare filtro in alto o aggiungere la tua webcam personale con il tasto "+ Nuova Webcam".</div>
+        <button onclick="openAddWebcamModal()" style="margin-top:12px;background:#0284c7;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer">
+          <i class="fa-solid fa-plus"></i> Aggiungi Webcam Spot
+        </button>
       </div>`;
     return;
   }
@@ -4215,57 +4293,74 @@ function renderWebcams() {
     <div class="webcam-card" style="background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 14px rgba(0,0,0,0.06);display:flex;flex-direction:column">
       <!-- Thumbnail Video Header -->
       <div style="position:relative;width:100%;height:180px;background:#0f172a;cursor:pointer" onclick="openWebcamPlayer('${w.id}')">
-        <img src="${w.thumb}" style="width:100%;height:100%;object-fit:cover;opacity:0.9" alt="${w.name}">
+        <img src="${w.thumb || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80'}" style="width:100%;height:100%;object-fit:cover;opacity:0.9" alt="${w.name}">
+        
         <!-- Play Button Overlay -->
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(2,132,199,0.9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(2,132,199,0.6)">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(2,132,199,0.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(2,132,199,0.6)">
           <i class="fa-solid fa-play" style="margin-left:4px"></i>
         </div>
-        <!-- Live Badges -->
-        <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px">
-          <span style="background:rgba(239,68,68,0.95);color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:4px">
-            <span style="width:6px;height:6px;border-radius:50%;background:#fff"></span> LIVE
+
+        <!-- Badges (Live + Source) -->
+        <div style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+          <span style="background:rgba(239,68,68,0.95);color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px;display:flex;align-items:center;gap:4px">
+            <span style="width:5px;height:5px;border-radius:50%;background:#fff"></span> LIVE
           </span>
-          <span style="background:rgba(15,23,42,0.75);backdrop-filter:blur(4px);color:#38bdf8;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px">
-            🌊 ${w.sea || 'Mare Calmo'}
+          <span style="background:rgba(15,23,42,0.85);backdrop-filter:blur(4px);color:#38bdf8;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px">
+            📡 ${w.source || 'Webcam Live'}
           </span>
         </div>
+
         <!-- Favorite Star -->
-        <button onclick="event.stopPropagation(); toggleWebcamFavorite('${w.id}')" style="position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.75);backdrop-filter:blur(4px);border:none;width:32px;height:32px;border-radius:50%;color:${w.fav ? '#fbbf24' : '#ffffff'};font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <button onclick="event.stopPropagation(); toggleWebcamFavorite('${w.id}')" style="position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.8);backdrop-filter:blur(4px);border:none;width:34px;height:34px;border-radius:50%;color:${w.fav ? '#fbbf24' : '#ffffff'};font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center">
           <i class="fa-${w.fav ? 'solid' : 'regular'} fa-star"></i>
         </button>
+
+        <!-- Sea Condition Strip -->
+        <div style="position:absolute;bottom:8px;left:10px;right:10px;background:rgba(15,23,42,0.85);backdrop-filter:blur(4px);color:#fff;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;display:flex;justify-content:space-between">
+          <span>🌊 ${w.sea || 'Mare Poco Mosso (0.3m)'}</span>
+          <span style="color:#94a3b8"><i class="fa-solid fa-eye"></i> ${w.views || 'Live'}</span>
+        </div>
       </div>
 
       <!-- Card Body Info -->
       <div style="padding:12px 14px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
-            <div style="font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;margin-bottom:2px">${w.reg} • ${w.spot}</div>
-            <h4 style="font-size:14px;font-weight:900;color:#0f172a;margin:0">${w.name}</h4>
+            <div style="font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;margin-bottom:2px">
+              📍 ${w.prov || w.reg} • <span style="color:#64748b">${w.reg}</span>
+            </div>
+            <h4 style="font-size:14px;font-weight:900;color:#0f172a;margin:0 0 4px 0">${w.name}</h4>
+            <div style="font-size:11px;color:#475569;line-height:1.3">${w.spot || 'Spot di pesca costiero'}</div>
           </div>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9">
-          <span style="font-size:11px;color:#64748b"><i class="fa-solid fa-eye" style="color:#94a3b8"></i> ${w.views}</span>
-          <div style="display:flex;gap:6px">
-            <button onclick="openWebcamPlayer('${w.id}')" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
-              <i class="fa-solid fa-play"></i> Guarda Diretta
-            </button>
-            <a href="${w.streamUrl}" target="_blank" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;text-decoration:none;display:flex;align-items:center;gap:4px">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </a>
-          </div>
+        <!-- Action Toolbar: Play, Edit, Delete, External -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;gap:6px">
+          <button onclick="openWebcamPlayer('${w.id}')" style="flex:2;background:#0284c7;color:#fff;border:none;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
+            <i class="fa-solid fa-play"></i> Guarda
+          </button>
+          
+          <button onclick="openEditWebcamModal('${w.id}')" title="Modifica URL o dettagli" style="background:#f8fafc;color:#0369a1;border:1px solid #bae6fd;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+            <i class="fa-solid fa-pen-to-square"></i> Modifica
+          </button>
+
+          <a href="${w.streamUrl}" target="_blank" title="Apri stream nel browser" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:7px 9px;border-radius:8px;font-size:11px;font-weight:800;text-decoration:none;display:flex;align-items:center">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+
+          <button onclick="deleteWebcam('${w.id}')" title="Elimina questa webcam" style="background:#fff1f2;color:#e11d48;border:1px solid #fecdd3;padding:7px 9px;border-radius:8px;font-size:11px;cursor:pointer;display:flex;align-items:center">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
         </div>
       </div>
     </div>
   `).join('');
 }
 
-function setWebcamRegion(region, element) {
+function setWebcamRegion(region, btnElement) {
   currentWebcamFilterRegion = region;
-  document.querySelectorAll('.sp-chip, .chips .chip').forEach(c => {
-    if (c.parentElement === element.parentElement) c.classList.remove('on');
-  });
-  element.classList.add('on');
+  document.querySelectorAll('.webcam-pill').forEach(btn => btn.classList.remove('active'));
+  if (btnElement) btnElement.classList.add('active');
   renderWebcams();
 }
 
@@ -4290,7 +4385,7 @@ function openWebcamPlayer(id) {
   document.getElementById('player-title').textContent = w.name;
   document.getElementById('player-iframe').src = w.streamUrl;
   document.getElementById('player-external-link').href = w.streamUrl;
-  document.getElementById('player-spot-info').textContent = `${w.reg} • ${w.spot} • ${w.sea}`;
+  document.getElementById('player-spot-info').textContent = `${w.prov || w.reg} • ${w.spot || ''} • ${w.sea || ''}`;
 
   const favBtn = document.getElementById('player-fav-btn');
   if (favBtn) favBtn.textContent = w.fav ? '⭐ Preferita' : '☆ Salva';
@@ -4303,6 +4398,13 @@ function closeWebcamPlayer() {
   document.getElementById('modal-webcam-player').classList.remove('on');
 }
 
+function openEditCurrentWebcam() {
+  if (currentSelectedWebcam) {
+    closeWebcamPlayer();
+    openEditWebcamModal(currentSelectedWebcam.id);
+  }
+}
+
 function toggleCurrentPlayerFavorite() {
   if (currentSelectedWebcam) {
     toggleWebcamFavorite(currentSelectedWebcam.id);
@@ -4312,6 +4414,33 @@ function toggleCurrentPlayerFavorite() {
 }
 
 function openAddWebcamModal() {
+  document.getElementById('w-form-title').innerHTML = '<i class="fa-solid fa-plus" style="color:var(--primary)"></i> Nuova Webcam Spot';
+  document.getElementById('w-submit-btn-text').textContent = 'Salva Nuova Webcam';
+  document.getElementById('w-id').value = '';
+  document.getElementById('w-name').value = '';
+  document.getElementById('w-region').value = 'Marche';
+  document.getElementById('w-prov').value = 'Ancona (AN)';
+  document.getElementById('w-url').value = '';
+  document.getElementById('w-spot').value = '';
+  document.getElementById('w-thumb').value = '';
+  document.getElementById('w-source').value = 'Vedetta.org / Skyline';
+  document.getElementById('modal-add-webcam').classList.add('on');
+}
+
+function openEditWebcamModal(id) {
+  const w = coastalWebcams.find(item => item.id === id);
+  if (!w) return;
+
+  document.getElementById('w-form-title').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:#0284c7"></i> Modifica Webcam Spot';
+  document.getElementById('w-submit-btn-text').textContent = 'Salva Modifiche';
+  document.getElementById('w-id').value = w.id;
+  document.getElementById('w-name').value = w.name || '';
+  document.getElementById('w-region').value = w.reg || 'Marche';
+  document.getElementById('w-prov').value = w.prov || 'Ancona (AN)';
+  document.getElementById('w-url').value = w.streamUrl || '';
+  document.getElementById('w-spot').value = w.spot || '';
+  document.getElementById('w-thumb').value = w.thumb || '';
+  document.getElementById('w-source').value = w.source || 'Vedetta.org';
   document.getElementById('modal-add-webcam').classList.add('on');
 }
 
@@ -4321,29 +4450,71 @@ function closeAddWebcamModal() {
 
 function saveCustomWebcam(e) {
   e.preventDefault();
-  const name = document.getElementById('w-name').value;
+  const id = document.getElementById('w-id').value;
+  const name = document.getElementById('w-name').value.trim();
   const reg = document.getElementById('w-region').value;
-  const url = document.getElementById('w-url').value;
-  const thumb = document.getElementById('w-thumb').value || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80';
+  const prov = document.getElementById('w-prov').value.trim();
+  const url = document.getElementById('w-url').value.trim();
+  const spotText = document.getElementById('w-spot').value.trim() || 'Spot di pesca costiero';
+  const thumb = document.getElementById('w-thumb').value.trim() || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80';
+  const source = document.getElementById('w-source').value.trim() || 'Webcam Live';
 
-  const newW = {
-    id: 'custom-' + Date.now(),
-    name: name,
-    reg: reg,
-    spot: 'Mio Spot Personalizzato',
-    thumb: thumb,
-    streamUrl: url,
-    embedUrl: url,
-    views: 'Personale',
-    fav: true,
-    sea: 'Live Stream'
-  };
+  if (id) {
+    // Edit existing
+    const existing = coastalWebcams.find(item => item.id === id);
+    if (existing) {
+      existing.name = name;
+      existing.reg = reg;
+      existing.prov = prov;
+      existing.streamUrl = url;
+      existing.embedUrl = url;
+      existing.spot = spotText;
+      existing.thumb = thumb;
+      existing.source = source;
+    }
+  } else {
+    // Create new
+    const newW = {
+      id: 'custom-' + Date.now(),
+      name: name,
+      reg: reg,
+      prov: prov,
+      spot: spotText,
+      source: source,
+      thumb: thumb,
+      streamUrl: url,
+      embedUrl: url,
+      views: 'Personale',
+      fav: true,
+      sea: 'Live Stream'
+    };
+    coastalWebcams.unshift(newW);
+  }
 
-  coastalWebcams.unshift(newW);
   saveWebcamsToDB();
   closeAddWebcamModal();
   renderWebcams();
-  alert('📹 Nuova Webcam salvata con successo nei tuoi preferiti!');
+  alert('✅ Webcam salvata con successo!');
+}
+
+function deleteWebcam(id) {
+  const w = coastalWebcams.find(item => item.id === id);
+  if (!w) return;
+
+  if (confirm(`Sei sicuro di voler eliminare la webcam "${w.name}"?`)) {
+    coastalWebcams = coastalWebcams.filter(item => item.id !== id);
+    saveWebcamsToDB();
+    renderWebcams();
+  }
+}
+
+function confirmResetWebcams() {
+  if (confirm('Vuoi ripristinare tutte le webcam predefinite di Ancona, Marche e Italia?')) {
+    coastalWebcams = JSON.parse(JSON.stringify(DEFAULT_COASTAL_WEBCAMS));
+    saveWebcamsToDB();
+    renderWebcams();
+    alert('✅ Webcam predefinite ripristinate!');
+  }
 }
 
 
@@ -4600,6 +4771,40 @@ function generateReportHTML(d, forDirectPdf = false) {
       }
     }
     
+
+/* === STILE BANDELLE WEBCAM AD ALTO CONTRASTO === */
+.webcam-filter-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.webcam-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+.webcam-pill {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+.webcam-pill.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4) !important;
+  font-weight: 900 !important;
+}
+
 </style>
   ${'<' + 'script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">' + '<' + '/script>'}
 </head>
