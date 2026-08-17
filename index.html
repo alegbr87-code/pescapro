@@ -2015,13 +2015,15 @@
     
     
     
-    <!-- MODAL: WEBCAM FULLSCREEN PLAYER -->
+    
+    <!-- MODAL: WEBCAM LIVE HUB & DIRECT STREAM PLAYER -->
     <div class="modal" id="modal-webcam-player" style="z-index:9999;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px)">
-      <div style="background:#0f172a;width:96%;max-width:900px;height:90vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #334155">
-        <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;background:#1e293b;border-bottom:1px solid #334155">
+      <div style="background:#0f172a;width:96%;max-width:600px;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.6)">
+        <!-- Header -->
+        <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:#1e293b;border-bottom:1px solid #334155">
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="background:#ef4444;color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:4px">LIVE</span>
-            <div style="color:#fff;font-weight:900;font-size:13px" id="player-title">Webcam Live</div>
+            <span style="background:#ef4444;color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px">LIVE HD</span>
+            <div style="color:#fff;font-weight:900;font-size:14px" id="player-title">Webcam Live</div>
           </div>
           <div style="display:flex;gap:6px">
             <button id="player-edit-btn" onclick="openEditCurrentWebcam()" style="background:#0284c7;color:#fff;border:none;padding:5px 9px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer">✏️ Modifica</button>
@@ -2029,25 +2031,75 @@
             <button onclick="closeWebcamPlayer()" style="background:#334155;color:#fff;border:none;width:30px;height:30px;border-radius:6px;font-size:14px;cursor:pointer">✕</button>
           </div>
         </div>
-        <div style="flex:1;position:relative;background:#000;display:flex;align-items:center;justify-content:center">
-          <iframe id="player-iframe" src="" style="width:100%;height:100%;border:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
+
+        <!-- Body / Live Hero -->
+        <div style="position:relative;width:100%;height:220px;background:#020617;overflow:hidden">
+          <img id="player-hero-img" src="" style="width:100%;height:100%;object-fit:cover;opacity:0.85" alt="Webcam Spot">
+          
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%">
+            <a id="player-main-stream-btn" href="#" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg, #0284c7, #0369a1);color:#fff;text-decoration:none;font-weight:900;font-size:14px;padding:12px 20px;border-radius:12px;box-shadow:0 6px 20px rgba(2,132,199,0.7);border:1.5px solid #38bdf8">
+              <i class="fa-solid fa-play" style="font-size:16px"></i> <span>APRI STREAMING UFFICIALE</span>
+            </a>
+            <div style="color:#e2e8f0;font-size:10px;font-weight:700;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.8)">
+              📡 Fonte: <span id="player-source-badge">Vedetta.org / Skyline</span>
+            </div>
+          </div>
+
+          <div style="position:absolute;bottom:8px;left:10px;right:10px;background:rgba(15,23,42,0.85);backdrop-filter:blur(4px);color:#38bdf8;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:800;display:flex;justify-content:space-between">
+            <span id="player-sea-badge">🌊 Mare Poco Mosso (0.3m)</span>
+            <span style="color:#cbd5e1" id="player-spot-badge">Ancona</span>
+          </div>
         </div>
-        <div style="padding:10px 14px;background:#1e293b;border-top:1px solid #334155;display:flex;justify-content:space-between;align-items:center;color:#94a3b8;font-size:11px">
-          <div id="player-spot-info">Meteo associato: 27°C • Onde 0.3m • Vento 7 km/h</div>
-          <a id="player-external-link" href="#" target="_blank" style="color:#38bdf8;font-weight:800;text-decoration:none;display:flex;align-items:center;gap:4px">
-            Apri Stream Ufficiale <i class="fa-solid fa-arrow-up-right-from-square"></i>
-          </a>
+
+        <!-- Footer / Fast Actions -->
+        <div style="padding:14px;background:#1e293b;border-top:1px solid #334155">
+          <div style="font-size:11px;color:#cbd5e1;line-height:1.4;margin-bottom:10px" id="player-desc-text">
+            Spot di pesca costiero monitorato in tempo reale.
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <a id="player-external-link" href="#" target="_blank" style="flex:2;background:#0284c7;color:#fff;text-decoration:none;font-weight:900;font-size:12px;padding:9px;border-radius:8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Guarda Diretta su Browser
+            </a>
+            <button onclick="copyCurrentWebcamLink()" style="flex:1;background:#334155;color:#e2e8f0;border:1px solid #475569;font-weight:800;font-size:11px;padding:9px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+              <i class="fa-solid fa-copy"></i> Copia Link
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- MODAL: AGGIUNGI / MODIFICA WEBCAM -->
+    <!-- MODAL: AGGIUNGI / MODIFICA WEBCAM CON ASSISTENTE E INCOLLA APPUNTI -->
     <div class="modal" id="modal-add-webcam">
-      <div class="sheet" style="max-height:85vh;overflow-y:auto">
+      <div class="sheet" style="max-height:88vh;overflow-y:auto">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e2e8f0">
           <h3 style="font-size:15px;font-weight:900" id="w-form-title"><i class="fa-solid fa-video" style="color:var(--primary)"></i> Nuova Webcam Spot</h3>
           <button onclick="closeAddWebcamModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
         </div>
+
+        <!-- Selettore Rapido da Catalogo Marche (Senza dover digitare URL) -->
+        <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:10px;margin-bottom:14px">
+          <div style="font-size:11px;font-weight:900;color:#0369a1;display:flex;align-items:center;gap:5px;margin-bottom:6px">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Compilazione Rapida da Catalogo Marche (1 Tocco)</span>
+          </div>
+          <select id="w-preset-select" onchange="applyPresetWebcam(this.value)" style="width:100%;font-size:12px;font-weight:700;padding:8px;border-radius:8px;border:1px solid #93c5fd;background:#ffffff">
+            <option value="">-- Seleziona uno spot per autocompilare --</option>
+            <option value="ancona-passetto">📍 Ancona - Monumento del Passetto & Scogli (SkylineWebcams)</option>
+            <option value="portonovo-baia">🏖️ Portonovo - Baia del Conero & Scoglio della Vela (Vedetta.org)</option>
+            <option value="senigallia-rotonda">🎡 Senigallia - Rotonda a Mare & Spiaggia di Velluto (SkylineWebcams)</option>
+            <option value="sirolo-urbani">🌲 Sirolo - Spiaggia Urbani & Falesia del Conero (Vedetta.org)</option>
+            <option value="numana-porto">⛵ Numana - Porto Turistico & Spiaggiola (SkylineWebcams)</option>
+            <option value="falconara-marittima">🌊 Falconara Marittima - Spiaggia & Litorale Nord (Vedetta.org)</option>
+            <option value="porto-recanati-conero">🌅 Porto Recanati - Lungomare Sud & Vista Conero (Vedetta.org)</option>
+            <option value="civitanova-marche">⚓ Civitanova Marche - Lungomare Piermanni & Molo (SkylineWebcams)</option>
+            <option value="san-benedetto-tronto">🌴 San Benedetto del Tronto - Riviera delle Palme (SkylineWebcams)</option>
+            <option value="fano-sassonia">🎣 Fano - Spiaggia Sassonia & Porto Canale (Vedetta.org)</option>
+            <option value="pesaro-panoramica">⛰️ Pesaro - Baia Flaminia & Parco San Bartolo (SkylineWebcams)</option>
+            <option value="gabicce-mare">🏖️ Gabicce Mare - Baia Vallugola & Falesia (Vedetta.org)</option>
+            <option value="rimini-spiaggia">🌅 Rimini - Lungomare & Molo di Levante (SkylineWebcams)</option>
+          </select>
+        </div>
+
         <form onsubmit="saveCustomWebcam(event)">
           <input type="hidden" id="w-id" value="">
           
@@ -2073,10 +2125,16 @@
             </div>
           </div>
 
+          <!-- URL Input con pulsante Incolla Automatico -->
           <div class="fg">
-            <label style="font-weight:800">URL Stream / Link Webcam (Vedetta.org / Skyline / YouTube) *</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <label style="font-weight:800;margin:0">URL Stream / Link Webcam *</label>
+              <button type="button" onclick="pasteWebcamUrl()" style="background:#0284c7;color:#fff;border:none;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+                <i class="fa-solid fa-paste"></i> Incolla dagli Appunti
+              </button>
+            </div>
             <input type="url" id="w-url" required placeholder="https://www.vedetta.org/... o https://www.skylinewebcams.com/..." style="font-size:12px">
-            <div style="font-size:10px;color:#64748b;margin-top:2px">Puoi inserire qualsiasi link webcam, pagina Vedetta.org, SkylineWebcams o canale YouTube Live.</div>
+            <div style="font-size:10px;color:#64748b;margin-top:2px">Puoi incollare qualsiasi link da Vedetta.org, SkylineWebcams, YouTube Live o sito webcam.</div>
           </div>
 
           <div class="fg">
@@ -4377,15 +4435,20 @@ function toggleWebcamFavorite(id) {
   }
 }
 
+
 function openWebcamPlayer(id) {
   const w = coastalWebcams.find(item => item.id === id);
   if (!w) return;
   currentSelectedWebcam = w;
 
   document.getElementById('player-title').textContent = w.name;
-  document.getElementById('player-iframe').src = w.streamUrl;
+  document.getElementById('player-hero-img').src = w.thumb || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80';
+  document.getElementById('player-main-stream-btn').href = w.streamUrl;
   document.getElementById('player-external-link').href = w.streamUrl;
-  document.getElementById('player-spot-info').textContent = `${w.prov || w.reg} • ${w.spot || ''} • ${w.sea || ''}`;
+  document.getElementById('player-source-badge').textContent = w.source || 'Webcam Live';
+  document.getElementById('player-sea-badge').textContent = '🌊 ' + (w.sea || 'Mare Poco Mosso (0.3m)');
+  document.getElementById('player-spot-badge').textContent = w.prov || w.reg;
+  document.getElementById('player-desc-text').textContent = '📍 ' + w.name + ' • ' + (w.spot || 'Spot di pesca costiero');
 
   const favBtn = document.getElementById('player-fav-btn');
   if (favBtn) favBtn.textContent = w.fav ? '⭐ Preferita' : '☆ Salva';
@@ -4394,7 +4457,6 @@ function openWebcamPlayer(id) {
 }
 
 function closeWebcamPlayer() {
-  document.getElementById('player-iframe').src = '';
   document.getElementById('modal-webcam-player').classList.remove('on');
 }
 
@@ -4405,13 +4467,47 @@ function openEditCurrentWebcam() {
   }
 }
 
-function toggleCurrentPlayerFavorite() {
-  if (currentSelectedWebcam) {
-    toggleWebcamFavorite(currentSelectedWebcam.id);
-    const favBtn = document.getElementById('player-fav-btn');
-    if (favBtn) favBtn.textContent = currentSelectedWebcam.fav ? '⭐ Preferita' : '☆ Salva';
+function copyCurrentWebcamLink() {
+  if (currentSelectedWebcam && currentSelectedWebcam.streamUrl) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(currentSelectedWebcam.streamUrl);
+    }
+    alert('📋 Link streaming copiato negli appunti: ' + currentSelectedWebcam.streamUrl);
   }
 }
+
+async function pasteWebcamUrl() {
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      const text = await navigator.clipboard.readText();
+      if (text && text.startsWith('http')) {
+        document.getElementById('w-url').value = text.trim();
+        alert('📋 Link incollato dagli appunti: ' + text.trim());
+        return;
+      }
+    }
+  } catch(e){}
+
+  const manual = prompt('Incolla qui il link della webcam (premi a lungo per incollare):', document.getElementById('w-url').value);
+  if (manual) {
+    document.getElementById('w-url').value = manual.trim();
+  }
+}
+
+function applyPresetWebcam(presetId) {
+  if (!presetId) return;
+  const found = DEFAULT_COASTAL_WEBCAMS.find(item => item.id === presetId);
+  if (found) {
+    document.getElementById('w-name').value = found.name;
+    document.getElementById('w-region').value = found.reg;
+    document.getElementById('w-prov').value = found.prov;
+    document.getElementById('w-url').value = found.streamUrl;
+    document.getElementById('w-spot').value = found.spot;
+    document.getElementById('w-thumb').value = found.thumb;
+    document.getElementById('w-source').value = found.source;
+  }
+}
+
 
 function openAddWebcamModal() {
   document.getElementById('w-form-title').innerHTML = '<i class="fa-solid fa-plus" style="color:var(--primary)"></i> Nuova Webcam Spot';
