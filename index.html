@@ -2191,9 +2191,24 @@ const defaultSpots = [
 ];
 
 function loadCatchesFromDB() {
-  const saved = localStorage.getItem(DB_CATCHES_KEY);
-  if (saved !== null) {
-    try { return JSON.parse(saved); } catch(e) { return defaultCatches; }
+  const possibleKeys = [
+    DB_CATCHES_KEY,
+    "PESCAPRO_CATCHES_DB",
+    "pescapro_user_catches_db_v2",
+    "pescapro_user_catches_db",
+    "pescapro_catches_v1",
+    "pescapro_catches"
+  ];
+  for (const k of possibleKeys) {
+    try {
+      const s = localStorage.getItem(k);
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch(e) {}
   }
   return defaultCatches;
 }
