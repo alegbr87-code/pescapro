@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v14-tabs-favorites-moon';
+const CACHE_NAME = 'pescapro-v15-modals-buttons-gps';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
