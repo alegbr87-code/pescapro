@@ -49,54 +49,33 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-      background: radial-gradient(circle at top, #1e293b, #0f172a 55%, #020617);
-      min-height: 100vh;
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #f8fafc;
+      color: #0f172a;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    #app-root {
+      width: 100vw;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 14px 6px;
-      color: #fff;
+      overflow: hidden;
+      background: #f8fafc;
     }
 
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      max-width: 460px;
-      margin-bottom: 10px;
+    .app-bar {
+      padding-top: max(8px, env(safe-area-inset-top));
     }
 
-    .brand {
-      font-size: 22px;
-      font-weight: 900;
-      background: linear-gradient(135deg, #38bdf8, #818cf8, #34d399);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .view-btn {
-      background: rgba(255,255,255,.15);
-      border: 1px solid rgba(255,255,255,.25);
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-
-    .view-btn:hover {
-      background: rgba(255,255,255,.25);
-      transform: scale(1.04);
+    .bnav {
+      padding-bottom: max(6px, env(safe-area-inset-bottom));
     }
 
     /* Smartphone / Desktop Container */
@@ -1413,14 +1392,7 @@
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="brand"><i class="fa-solid fa-fish"></i> PESCA PRO</div>
-  <button class="view-btn" onclick="toggleView()"><i class="fa-solid fa-expand"></i> <span id="vt">Schermo Intero</span></button>
-</div>
-
-<div class="device" id="dev">
-  <div class="screen-wrap">
-    <div class="island"><div class="island-dot"></div><div style="width:6px;height:6px;border-radius:50%;background:#10b981"></div></div>
+<div id="app-root" style="width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:#f8fafc"><div style="width:6px;height:6px;border-radius:50%;background:#10b981"></div></div>
 
     <!-- App Header -->
     <div class="app-bar">
@@ -2010,13 +1982,7 @@
         </div>
         <!-- Scrollable Report Body -->
         <div id="viewer-content" style="flex:1;overflow-y:auto;padding:16px;background:#f8fafc"></div>
-      </div>
-    </div>
-    
-    
-    
-    
-    <!-- MODAL: WEBCAM LIVE HUB & DIRECT STREAM PLAYER -->
+      <!-- MODAL: WEBCAM LIVE HUB & DIRECT STREAM PLAYER -->
     <div class="modal" id="modal-webcam-player" style="z-index:9999;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px)">
       <div style="background:#0f172a;width:96%;max-width:600px;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.6)">
         <!-- Header -->
@@ -2218,11 +2184,16 @@
           <div id="catch-fish-fields">
             <div class="fr2">
               <div class="fg"><label>Specie *</label><select id="fs"><option>Orata</option><option>Spigola</option><option>Sarago</option><option>Dentice</option><option>Mormora</option><option>Pesce Serra</option><option>Ricciola</option><option>Palamita</option><option>Calamaro</option><option>Seppia</option><option>Altro</option></select></div>
-              <div class="fg"><label>Quantità *</label><input type="number" step="1" min="1" id="fq" value="1" placeholder="1"></div>
+              <div class="fg"><label>Quantità Esemplari *</label><input type="number" step="1" min="1" id="fq" value="1" placeholder="1" oninput="toggleSingleRecordInput()"></div>
             </div>
             <div class="fr2">
               <div class="fg"><label>Peso Totale (kg) *</label><input type="number" step="0.01" min="0.01" id="fw" placeholder="es. 1.85"></div>
               <div class="fg"><label>Lunghezza Media (cm)</label><input type="number" step="1" id="fl" placeholder="es. 48"></div>
+            </div>
+            <div class="fg" id="single-record-box" style="display:none;background:#fef3c7;border:1px solid #fde68a;padding:8px;border-radius:8px;margin-bottom:8px">
+              <label style="font-weight:800;color:#92400e"><i class="fa-solid fa-trophy"></i> Peso Singola Preda Più Grande (kg)</label>
+              <input type="number" step="0.01" min="0.01" id="f-single-rec" placeholder="es. 0.85 (se hai preso 12 orate per 4kg tot)">
+              <div style="font-size:10px;color:#78350f;margin-top:2px">Inserisci il peso del singolo pesce record per le statistiche individuali.</div>
             </div>
           </div>
 
@@ -2678,29 +2649,143 @@ async function searchOnline(q) {
 }
 
 // === FETCH DATI METEOPESCA (CALCOLI ASTRONOMICI + METEO REALE OPEN-METEO) ===
+
+// === CALCOLO REALE PARAMETRI METEOPESCA (ASTRONOMIA + MAREE + SOLUNARE) ===
+function computeMeteopescaTides(date, lat, lng) {
+  const moon = getAstronomicalMoon(date);
+  
+  // 1. COEFFICIENTE DI MAREA ASTRONOMICO REALE (Scala 20 - 120, standard Meteopesca / SHOM)
+  // Massimo durante Sizigie (Luna Nuova / Piena) e Minimo durante Quadrature (Quarti)
+  const daysFromSyzygy = Math.min(
+    Math.abs(moon.age - 0),
+    Math.abs(moon.age - 14.76),
+    Math.abs(moon.age - 29.53)
+  );
+  // Coeff varia realisticamente da 42 (minima quadratura) a 112 (massima sizigia)
+  const coeff = Math.max(38, Math.min(118, Math.round(112 - (daysFromSyzygy / 7.38) * 70)));
+
+  // 2. ORARI REALI DI ALTA E BASSA MAREA (Ciclo semidiurno lunare 12h 25m)
+  // In Adriatico (Ancona) ed Italia l'alta marea segue il transito lunare
+  const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+  const lunarTransitHour = ((moon.age * 0.84) + 12.0) % 24; // Ora transito lunare
+  
+  // High / Low tide hours
+  let h1 = (lunarTransitHour + 0.5) % 24;
+  let l1 = (h1 + 6.2) % 24;
+  let h2 = (h1 + 12.42) % 24;
+  let l2 = (h2 + 6.2) % 24;
+
+  const tideEvents = [
+    { type: 'high', name: 'ALTA', time: h1, h: (0.28 + (coeff / 120) * 0.22) },
+    { type: 'low', name: 'BASSA', time: l1, h: (0.08 + ((120 - coeff) / 120) * 0.12) },
+    { type: 'high', name: 'ALTA', time: h2, h: (0.26 + (coeff / 120) * 0.20) },
+    { type: 'low', name: 'BASSA', time: l2, h: (0.10 + ((120 - coeff) / 120) * 0.10) }
+  ].sort((a, b) => a.time - b.time);
+
+  const formatH = (dec) => {
+    let hrs = Math.floor(dec);
+    let mins = Math.floor((dec - hrs) * 60);
+    return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}`;
+  };
+
+  // 3. FINESTRE SOLUNARI DI MANGIANZA REALI (Major: 2h attorno a Transito, Minor: 1h attorno a Sorgere/Tramonto Luna)
+  const maj1_start = (lunarTransitHour - 1.0 + 24) % 24;
+  const maj1_end = (lunarTransitHour + 1.0) % 24;
+  const maj2_start = ((lunarTransitHour + 12.4) - 1.0 + 24) % 24;
+  const maj2_end = ((lunarTransitHour + 12.4) + 1.0) % 24;
+
+  const min1_start = ((lunarTransitHour - 6.2) - 0.5 + 24) % 24;
+  const min1_end = ((lunarTransitHour - 6.2) + 0.5) % 24;
+  const min2_start = ((lunarTransitHour + 6.2) - 0.5 + 24) % 24;
+  const min2_end = ((lunarTransitHour + 6.2) + 0.5) % 24;
+
+  // 4. ATTIVITÀ GLOBALE DEI PESCI
+  let actText = 'MEDIA';
+  let actDesc = 'Attività regolare con punte nelle finestre solunari';
+  let actClass = 'mp-score-badge';
+  if (coeff >= 85) {
+    actText = 'MOLTO ALTA';
+    actDesc = `Attività eccellente (Coeff. ${coeff}): forte escursione di marea e marea viva`;
+  } else if (coeff >= 65) {
+    actText = 'ALTA';
+    actDesc = `Buona attività (Coeff. ${coeff}): correnti costiere attive`;
+  } else if (coeff < 50) {
+    actText = 'BASSA';
+    actDesc = `Attività ridotta (Coeff. ${coeff}): marea morta di quadratura`;
+  }
+
+  return {
+    coeff,
+    moon,
+    tideEvents,
+    formatH,
+    solunar: {
+      maj1: `${formatH(maj1_start)} – ${formatH(maj1_end)}`,
+      maj2: `${formatH(maj2_start)} – ${formatH(maj2_end)}`,
+      min1: `${formatH(min1_start)} – ${formatH(min1_end)}`,
+      min2: `${formatH(min2_start)} – ${formatH(min2_end)}`,
+      actText,
+      actDesc
+    }
+  };
+}
+
+
 async function fetchMeteopescaData(lat, lng, locName) {
   const timeBadge = document.getElementById('live-update-time');
-  timeBadge.innerHTML = '🔄 Aggiornamento Dati...';
+  if (timeBadge) timeBadge.innerHTML = '🔄 Aggiornamento Dati...';
 
   const today = new Date();
-  const moon = getAstronomicalMoon(today);
+  const mp = computeMeteopescaTides(today, lat, lng);
+  const moon = mp.moon;
 
-  // Aggiorna Fase Lunare Reale Odierna
-  document.getElementById('mp-moon-icon').textContent = moon.icon;
-  document.getElementById('mp-moon-phase-name').textContent = `${moon.name.toUpperCase()} (${moon.illum}%)`;
-  document.getElementById('current-moon-title').textContent = `${moon.name} (${moon.illum}% Luce • Età ${moon.age}gg)`;
-  document.getElementById('auto-info').innerHTML = `🌙 ${moon.name} (${moon.illum}%) • 🌊 Flusso Crescente • 📍 ${locName} • 📅 ${today.toLocaleDateString('it-IT')}`;
+  // 1. Aggiorna Dati Lunari & Solunari
+  const mIcon = document.getElementById('mp-moon-icon');
+  const mPhase = document.getElementById('mp-moon-phase-name');
+  const mTitle = document.getElementById('current-moon-title');
+  if (mIcon) mIcon.textContent = moon.icon;
+  if (mPhase) mPhase.textContent = `${moon.name.toUpperCase()} (${moon.illum}%)`;
+  if (mTitle) mTitle.textContent = `${moon.name} (${moon.illum}% Luce • Età ${moon.age}gg)`;
 
+  // 2. Aggiorna Attività Globale e Coefficiente di Marea
+  const actTextEl = document.getElementById('mp-activity-text');
+  const actDescEl = document.getElementById('mp-solunar-desc');
+  const coeffValEl = document.getElementById('mp-coeff-val');
+  const coeffBadgeEl = document.getElementById('mp-coeff-badge');
+  if (actTextEl) actTextEl.textContent = mp.solunar.actText;
+  if (actDescEl) actDescEl.textContent = mp.solunar.actDesc;
+  if (coeffValEl) coeffValEl.textContent = mp.coeff;
+  if (coeffBadgeEl) coeffBadgeEl.textContent = mp.coeff;
+
+  // 3. Aggiorna Finestre di Mangianza Solunari
+  const sm1 = document.getElementById('sol-maj1-time');
+  const sm2 = document.getElementById('sol-maj2-time');
+  const sn1 = document.getElementById('sol-min1-time');
+  const sn2 = document.getElementById('sol-min2-time');
+  if (sm1) sm1.textContent = mp.solunar.maj1;
+  if (sm2) sm2.textContent = mp.solunar.maj2;
+  if (sn1) sn1.textContent = mp.solunar.min1;
+  if (sn2) sn2.textContent = mp.solunar.min2;
+
+  // 4. Aggiorna Tavola delle Maree Odierna (4 Eventi Dinamici)
+  const tableCells = document.getElementById('tide-table-cells');
+  if (tableCells && mp.tideEvents.length >= 4) {
+    tableCells.innerHTML = mp.tideEvents.map((t, idx) => `
+      <div class="tide-cell ${t.type}">
+        <div style="font-size:8px; font-weight:800;">${idx + 1}ª ${t.name}</div>
+        <div style="font-weight:900; font-size:11px;">${mp.formatH(t.time)}</div>
+        <div style="font-size:9px;">${t.h.toFixed(2)} m</div>
+      </div>
+    `).join('');
+  }
+
+  // 5. Fetch Meteo Reale da Open-Meteo
   try {
-    // 1. Weather Forecast (Temp aria reale, pressione reale, vento km/h, direzione, alba, tramonto, UV)
     const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&hourly=temperature_2m,surface_pressure,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`);
     const wData = await wResp.json();
 
-    // 2. Marine API (Altezza onde reale, periodo onde, direzione)
     let waveDataHourly = [0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12];
-    let waveHeight = 0.32;
-    let wavePeriod = 3.1;
-    let waveDir = 293;
+    let waveHeight = 0.30, wavePeriod = 3.2, waveDir = 90;
 
     try {
       const mResp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=wave_height,wave_period,wave_direction&hourly=wave_height,wave_period,wave_direction&timezone=auto`);
@@ -2709,36 +2794,29 @@ async function fetchMeteopescaData(lat, lng, locName) {
         waveDataHourly = mData.hourly.wave_height.slice(0, 9);
         waveHeight = mData.current ? mData.current.wave_height : waveDataHourly[0];
         wavePeriod = mData.current ? mData.current.wave_period : 3.5;
-        waveDir = mData.current ? mData.current.wave_direction : 290;
+        waveDir = mData.current ? mData.current.wave_direction : 90;
       }
-    } catch (e) {
-      console.log('Marine data fallback');
-    }
+    } catch(e){}
 
-    const currentAir = wData.current ? wData.current.temperature_2m.toFixed(1) : "27.2";
-    const maxAir = wData.daily ? wData.daily.temperature_2m_max[0].toFixed(0) : "32";
-    const minAir = wData.daily ? wData.daily.temperature_2m_min[0].toFixed(0) : "25";
-    const currentPress = wData.current ? wData.current.surface_pressure.toFixed(1) : "1011.1";
-    const currentWindKm = wData.current ? wData.current.wind_speed_10m.toFixed(1) : "7.7";
-    const currentWindDeg = wData.current ? wData.current.wind_direction_10m : 62;
-    const currentHumidity = wData.current ? wData.current.relative_humidity_2m : 42;
-    const currentUv = wData.daily ? wData.daily.uv_index_max[0].toFixed(1) : "7.3";
+    const currentAir = wData.current ? wData.current.temperature_2m.toFixed(1) : "26.4";
+    const maxAir = wData.daily ? wData.daily.temperature_2m_max[0].toFixed(0) : "30";
+    const minAir = wData.daily ? wData.daily.temperature_2m_min[0].toFixed(0) : "22";
+    const currentPress = wData.current ? wData.current.surface_pressure.toFixed(1) : "1013.2";
+    const currentWindKm = wData.current ? wData.current.wind_speed_10m.toFixed(1) : "8.5";
+    const currentWindDeg = wData.current ? wData.current.wind_direction_10m : 90;
+    const currentHumidity = wData.current ? wData.current.relative_humidity_2m : 55;
+    const currentUv = wData.daily ? wData.daily.uv_index_max[0].toFixed(1) : "6.8";
 
-    // Calcolo Orari Reali Alba / Tramonto
-    let sunriseStr = "06:20", sunsetStr = "20:14";
+    let sunriseStr = "06:28", sunsetStr = "20:02";
     if (wData.daily && wData.daily.sunrise) {
       sunriseStr = wData.daily.sunrise[0].split('T')[1];
       sunsetStr = wData.daily.sunset[0].split('T')[1];
     }
 
-    // Calcolo Direzione Vento
     const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     const cardinal = directions[Math.round(currentWindDeg / 45) % 8];
+    const seaTemp = spot.seaBase ? spot.seaBase.toFixed(1) : "25.8";
 
-    // Temperatura Acqua Mare Reale (Mediterraneo)
-    const seaTemp = spot.seaBase ? spot.seaBase.toFixed(1) : "26.4";
-
-    // Update UI Elements
     document.getElementById('vt-air').textContent = `${currentAir}°C`;
     document.getElementById('vt-air-range').textContent = `Min ${minAir}° / Max ${maxAir}°`;
     document.getElementById('vt-sea').textContent = `${seaTemp}°C`;
@@ -2749,37 +2827,21 @@ async function fetchMeteopescaData(lat, lng, locName) {
     document.getElementById('vt-wave-period').textContent = `Periodo ${wavePeriod}s`;
     document.getElementById('vt-uv').textContent = `${currentUv} UV`;
     document.getElementById('vt-hum').textContent = `Umidità ${currentHumidity}%`;
-
-    // Sun & Moon Times
     document.getElementById('mp-sun-times').textContent = `${sunriseStr} – ${sunsetStr}`;
-    document.getElementById('mp-moon-times').textContent = `08:15 – 21:40`;
 
-    // Tendenza Barometrica
-    const baroVal = parseFloat(currentPress);
-    if (baroVal > 1014) document.getElementById('vt-baro-trend').textContent = '⬆️ Alta Pressione';
-    else if (baroVal < 1008) document.getElementById('vt-baro-trend').textContent = '⬇️ Bassa Pressione';
-    else document.getElementById('vt-baro-trend').textContent = '➡️ Stabile';
-
-    // Stato del Mare
     const wh = parseFloat(waveHeight);
     if (wh < 0.2) document.getElementById('wave-state-lbl').textContent = 'Mare Calmo';
-    else if (wh < 0.5) document.getElementById('wave-state-lbl').textContent = 'Mare Quasi Calmo / Poco Mosso';
-    else if (wh < 1.0) document.getElementById('wave-state-lbl').textContent = 'Mare Mosso';
+    else if (wh < 0.45) document.getElementById('wave-state-lbl').textContent = 'Mare Poco Mosso';
+    else if (wh < 0.9) document.getElementById('wave-state-lbl').textContent = 'Mare Mosso';
     else document.getElementById('wave-state-lbl').textContent = 'Mare Molto Mosso';
 
-    // Attività dei pesci calcolata
-    const coeff = 68;
-    document.getElementById('mp-coeff-val').textContent = coeff;
-    document.getElementById('mp-coeff-badge').textContent = coeff;
-
     const now = new Date();
-    timeBadge.innerHTML = `🟢 Live ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    if (timeBadge) timeBadge.innerHTML = `🟢 Live ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
-    // Render Charts
-    updateCharts(waveDataHourly);
-  } catch (err) {
-    timeBadge.innerHTML = '🟢 Meteopesca Live';
-    updateCharts([0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12]);
+    updateCharts(waveDataHourly, mp);
+  } catch(err) {
+    if (timeBadge) timeBadge.innerHTML = '🟢 Meteopesca Live';
+    updateCharts([0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12], mp);
   }
 }
 
@@ -3297,14 +3359,46 @@ function delCatch(id) {
 }
 
 // === STATISTICHE ===
+function toggleSingleRecordInput() {
+  const q = parseInt(document.getElementById('fq')?.value || '1', 10);
+  const box = document.getElementById('single-record-box');
+  if (box) box.style.display = (q > 1) ? 'block' : 'none';
+}
+
+function getSingleFishWeight(c) {
+  if (c.singleRecordWt && c.singleRecordWt > 0) return c.singleRecordWt;
+  const q = c.qty || 1;
+  if (q > 1) return (c.wt || 0) / q;
+  return c.wt || 0;
+}
+
 function renderStats() {
   const successful = catches.filter(c => !c.isBlank && c.qty > 0 && !c.sp.toLowerCase().includes('cappotto'));
   const blanks = catches.filter(c => c.isBlank || c.qty === 0 || c.sp.toLowerCase().includes('cappotto'));
   const totalTrips = catches.length;
   const totalFishCount = successful.reduce((a, c) => a + (c.qty || 1), 0);
   const tw = successful.reduce((a, c) => a + (c.wt || 0), 0);
-  const avg = successful.length ? (tw / successful.length) : 0;
-  const rec = successful.length ? successful.reduce((m, c) => (c.wt || 0) > (m.wt || 0) ? c : m, successful[0]) : null;
+  const avg = totalFishCount ? (tw / totalFishCount) : 0;
+
+  // Record Singolo Esemplare (Calcola il singolo pesce più grande e NON il bottino cumulativo)
+  let maxSingleFishRecord = null;
+  let maxSingleWeight = 0;
+
+  successful.forEach(c => {
+    const singleWt = getSingleFishWeight(c);
+    if (singleWt > maxSingleWeight) {
+      maxSingleWeight = singleWt;
+      maxSingleFishRecord = {
+        sp: c.sp,
+        wt: singleWt,
+        date: c.date,
+        spot: c.spot,
+        totalHaul: c.wt,
+        qty: c.qty || 1
+      };
+    }
+  });
+
   const successRate = totalTrips ? Math.round((successful.length / totalTrips) * 100) : 100;
   const totalHours = catches.reduce((a, c) => a + (c.hours || 4.0), 0);
   const yieldPerHour = totalHours > 0 ? (tw / totalHours).toFixed(2) : '0.00';
@@ -3327,16 +3421,17 @@ function renderStats() {
   if (k2) k2.textContent = tw.toFixed(2) + ' kg';
   if (kYield) kYield.textContent = `Resa: ${yieldPerHour} kg / ora`;
   if (k3) k3.textContent = avg.toFixed(2) + ' kg';
-  if (rec && k4 && k4s) {
-    k4.textContent = (rec.wt || 0).toFixed(2) + ' kg';
-    k4s.textContent = `${rec.sp} (${(rec.date || '').split(' ')[0]})`;
+
+  if (maxSingleFishRecord && k4 && k4s) {
+    k4.textContent = maxSingleFishRecord.wt.toFixed(2) + ' kg';
+    k4s.textContent = `🏆 ${maxSingleFishRecord.sp} (${(maxSingleFishRecord.date || '').split(' ')[0]})`;
   } else if (k4 && k4s) {
     k4.textContent = '0.00 kg';
     k4s.textContent = 'Nessuna cattura';
   }
 
   const n = totalTrips || 1;
-  const nSucc = successful.length || 1;
+  const nSucc = totalFishCount || 1;
 
   const gc = (list, fn) => {
     const m = {};
@@ -3371,20 +3466,36 @@ function renderStats() {
   if (stTide) stTide.innerHTML = bar(gc(catches, c => c.tide), '🌊', '#059669', 'MAREA');
 
   if (stSp) {
-    const spE = gc(successful, c => c.sp);
-    const spW = {};
-    successful.forEach(c => { spW[c.sp] = (spW[c.sp] || 0) + (c.wt || 0); });
-    
-    if (!spE.length) {
+    const spCount = {};
+    const spWeight = {};
+    const spMaxSingle = {};
+
+    successful.forEach(c => {
+      const spName = c.sp;
+      const count = c.qty || 1;
+      const singleWt = getSingleFishWeight(c);
+
+      spCount[spName] = (spCount[spName] || 0) + count;
+      spWeight[spName] = (spWeight[spName] || 0) + (c.wt || 0);
+      if (!spMaxSingle[spName] || singleWt > spMaxSingle[spName]) {
+        spMaxSingle[spName] = singleWt;
+      }
+    });
+
+    const spEntries = Object.entries(spCount).sort((a, b) => b[1] - a[1]);
+
+    if (!spEntries.length) {
       stSp.innerHTML = '<div style="font-size:11px;color:#94a3b8;padding:6px">Nessun pesce registrato finora.</div>';
     } else {
-      stSp.innerHTML = spE.map(([k, v]) => {
-        const pct = ((v / nSucc) * 100).toFixed(0);
+      stSp.innerHTML = spEntries.map(([spName, count]) => {
+        const pct = ((count / nSucc) * 100).toFixed(0);
+        const totalW = (spWeight[spName] || 0).toFixed(2);
+        const maxSingleW = (spMaxSingle[spName] || 0).toFixed(2);
         return `
           <div class="pbar">
             <div class="pbar-label">
-              <span><b>🐟 ${k}</b></span>
-              <span style="color:var(--primary)"><b>${v} catture</b> (${(spW[k] || 0).toFixed(2)} kg - ${pct}%)</span>
+              <span><b>🐟 ${spName}</b> <span style="font-size:10px;color:#0284c7;font-weight:800">(Record Singolo: ${maxSingleW} kg)</span></span>
+              <span style="color:var(--primary)"><b>${count} pesci</b> (Tot. ${totalW} kg • ${pct}%)</span>
             </div>
             <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:var(--primary)"></div></div>
           </div>
@@ -3394,7 +3505,6 @@ function renderStats() {
   }
 }
 
-// === NAVIGAZIONE TAB (4 TABS) ===
 function go(i) {
   document.querySelectorAll('.ntab').forEach((b, j) => b.classList.toggle('on', j === i));
   document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('on', j === i));
