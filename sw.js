@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v12-fullscreen-fixed';
+const CACHE_NAME = 'pescapro-v14-tabs-favorites-moon';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

@@ -854,15 +854,17 @@
 
     /* Modals */
     .modal {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,.65);
-      z-index: 1200;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: rgba(0,0,0,.65) !important;
+      z-index: 9999 !important;
       display: none;
-      align-items: flex-end;
+      align-items: flex-end !important;
+      justify-content: center !important;
+      backdrop-filter: blur(4px);
     }
     .modal.on { display: flex; }
     .sheet {
@@ -1631,9 +1633,27 @@
           <!-- 6. CALENDARIO MENSILE DELLE FASI LUNARI (ASTRONOMICO MEUS REALE) -->
           <div class="card">
             <div class="card-h">
-              <h3><i class="fa-solid fa-moon" style="color:#4f46e5"></i> Fasi Lunari del Mese (Tavola Astronomica)</h3>
-              <span style="font-size:10px; font-weight:800; color:#4f46e5;" id="current-moon-title">Luna Crescente (5%)</span>
+              <h3><i class="fa-solid fa-moon" style="color:#4f46e5"></i> Fase Lunare &amp; Calendario Astronomico</h3>
+              <span style="font-size:10px; font-weight:800; color:#4f46e5;" id="current-moon-title">Oggi</span>
             </div>
+
+            <!-- Riquadro Oggi in Evidenza (Nessuno scorrimento necessario) -->
+            <div id="moon-today-hero" style="background:linear-gradient(135deg, #1e1b4b, #312e81);color:#fff;padding:12px 14px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;box-shadow:0 4px 12px rgba(49,46,129,0.25);border:1px solid #6366f1">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div id="moon-today-icon" style="font-size:36px;line-height:1">🌒</div>
+                <div>
+                  <div style="font-size:10px;font-weight:800;color:#a5b4fc;text-transform:uppercase;letter-spacing:0.5px">OGGI • FASE CORRENTE</div>
+                  <div id="moon-today-name" style="font-size:15px;font-weight:900;margin:1px 0">Luna Crescente (6%)</div>
+                  <div id="moon-today-sub" style="font-size:11px;color:#c7d2fe">Età: 2.1 giorni • Transito 13:40</div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:9px;font-weight:800;background:rgba(255,255,255,0.15);padding:3px 8px;border-radius:12px;color:#e0e7ff">IMPATTO</div>
+                <div id="moon-today-impact" style="font-size:11px;font-weight:900;color:#38bdf8;margin-top:2px">⭐⭐ Buono</div>
+              </div>
+            </div>
+
+            <div style="font-size:10px;font-weight:800;color:#64748b;margin-bottom:4px;text-transform:uppercase">Tavola di tutto il mese:</div>
             <div class="moon-strip" id="monthly-moon-strip"></div>
           </div>
 
@@ -1692,6 +1712,23 @@
       <!-- TAB 2: DIARIO CATTURE -->
       <div class="tab" id="t2">
         <div class="diary-top">
+          <!-- Backup & Recovery Action Strip -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;background:#f0f9ff;border:1px solid #bae6fd;padding:6px 10px;border-radius:8px">
+            <span style="font-size:10px;font-weight:800;color:#0369a1"><i class="fa-solid fa-shield-halved"></i> Memoria Diario</span>
+            <div style="display:flex;gap:4px">
+              <button onclick="manualRecoverCatches()" style="background:#0284c7;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer">
+                🔍 Recupera Catture
+              </button>
+              <button onclick="exportCatchesBackup()" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer" title="Salva file di Backup">
+                📥 Backup
+              </button>
+              <button onclick="document.getElementById('import-file-input').click()" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer" title="Ripristina file">
+                📤 Ripristina
+              </button>
+              <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importCatchesBackup(event)">
+            </div>
+          </div>
+
           <div class="search-box" style="padding:6px 10px;margin-bottom:6px">
             <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px"></i>
             <input id="dq" placeholder="Cerca specie, esca o spot..." oninput="renderDiary()">
@@ -2347,28 +2384,117 @@ const defaultSpots = [
   { id: 4, name: 'Numana & Sirolo - Spiaggiola & Frate', sb: 'Ghiaia e scogliera sommersa', tgt: 'Spigola, Sarago, Calamaro', lat: 43.518, lng: 13.623 }
 ];
 
-function loadCatchesFromDB() {
-  const possibleKeys = [
-    DB_CATCHES_KEY,
-    "PESCAPRO_CATCHES_DB",
-    "pescapro_user_catches_db_v2",
-    "pescapro_user_catches_db",
-    "pescapro_catches_v1",
-    "pescapro_catches"
-  ];
-  for (const k of possibleKeys) {
-    try {
-      const s = localStorage.getItem(k);
-      if (s) {
-        const parsed = JSON.parse(s);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+
+// === DEEP CATCH RECOVERY & MEMORY SCANNER (TUTTE LE CHIAVI LOCALSTORAGE) ===
+function deepScanAndRecoverCatches() {
+  let recovered = [];
+  let knownIds = new Set();
+
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      try {
+        const val = localStorage.getItem(key);
+        if (!val || val.length < 10) continue;
+        const parsed = JSON.parse(val);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(item => {
+            if (item && (item.sp || item.specie || item.wt !== undefined || item.peso !== undefined)) {
+              const uniqueId = item.id || (item.date + '_' + (item.sp || item.specie));
+              if (!knownIds.has(uniqueId)) {
+                knownIds.add(uniqueId);
+                recovered.push({
+                  id: item.id || Date.now() + Math.random(),
+                  sp: item.sp || item.specie || 'Pesce',
+                  wt: parseFloat(item.wt || item.peso || 0),
+                  len: parseInt(item.len || item.lunghezza || 0, 10),
+                  tech: item.tech || item.tecnica || 'Surfcasting',
+                  spot: item.spot || 'Spot Personale',
+                  moon: item.moon || 'Fase Lunare',
+                  tide: item.tide || 'Marea',
+                  bait: item.bait || item.esca || 'Esca',
+                  notes: item.notes || item.note || '',
+                  date: item.date || item.data || new Date().toLocaleDateString('it-IT'),
+                  lat: item.lat || 43.618,
+                  lng: item.lng || 13.528,
+                  img: item.img || null,
+                  isBlank: !!item.isBlank,
+                  qty: item.qty || 1,
+                  hours: item.hours || 4.0,
+                  singleRecordWt: item.singleRecordWt || (item.wt || 0)
+                });
+              }
+            }
+          });
         }
-      }
-    } catch(e) {}
+      } catch(e){}
+    }
+  } catch(e){}
+
+  return recovered;
+}
+
+function loadCatchesFromDB() {
+  const scanned = deepScanAndRecoverCatches();
+  if (scanned && scanned.length > 0) {
+    return scanned;
   }
   return defaultCatches;
 }
+
+function manualRecoverCatches() {
+  const found = deepScanAndRecoverCatches();
+  if (found && found.length > 0) {
+    catches = found;
+    saveCatchesToDB(found);
+    renderDiary();
+    renderStats();
+    if (map) drawMarkers();
+    alert(`🎉 RECUPERO COMPLETATO! Sono state trovate e ripristinate ${found.length} catture salvate nella memoria del telefono!`);
+  } else {
+    alert('Nessuna cattura precedente trovata nella memoria di questa sessione. Se hai un file di backup puoi ripristinarlo con il tasto "Ripristina Backup".');
+  }
+}
+
+function exportCatchesBackup() {
+  const dataStr = JSON.stringify(catches, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Backup_Diario_PescaPro_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 300);
+}
+
+function importCatchesBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (Array.isArray(imported) && imported.length > 0) {
+        catches = imported;
+        saveCatchesToDB(imported);
+        renderDiary();
+        renderStats();
+        if (map) drawMarkers();
+        alert(`✅ Backup importato con successo! ${imported.length} catture ripristinate.`);
+      } else {
+        alert('File di backup non valido.');
+      }
+    } catch(err) {
+      alert('Errore nella lettura del file di backup.');
+    }
+  };
+  reader.readAsText(file);
+}
+
 
 function saveCatchesToDB(data) {
   catches = data;
@@ -2949,6 +3075,28 @@ function generateMonthlyMoonStrip() {
   const currentYear = now.getFullYear();
   const currentMonthName = now.toLocaleString('it-IT', { month: 'short' });
 
+  // 1. Aggiorna Riquadro Oggi in Evidenza
+  const todayData = getAstronomicalMoon(now);
+  const heroIcon = document.getElementById('moon-today-icon');
+  const heroName = document.getElementById('moon-today-name');
+  const heroSub = document.getElementById('moon-today-sub');
+  const heroImpact = document.getElementById('moon-today-impact');
+
+  if (heroIcon) heroIcon.textContent = todayData.icon;
+  if (heroName) heroName.textContent = `${todayData.name} (${todayData.illum}%)`;
+  if (heroSub) heroSub.textContent = `Età Luna: ${todayData.age} giorni • ${now.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long' })}`;
+  if (heroImpact) {
+    const illum = todayData.illum;
+    if (illum >= 85 || illum <= 10) {
+      heroImpact.textContent = '⭐⭐⭐ TOP Sizigia';
+      heroImpact.style.color = '#4ade80';
+    } else {
+      heroImpact.textContent = '⭐⭐ Attività Media';
+      heroImpact.style.color = '#38bdf8';
+    }
+  }
+
+  // 2. Genera Strip di tutto il mese
   let html = '';
   for (let d = 1; d <= 31; d++) {
     const testDate = new Date(currentYear, currentMonth, d);
@@ -2956,7 +3104,7 @@ function generateMonthlyMoonStrip() {
     const isToday = d === currentDay;
     const mData = getAstronomicalMoon(testDate);
     html += `
-      <div class="moon-day-card ${isToday ? 'today' : ''}">
+      <div id="${isToday ? 'moon-card-today' : ''}" class="moon-day-card ${isToday ? 'today' : ''}" style="${isToday ? 'border:2px solid #4f46e5;background:#eef2ff;' : ''}">
         <div style="font-size:9px; font-weight:800; color:${isToday ? '#4338ca' : '#64748b'};">${d} ${currentMonthName}</div>
         <div style="font-size:20px; margin:2px 0;">${mData.icon}</div>
         <div style="font-size:9px; font-weight:700; color:#1e293b;">${mData.illum}%</div>
@@ -2965,9 +3113,15 @@ function generateMonthlyMoonStrip() {
     `;
   }
   container.innerHTML = html;
+
+  setTimeout(() => {
+    const todayCard = document.getElementById('moon-card-today');
+    if (todayCard) {
+      todayCard.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
+  }, 300);
 }
 
-// === SPOTS MODAL ===
 function openSpotModal(lat, lng) {
   document.getElementById('sco').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
   document.getElementById('sn').value = `Spot ${spot.name}`;
@@ -3509,7 +3663,7 @@ function go(i) {
   document.querySelectorAll('.ntab').forEach((b, j) => b.classList.toggle('on', j === i));
   document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('on', j === i));
   if (i === 0 && map) setTimeout(() => map.invalidateSize(), 200);
-  if (i === 1) renderSpeciesGrid();
+  if (i === 1) renderWebcams();
   if (i === 2) renderDiary();
   if (i === 3) renderStats();
 }
