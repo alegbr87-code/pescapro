@@ -1392,13 +1392,13 @@
 </head>
 <body>
 
-<div id="app-root" style="width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:#f8fafc"><div style="width:6px;height:6px;border-radius:50%;background:#10b981"></div></div>
+<div id="app-root">
 
     <!-- App Header -->
     <div class="app-bar">
       <div>
         <div class="app-name"><i class="fa-solid fa-fish"></i> PESCA PRO</div>
-        <div class="app-sub" id="spot-label"><i class="fa-solid fa-location-dot"></i> Civitavecchia (Lazio)</div>
+        <div class="app-sub" id="spot-label"><i class="fa-solid fa-location-dot"></i> Ancona (Riviera del Conero)</div>
       </div>
       <div style="display:flex;gap:6px">
         <button class="ib" onclick="toggleSearch()" title="Cerca Località"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -1786,9 +1786,9 @@
       <button class="ntab" onclick="go(2)"><i class="fa-solid fa-book-bookmark"></i><span>Diario</span></button>
       <button class="ntab" onclick="go(3)"><i class="fa-solid fa-chart-column"></i><span>Statistiche</span></button>
     </div>
+</div>
 
-    
-    <!-- MODAL: AI SCANNER ANIMATION OVERLAY -->
+<!-- MODAL: AI SCANNER ANIMATION OVERLAY -->
     <div class="ai-scan-modal" id="ai-scan-modal">
       <div class="ai-scan-box">
         <img id="ai-scan-preview-img" src="" alt="Fish Scanning">
