@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v20-edit-modal-data-fix';
+const CACHE_NAME = 'pescapro-v21-spot-georeferencing-map';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

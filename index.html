@@ -2269,13 +2269,71 @@
             </div>
           </div>
 
-          <div class="fr2">
-            <div class="fg"><label>Tecnica Utilizzata *</label><select id="ft"><option>Surfcasting</option><option>Bolognese</option><option>Spinning</option><option>Barca</option></select></div>
-            <div class="fg"><label>Posizione / Spot *</label><input type="text" id="fsp" placeholder="es. Spiaggia di Sant'Agostino" required oninput="updateCatchSolunarParams()"></div>
+                    <div class="fr2">
+            <div class="fg">
+              <label>Tecnica Utilizzata *</label>
+              <select id="ft">
+                <option>Surfcasting</option>
+                <option>Bolognese</option>
+                <option>Spinning</option>
+                <option>Barca / Traina</option>
+                <option>Fondo / Rockfishing</option>
+                <option>Eging (Cefalopodi)</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Esca Provata *</label>
+              <select id="fb">
+                <option>Cannolicchio vivo</option>
+                <option>Arenicola (Verme di sabbia)</option>
+                <option>Bibi nostrano</option>
+                <option>Americano (Bloodworm)</option>
+                <option>Coreano</option>
+                <option>Muriddu (Verme rosso)</option>
+                <option>Sarda a tocchetti / rivoltata</option>
+                <option>Strisciolina di Seppia / Calamaro</option>
+                <option>Granchio vivo di sabbia</option>
+                <option>Cozza / Fasolaro</option>
+                <option>Gambero vivo</option>
+                <option>Trancio di Pesce</option>
+                <option>Artificiale Minnow / Jerk / Gomma</option>
+                <option>Altro / Personalizzato</option>
+              </select>
+            </div>
           </div>
 
-          <div class="fg"><label>Esca Provata (Menu Surfcasting / Mare) *</label><select id="fb"><option>Trancio di Pesce</option><option>Cannolicchio vivo</option><option>Arenicola (Verme di sabbia)</option><option>Coreano</option><option>Americano (Bloodworm)</option><option>Bibi nostrano</option><option>Muriddu (Verme rosso)</option><option>Sarda a tocchetti / rivoltata</option><option>Strisciolina di Seppia / Calamaro</option><option>Granchio vivo di sabbia</option><option>Cozza / Fasolaro</option><option>Gambero vivo</option><option>Artificiale Minnow / Jerk</option><option>Altro / Personalizzato</option></select></div>
-          
+          <!-- Spot & Località Georeferenziata per la Mappa Satellitare -->
+          <div class="fg" style="background:#f8fafc;border:1.5px solid #cbd5e1;padding:10px;border-radius:12px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <label style="font-weight:900;color:#0f172a;font-size:11px">
+                <i class="fa-solid fa-map-pin" style="color:#ef4444"></i> Località / Spot della Pescata *
+              </label>
+              <button type="button" onclick="useCurrentGpsForCatch()" style="background:#0284c7;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+                <i class="fa-solid fa-location-crosshairs"></i> Rileva GPS Ora
+              </button>
+            </div>
+
+            <!-- Spot Input con Datalist per Suggerimenti Rapidi -->
+            <input type="text" id="fsp" list="catch-spot-suggestions" placeholder="Scrivi es. Portonovo, Senigallia, Sirolo, Passetto..." required oninput="onCatchSpotInput(this.value)" style="background:#fff;font-weight:800;border:1px solid #94a3b8">
+            <datalist id="catch-spot-suggestions"></datalist>
+
+            <!-- Coordinate GPS Nascoste e Badge Stato Posizione -->
+            <input type="hidden" id="flat" value="">
+            <input type="hidden" id="flng" value="">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:10px">
+              <span id="spot-geo-status" style="color:#0284c7;font-weight:800">📍 Posizione Mappa: Riconoscimento automatico</span>
+              <span id="spot-coords-badge" style="color:#64748b;font-size:9px"></span>
+            </div>
+
+            <!-- Menu Rapido Miei Preferiti -->
+            <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #cbd5e1;display:flex;align-items:center;gap:6px">
+              <span style="font-size:10px;font-weight:800;color:#475569;white-space:nowrap">⭐ Miei Preferiti:</span>
+              <select id="quick-fav-spot-select" onchange="pickFavoriteSpotForCatch(this.value)" style="font-size:10px;padding:4px 6px;border-radius:6px;background:#fff;border:1px solid #cbd5e1;flex:1">
+                <option value="">-- Seleziona uno Spot Salvato --</option>
+              </select>
+            </div>
+          </div>
+
           <div class="fg"><label>Note Battuta & Condizioni</label><textarea id="fn" rows="2" placeholder="Corrente, vento, mangiate avvertite, assetto..."></textarea></div>
           <button type="submit" class="submit-btn" id="btn-save-catch">Salva nel Diario</button>
         </form>
@@ -3404,6 +3462,180 @@ function updateTripSummary() {
 }
 
 
+
+// =========================================================================
+// === DATABASE GEOREFERENZIAZIONE SPOT & MAPPA SATELLITARE PESCA PRO ===
+// =========================================================================
+
+const KNOWN_COASTAL_SPOTS_DB = [
+  { name: "Passetto (Ancona)", reg: "Marche", prov: "Ancona", lat: 43.6180, lng: 13.5280 },
+  { name: "Portonovo - Baia & Vela", reg: "Marche", prov: "Ancona", lat: 43.5620, lng: 13.5910 },
+  { name: "Scoglio della Vela", reg: "Marche", prov: "Ancona", lat: 43.5590, lng: 13.5930 },
+  { name: "Mezzavalle", reg: "Marche", prov: "Ancona", lat: 43.5750, lng: 13.5770 },
+  { name: "Sirolo - Spiaggia Urbani", reg: "Marche", prov: "Ancona", lat: 43.5220, lng: 13.6190 },
+  { name: "Spiaggia del Frate", reg: "Marche", prov: "Ancona", lat: 43.5240, lng: 13.6220 },
+  { name: "San Michele & Sassi Neri", reg: "Marche", prov: "Ancona", lat: 43.5250, lng: 13.6230 },
+  { name: "Numana - Porto & Spiaggiola", reg: "Marche", prov: "Ancona", lat: 43.5140, lng: 13.6230 },
+  { name: "Marcelli di Numana", reg: "Marche", prov: "Ancona", lat: 43.4920, lng: 13.6360 },
+  { name: "Senigallia - Molo di Levante", reg: "Marche", prov: "Ancona", lat: 43.7170, lng: 13.2200 },
+  { name: "Senigallia - Rotonda & Spiaggia", reg: "Marche", prov: "Ancona", lat: 43.7150, lng: 13.2210 },
+  { name: "Senigallia Ciarnin", reg: "Marche", prov: "Ancona", lat: 43.7020, lng: 13.2380 },
+  { name: "Falconara Marittima", reg: "Marche", prov: "Ancona", lat: 43.6300, lng: 13.3980 },
+  { name: "Marina di Montemarciano", reg: "Marche", prov: "Ancona", lat: 43.6420, lng: 13.3420 },
+  { name: "Porto Recanati - Scossicci", reg: "Marche", prov: "Macerata", lat: 43.4450, lng: 13.6580 },
+  { name: "Civitanova Marche - Molo", reg: "Marche", prov: "Macerata", lat: 43.3070, lng: 13.7310 },
+  { name: "Porto Sant'Elpidio", reg: "Marche", prov: "Fermo", lat: 43.2580, lng: 13.7620 },
+  { name: "Porto San Giorgio", reg: "Marche", prov: "Fermo", lat: 43.1810, lng: 13.7950 },
+  { name: "Pedaso", reg: "Marche", prov: "Fermo", lat: 43.0850, lng: 13.8440 },
+  { name: "Cupra Marittima", reg: "Marche", prov: "Ascoli Piceno", lat: 43.0230, lng: 13.8590 },
+  { name: "Grottammare", reg: "Marche", prov: "Ascoli Piceno", lat: 42.9860, lng: 13.8710 },
+  { name: "San Benedetto del Tronto", reg: "Marche", prov: "Ascoli Piceno", lat: 42.9540, lng: 13.8820 },
+  { name: "Fano - Sassonia & Arzilla", reg: "Marche", prov: "Pesaro-Urbino", lat: 43.8430, lng: 13.0210 },
+  { name: "Pesaro - Baia Flaminia & Molo", reg: "Marche", prov: "Pesaro-Urbino", lat: 43.9120, lng: 12.9150 },
+  { name: "Gabicce Mare & Vallugola", reg: "Marche", prov: "Pesaro-Urbino", lat: 43.9680, lng: 12.7620 },
+  { name: "Rimini - Molo & Palata", reg: "Emilia-Romagna", prov: "Rimini", lat: 44.0670, lng: 12.5700 },
+  { name: "Riccione", reg: "Emilia-Romagna", prov: "Rimini", lat: 43.9990, lng: 12.6560 },
+  { name: "Cattolica", reg: "Emilia-Romagna", prov: "Rimini", lat: 43.9630, lng: 12.7440 },
+  { name: "Cesenatico", reg: "Emilia-Romagna", prov: "Forlì-Cesena", lat: 44.2010, lng: 12.4030 },
+  { name: "Cervia & Milano Marittima", reg: "Emilia-Romagna", prov: "Ravenna", lat: 44.2630, lng: 12.3520 },
+  { name: "Civitavecchia - Antemurale", reg: "Lazio", prov: "Roma", lat: 42.0924, lng: 11.7954 },
+  { name: "Santa Marinella", reg: "Lazio", prov: "Roma", lat: 42.0333, lng: 11.8667 },
+  { name: "Ostia Lido", reg: "Lazio", prov: "Roma", lat: 41.7333, lng: 12.2833 },
+  { name: "Anzio & Nettuno", reg: "Lazio", prov: "Roma", lat: 41.4500, lng: 12.6333 },
+  { name: "Sabaudia & Circeo", reg: "Lazio", prov: "Latina", lat: 41.3000, lng: 13.0167 },
+  { name: "Gaeta & Sperlonga", reg: "Lazio", prov: "Latina", lat: 41.2167, lng: 13.5667 },
+  { name: "Napoli & Pozzuoli", reg: "Campania", prov: "Napoli", lat: 40.8518, lng: 14.2681 },
+  { name: "Salerno & Costiera", reg: "Campania", prov: "Salerno", lat: 40.6824, lng: 14.7681 },
+  { name: "Bari - Molo San Nicola", reg: "Puglia", prov: "Bari", lat: 41.1171, lng: 16.8719 },
+  { name: "Gallipoli", reg: "Puglia", prov: "Lecce", lat: 40.0558, lng: 17.9926 }
+];
+
+function populateSpotSuggestions() {
+  const datalist = document.getElementById('catch-spot-suggestions');
+  const favSelect = document.getElementById('quick-fav-spot-select');
+  if (!datalist) return;
+
+  const suggestions = new Set();
+  spots.forEach(s => suggestions.add(s.name));
+  KNOWN_COASTAL_SPOTS_DB.forEach(s => suggestions.add(s.name));
+  locs.forEach(s => suggestions.add(s.name));
+
+  datalist.innerHTML = Array.from(suggestions).map(name => `<option value="${name}">`).join('');
+
+  if (favSelect) {
+    favSelect.innerHTML = '<option value="">-- Seleziona uno Spot Preferito ⭐ --</option>' +
+      spots.map(s => `<option value="${s.name}" data-lat="${s.lat}" data-lng="${s.lng}">⭐ ${s.name} (${s.sb || 'Preferito'})</option>`).join('');
+  }
+}
+
+function resolveCatchSpotCoordinates(spotName, manualLat, manualLng) {
+  if (manualLat && manualLng && !isNaN(parseFloat(manualLat)) && !isNaN(parseFloat(manualLng))) {
+    return { lat: parseFloat(manualLat), lng: parseFloat(manualLng), source: 'Manuale/GPS' };
+  }
+
+  const query = (spotName || '').toLowerCase().trim();
+  if (!query) return { lat: spot.lat, lng: spot.lng, source: 'Spot Default' };
+
+  // 1. Cerca nei Preferiti dell'utente (anche per singole parole chiave)
+  const tokens = query.replace(/[^a-zA-Z0-9àèéìòù]/g, ' ').split(' ').filter(w => w.length >= 3);
+  for (const s of spots) {
+    const sLow = s.name.toLowerCase();
+    if (sLow.includes(query) || query.includes(sLow) || tokens.some(t => sLow.includes(t))) {
+      return { lat: s.lat, lng: s.lng, source: `⭐ ${s.name}` };
+    }
+  }
+
+  // 2. Cerca nel database spot costieri (Passetto, Portonovo, Sirolo, Senigallia, etc.)
+  for (const k of KNOWN_COASTAL_SPOTS_DB) {
+    const kLow = k.name.toLowerCase();
+    if (kLow.includes(query) || query.includes(kLow) || tokens.some(t => kLow.includes(t))) {
+      return { lat: k.lat, lng: k.lng, source: `${k.name}` };
+    }
+  }
+
+  // 3. Cerca nel database località marittime generali (locs)
+  for (const l of locs) {
+    const lLow = l.name.toLowerCase();
+    if (lLow.includes(query) || query.includes(lLow) || tokens.some(t => lLow.includes(t))) {
+      return { lat: l.lat, lng: l.lng, source: `${l.name}` };
+    }
+  }
+
+  // 4. Default spot attivo
+  return { lat: spot.lat, lng: spot.lng, source: 'Spot Attivo' };
+}
+
+function onCatchSpotInput(val) {
+  const coords = resolveCatchSpotCoordinates(val);
+  const statusEl = document.getElementById('spot-geo-status');
+  const badgeEl = document.getElementById('spot-coords-badge');
+  const latInput = document.getElementById('flat');
+  const lngInput = document.getElementById('flng');
+
+  if (latInput) latInput.value = coords.lat;
+  if (lngInput) lngInput.value = coords.lng;
+
+  if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#059669">${coords.source}</b> (${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)})`;
+  updateCatchSolunarParams();
+}
+
+function pickFavoriteSpotForCatch(spotName) {
+  if (!spotName) return;
+  const fav = spots.find(s => s.name === spotName);
+  const spInput = document.getElementById('fsp');
+  const latInput = document.getElementById('flat');
+  const lngInput = document.getElementById('flng');
+  const statusEl = document.getElementById('spot-geo-status');
+
+  if (spInput) spInput.value = spotName;
+  if (fav) {
+    if (latInput) latInput.value = fav.lat;
+    if (lngInput) lngInput.value = fav.lng;
+    if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#059669">⭐ ${fav.name}</b> (${fav.lat.toFixed(3)}, ${fav.lng.toFixed(3)})`;
+  }
+  updateCatchSolunarParams();
+}
+
+function useCurrentGpsForCatch() {
+  if ("geolocation" in navigator) {
+    const statusEl = document.getElementById('spot-geo-status');
+    if (statusEl) statusEl.innerHTML = '⌛ Rilevamento coordinate GPS in corso...';
+
+    navigator.geolocation.getCurrentPosition(async (p) => {
+      const lat = p.coords.latitude;
+      const lng = p.coords.longitude;
+      document.getElementById('flat').value = lat;
+      document.getElementById('flng').value = lng;
+
+      let realName = `Spot GPS (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`);
+        const data = await resp.json();
+        if (data && data.address) {
+          const city = data.address.city || data.address.town || data.address.village || data.address.municipality || "Costa";
+          const prov = data.address.state || "";
+          realName = `${city} ${prov ? '(' + prov + ')' : ''}`;
+        }
+      } catch(e){}
+
+      const spInput = document.getElementById('fsp');
+      if (spInput && (!spInput.value || spInput.value.includes('Spot'))) {
+        spInput.value = realName;
+      }
+      if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#059669">GPS Reale</b> (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+      updateCatchSolunarParams();
+      alert(`📍 Coordinate GPS agganciate con successo!
+Posizione: ${realName}`);
+    }, () => {
+      alert('Impossibile rilevare il GPS. Assicurati che i permessi di localizzazione siano attivi.');
+      if (statusEl) statusEl.innerHTML = '⚠️ GPS non disponibile. Puoi digitare il luogo a mano.';
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  } else {
+    alert('Geolocalizzazione non supportata.');
+  }
+}
+
+
 function parseCatchTimestamp(dateStr) {
   if (!dateStr) return 0;
   if (typeof dateStr === 'string' && dateStr.includes('/')) {
@@ -3513,7 +3745,11 @@ function openCatchModal(ex, forceCappotto = false) {
     document.getElementById('ft').value = ex.tech || 'Surfcasting';
     document.getElementById('fb').value = ex.bait || 'Cannolicchio vivo';
     document.getElementById('fsp').value = ex.spot || spot.name;
+    document.getElementById('flat').value = ex.lat || '';
+    document.getElementById('flng').value = ex.lng || '';
     document.getElementById('fn').value = ex.notes || '';
+    populateSpotSuggestions();
+    onCatchSpotInput(ex.spot || spot.name);
 
     const formattedStartDate = formatCatchDateToIso(ex.date, ex.rawDate);
     document.getElementById('fdt').value = formattedStartDate;
@@ -3538,6 +3774,10 @@ function openCatchModal(ex, forceCappotto = false) {
     const endIso = new Date(endNow.getTime() - endNow.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     if (document.getElementById('fdt-end')) document.getElementById('fdt-end').value = endIso;
     document.getElementById('fsp').value = spot.name;
+    document.getElementById('flat').value = '';
+    document.getElementById('flng').value = '';
+    populateSpotSuggestions();
+    onCatchSpotInput(spot.name);
     if (cappottoBox) cappottoBox.checked = forceCappotto;
     toggleCappottoMode(forceCappotto);
   }
@@ -3590,6 +3830,11 @@ function saveCatch(e) {
     });
   }
 
+    const spotText = document.getElementById('fsp').value || spot.name;
+  const manualLat = document.getElementById('flat')?.value;
+  const manualLng = document.getElementById('flng')?.value;
+  const catchCoords = resolveCatchSpotCoordinates(spotText, manualLat, manualLng);
+
   const combinedSp = isCappotto ? 'Cappotto (0 Catture)' : (speciesList.map(s => (s.qty > 1 ? s.qty + 'x ' : '') + s.sp).join(', ') || 'Pesce');
 
   const obj = {
@@ -3609,8 +3854,8 @@ function saveCatch(e) {
     rawDate: dtVal,
     rawEndDate: dtEndVal,
     hours: hours,
-    lat: spot.lat + (Math.random() - .5) * .02,
-    lng: spot.lng + (Math.random() - .5) * .02,
+    lat: catchCoords.lat + (Math.random() - .5) * .003,
+    lng: catchCoords.lng + (Math.random() - .5) * .003,
     img: isCappotto ? '' : (photoB64 || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80'),
     notes: document.getElementById('fn').value || ''
   };
