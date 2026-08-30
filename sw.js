@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v15-modals-buttons-gps';
+const CACHE_NAME = 'pescapro-v17-multispecies-basket';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

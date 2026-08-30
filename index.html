@@ -2220,20 +2220,30 @@
             <div id="auto-info" style="margin-top:2px;font-size:10px">🌙 Calcolo in corso... • 🌊 Calcolo marea... • 📍 Spot</div>
           </div>
 
-          <!-- Dettagli Pesce (nascosti in modalità cappotto) -->
+                    <!-- Dettagli Pesce / Cestino Multi-Specie (nascosti in modalità cappotto) -->
           <div id="catch-fish-fields">
-            <div class="fr2">
-              <div class="fg"><label>Specie *</label><select id="fs"><option>Orata</option><option>Spigola</option><option>Sarago</option><option>Dentice</option><option>Mormora</option><option>Pesce Serra</option><option>Ricciola</option><option>Palamita</option><option>Calamaro</option><option>Seppia</option><option>Altro</option></select></div>
-              <div class="fg"><label>Quantità Esemplari *</label><input type="number" step="1" min="1" id="fq" value="1" placeholder="1" oninput="toggleSingleRecordInput()"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:#f0f9ff;border:1px solid #bae6fd;padding:6px 10px;border-radius:10px">
+              <label style="font-size:12px;font-weight:900;color:#0369a1;display:flex;align-items:center;gap:6px">
+                <i class="fa-solid fa-basket-shopping"></i> Pescato della Battuta
+              </label>
+              <button type="button" onclick="addSpeciesRow()" style="background:#0284c7;color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(2,132,199,0.3)">
+                <i class="fa-solid fa-plus"></i> + Altra Specie
+              </button>
             </div>
-            <div class="fr2">
-              <div class="fg"><label>Peso Totale (kg) *</label><input type="number" step="0.01" min="0.01" id="fw" placeholder="es. 1.85"></div>
-              <div class="fg"><label>Lunghezza Media (cm)</label><input type="number" step="1" id="fl" placeholder="es. 48"></div>
-            </div>
-            <div class="fg" id="single-record-box" style="display:none;background:#fef3c7;border:1px solid #fde68a;padding:8px;border-radius:8px;margin-bottom:8px">
-              <label style="font-weight:800;color:#92400e"><i class="fa-solid fa-trophy"></i> Peso Singola Preda Più Grande (kg)</label>
-              <input type="number" step="0.01" min="0.01" id="f-single-rec" placeholder="es. 0.85 (se hai preso 12 orate per 4kg tot)">
-              <div style="font-size:10px;color:#78350f;margin-top:2px">Inserisci il peso del singolo pesce record per le statistiche individuali.</div>
+
+            <!-- Contenitore Righe Specie Dinamiche -->
+            <div id="species-rows-container" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+
+            <!-- Riepilogo Live Totali Battuta -->
+            <div id="trip-live-summary" style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:10px 12px;margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:#166534">
+                <span>🐟 Pescato Totale: <b id="summary-total-qty">1 pesce</b></span>
+                <span id="summary-total-wt" style="font-size:14px;color:#15803d">0.00 kg</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#15803d;margin-top:4px;padding-top:4px;border-top:1px dashed #bbf7d0">
+                <span>🏆 Singola Preda Più Grande:</span>
+                <b id="summary-max-single" style="color:#047857;font-weight:900">0.00 kg</b>
+              </div>
             </div>
           </div>
 
@@ -3225,14 +3235,10 @@ function toggleCappottoMode(isCappotto) {
   const fishFields = document.getElementById('catch-fish-fields');
   const photoSec = document.getElementById('catch-photo-section');
   const saveBtn = document.getElementById('btn-save-catch');
-  const fs = document.getElementById('fs');
-  const fw = document.getElementById('fw');
 
   if (isCappotto) {
     if (fishFields) fishFields.style.display = 'none';
     if (photoSec) photoSec.style.display = 'none';
-    if (fs) fs.removeAttribute('required');
-    if (fw) fw.removeAttribute('required');
     if (saveBtn) {
       saveBtn.innerHTML = '🧥 Registra Cappotto (0 Catture)';
       saveBtn.style.background = 'linear-gradient(135deg, #475569, #334155)';
@@ -3240,13 +3246,139 @@ function toggleCappottoMode(isCappotto) {
   } else {
     if (fishFields) fishFields.style.display = 'block';
     if (photoSec) photoSec.style.display = 'block';
-    if (fs) fs.setAttribute('required', 'required');
-    if (fw) fw.setAttribute('required', 'required');
     if (saveBtn) {
       saveBtn.innerHTML = '🎣 Salva Cattura nel Diario';
-      saveBtn.style.background = 'linear-gradient(135deg, var(--primary), var(--primary-dark))';
+      saveBtn.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
     }
   }
+}
+
+
+
+// =========================================================================
+// === CESTINO MULTI-SPECIE DINAMICO (PIÙ SPECIE NELLA STESSA BATTUTA) ===
+// =========================================================================
+
+let currentSpeciesBasket = [];
+
+const SPECIES_SELECT_OPTIONS = `<option value="Orata">Orata</option><option value="Spigola">Spigola</option><option value="Sarago">Sarago</option><option value="Mormora">Mormora</option><option value="Dentice">Dentice</option><option value="Pesce Serra">Pesce Serra</option><option value="Ricciola">Ricciola</option><option value="Palamita">Palamita</option><option value="Calamaro">Calamaro</option><option value="Seppia">Seppia</option><option value="Cefalo">Cefalo</option><option value="Tracina">Tracina</option><option value="Pagello">Pagello</option><option value="Aguglia">Aguglia</option><option value="Sgombro">Sgombro</option><option value="Occhiata">Occhiata</option><option value="Leccia">Leccia</option><option value="Altro">Altro</option>`;
+
+function getSpeciesSelectHtml(selected) {
+  if (!selected) selected = 'Orata';
+  return SPECIES_SELECT_OPTIONS.replace(`value="${selected}"`, `value="${selected}" selected`);
+}
+
+function renderSpeciesRows() {
+  const container = document.getElementById('species-rows-container');
+  if (!container) return;
+
+  if (!currentSpeciesBasket || currentSpeciesBasket.length === 0) {
+    currentSpeciesBasket = [{ sp: 'Orata', qty: 1, wt: '', singleRecordWt: '' }];
+  }
+
+  container.innerHTML = currentSpeciesBasket.map((item, idx) => `
+    <div class="species-row-card" data-idx="${idx}" style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:900;color:#0369a1;background:#e0f2fe;padding:2px 8px;border-radius:6px">
+          🐟 Specie #${idx + 1}
+        </span>
+        ${currentSpeciesBasket.length > 1 ? `
+          <button type="button" onclick="removeSpeciesRow(${idx})" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer">
+            <i class="fa-solid fa-trash"></i> Elimina
+          </button>
+        ` : ''}
+      </div>
+
+      <div class="fr2" style="margin-bottom:6px">
+        <div class="fg" style="margin-bottom:0">
+          <label>Specie *</label>
+          <select class="row-sp" onchange="syncSpeciesBasketData(${idx})">
+            ${getSpeciesSelectHtml(item.sp || 'Orata')}
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Quantità Esemplari *</label>
+          <input type="number" step="1" min="1" class="row-qty" value="${item.qty || 1}" oninput="syncSpeciesBasketData(${idx})">
+        </div>
+      </div>
+
+      <div class="fr2">
+        <div class="fg" style="margin-bottom:0">
+          <label>Peso Totale Specie (kg) *</label>
+          <input type="number" step="0.01" min="0.01" class="row-wt" placeholder="es. 1.80" value="${item.wt !== undefined && item.wt !== null ? item.wt : ''}" oninput="syncSpeciesBasketData(${idx})">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Preda Record Specie (kg)</label>
+          <input type="number" step="0.01" min="0.01" class="row-single" placeholder="es. 0.90" value="${item.singleRecordWt !== undefined && item.singleRecordWt !== null ? item.singleRecordWt : ''}" oninput="syncSpeciesBasketData(${idx})">
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  updateTripSummary();
+}
+
+function addSpeciesRow() {
+  currentSpeciesBasket.push({ sp: 'Spigola', qty: 1, wt: '', singleRecordWt: '' });
+  renderSpeciesRows();
+}
+
+function removeSpeciesRow(idx) {
+  if (currentSpeciesBasket.length > 1) {
+    currentSpeciesBasket.splice(idx, 1);
+    renderSpeciesRows();
+  }
+}
+
+function syncSpeciesBasketData(idx) {
+  const container = document.getElementById('species-rows-container');
+  if (!container) return;
+  const cards = container.querySelectorAll('.species-row-card');
+  if (cards[idx]) {
+    const sp = cards[idx].querySelector('.row-sp')?.value || 'Orata';
+    const qty = parseInt(cards[idx].querySelector('.row-qty')?.value, 10) || 1;
+    const wtVal = cards[idx].querySelector('.row-wt')?.value;
+    const wt = wtVal !== '' ? parseFloat(wtVal) : '';
+    const singleVal = cards[idx].querySelector('.row-single')?.value;
+    const single = singleVal !== '' ? parseFloat(singleVal) : '';
+
+    currentSpeciesBasket[idx] = {
+      sp,
+      qty,
+      wt,
+      singleRecordWt: single
+    };
+  }
+  updateTripSummary();
+}
+
+function updateTripSummary() {
+  let totalQty = 0;
+  let totalWt = 0;
+  let maxSingle = 0;
+  let maxSingleSpecies = '';
+
+  currentSpeciesBasket.forEach(item => {
+    const q = parseInt(item.qty, 10) || 1;
+    const w = parseFloat(item.wt) || 0;
+    const sVal = parseFloat(item.singleRecordWt);
+    const s = (!isNaN(sVal) && sVal > 0) ? sVal : (q > 1 ? (w / q) : w);
+
+    totalQty += q;
+    totalWt += w;
+    if (s > maxSingle) {
+      maxSingle = s;
+      maxSingleSpecies = item.sp;
+    }
+  });
+
+  const qtyEl = document.getElementById('summary-total-qty');
+  const wtEl = document.getElementById('summary-total-wt');
+  const singleEl = document.getElementById('summary-max-single');
+
+  if (qtyEl) qtyEl.textContent = `${totalQty} pesci (${currentSpeciesBasket.length} specie)`;
+  if (wtEl) wtEl.textContent = `${totalWt.toFixed(2)} kg`;
+  if (singleEl) singleEl.textContent = maxSingle > 0 ? `${maxSingle.toFixed(2)} kg (${maxSingleSpecies})` : '0.00 kg';
 }
 
 
@@ -3379,12 +3511,39 @@ function saveCatch(e) {
 
   const isCappotto = document.getElementById('f-cappotto') && document.getElementById('f-cappotto').checked;
 
+  let speciesList = [];
+  let totalQty = 0;
+  let totalWt = 0;
+  let maxSingleRecordWt = 0;
+  let maxSingleFishSp = 'Pesce';
+
+  if (!isCappotto) {
+    currentSpeciesBasket.forEach(item => {
+      const sp = item.sp || 'Orata';
+      const q = parseInt(item.qty, 10) || 1;
+      const w = parseFloat(item.wt) || 0;
+      const sVal = parseFloat(item.singleRecordWt);
+      const s = (!isNaN(sVal) && sVal > 0) ? sVal : (q > 1 ? (w / q) : w);
+
+      totalQty += q;
+      totalWt += w;
+      if (s > maxSingleRecordWt) {
+        maxSingleRecordWt = s;
+        maxSingleFishSp = sp;
+      }
+      speciesList.push({ sp, qty: q, wt: w, singleRecordWt: s });
+    });
+  }
+
+  const combinedSp = isCappotto ? 'Cappotto (0 Catture)' : (speciesList.map(s => (s.qty > 1 ? s.qty + 'x ' : '') + s.sp).join(', ') || 'Pesce');
+
   const obj = {
     id: eid ? parseInt(eid) : Date.now(),
-    sp: isCappotto ? 'Cappotto (0 Catture)' : document.getElementById('fs').value,
-    qty: isCappotto ? 0 : (parseInt(document.getElementById('fq').value) || 1),
-    wt: isCappotto ? 0 : (parseFloat(document.getElementById('fw').value) || 1),
-    len: isCappotto ? null : (parseFloat(document.getElementById('fl').value) || null),
+    sp: combinedSp,
+    speciesList: speciesList,
+    qty: isCappotto ? 0 : totalQty,
+    wt: isCappotto ? 0 : totalWt,
+    singleRecordWt: isCappotto ? 0 : maxSingleRecordWt,
     isBlank: isCappotto,
     tech: document.getElementById('ft').value,
     bait: document.getElementById('fb').value,
@@ -3513,12 +3672,6 @@ function delCatch(id) {
 }
 
 // === STATISTICHE ===
-function toggleSingleRecordInput() {
-  const q = parseInt(document.getElementById('fq')?.value || '1', 10);
-  const box = document.getElementById('single-record-box');
-  if (box) box.style.display = (q > 1) ? 'block' : 'none';
-}
-
 function getSingleFishWeight(c) {
   if (c.singleRecordWt && c.singleRecordWt > 0) return c.singleRecordWt;
   const q = c.qty || 1;
@@ -3592,6 +3745,21 @@ function renderStats() {
     list.forEach(c => { const v = fn(c); if (v) m[v] = (m[v] || 0) + 1; });
     return Object.entries(m).sort((a, b) => b[1] - a[1]);
   };
+
+  // Calcolo Preciso Classifica Specie (considerando ogni specie nei panieri multi-pesce)
+  const speciesLeaderboardMap = {};
+  successful.forEach(c => {
+    if (c.speciesList && Array.isArray(c.speciesList) && c.speciesList.length > 0) {
+      c.speciesList.forEach(s => {
+        const name = s.sp || 'Altro';
+        speciesLeaderboardMap[name] = (speciesLeaderboardMap[name] || 0) + (s.qty || 1);
+      });
+    } else {
+      const name = c.sp || 'Altro';
+      speciesLeaderboardMap[name] = (speciesLeaderboardMap[name] || 0) + (c.qty || 1);
+    }
+  });
+  const speciesLeaderboard = Object.entries(speciesLeaderboardMap).sort((a, b) => b[1] - a[1]);
 
   const medals = ['🥇 TOP', '🥈 2°', '🥉 3°'];
   const bar = (entries, icon, color, topLabel) => {
@@ -4936,12 +5104,15 @@ function generateReportData() {
         return parts.length === 3 && `${parts[1]}/${parts[2]}` === selectedMonth;
       });
       const monthNames = ['', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-      const mNum = parseInt(selectedMonth.split('/')[0]);
+      const mNum = parseInt(selectedMonth.split('/')[0], 10);
       periodTitle = `Mese di ${monthNames[mNum]} ${selectedMonth.split('/')[1]}`;
     } else {
       periodTitle = "Mese di Agosto 2026";
     }
   }
+
+  // Ordina cronologicamente le catture per data (dalla più recente alla più vecchia)
+  filtered.sort((a, b) => parseCatchTimestamp(b) - parseCatchTimestamp(a));
 
   // KPIs
   const successful = filtered.filter(c => !c.isBlank && c.qty > 0 && !c.sp.toLowerCase().includes('cappotto'));
@@ -4949,8 +5120,25 @@ function generateReportData() {
   const totalTrips = filtered.length;
   const totalFishCount = successful.reduce((a, c) => a + (c.qty || 1), 0);
   const totalWeight = successful.reduce((a, c) => a + (c.wt || 0), 0);
-  const avgWeight = successful.length ? (totalWeight / successful.length) : 0;
-  const recordCatch = successful.length ? successful.reduce((m, c) => (c.wt || 0) > (m.wt || 0) ? c : m, successful[0]) : null;
+  const avgWeight = totalFishCount ? (totalWeight / totalFishCount) : 0;
+
+  // Calcolo Record Singolo Esemplare Esatto per il Report
+  let recordCatch = null;
+  let maxWeight = 0;
+  successful.forEach(c => {
+    const sw = getSingleFishWeight(c);
+    if (sw > maxWeight) {
+      maxWeight = sw;
+      recordCatch = {
+        sp: c.sp,
+        wt: sw,
+        date: c.date,
+        spot: c.spot,
+        totalHaul: c.wt,
+        qty: c.qty || 1
+      };
+    }
+  });
   const totalHours = filtered.reduce((a, c) => a + (c.hours || 4.0), 0);
   const yieldPerHour = totalHours > 0 ? (totalWeight / totalHours).toFixed(2) : '0.00';
   const successRate = totalTrips ? Math.round((successful.length / totalTrips) * 100) : 100;
@@ -4975,7 +5163,32 @@ function generateReportData() {
   const tides = groupStats(c => c.tide);
   const moons = groupStats(c => c.moon);
   const baits = groupStats(c => c.bait);
-  const species = groupStats(c => c.sp);
+    // Calcolo Preciso Multi-Specie per il Report
+  const speciesMap = {};
+  filtered.forEach(c => {
+    if (!c.isBlank) {
+      if (c.speciesList && Array.isArray(c.speciesList) && c.speciesList.length > 0) {
+        c.speciesList.forEach(s => {
+          const spName = s.sp || 'Altro';
+          if (!speciesMap[spName]) speciesMap[spName] = { count: 0, weight: 0 };
+          speciesMap[spName].count += (s.qty || 1);
+          speciesMap[spName].weight += (s.wt || 0);
+        });
+      } else {
+        const spName = c.sp || 'Altro';
+        if (!speciesMap[spName]) speciesMap[spName] = { count: 0, weight: 0 };
+        speciesMap[spName].count += (c.qty || 1);
+        speciesMap[spName].weight += (c.wt || 0);
+      }
+    }
+  });
+
+  const species = Object.entries(speciesMap).map(([k, d]) => ({
+    name: k,
+    count: d.count,
+    weight: d.weight,
+    pct: totalFishCount ? Math.round((d.count / totalFishCount) * 100) : 0
+  })).sort((a, b) => b.count - a.count);
   const techniques = groupStats(c => c.tech);
 
   // Best / Worst Insights
@@ -5261,20 +5474,33 @@ function generateReportHTML(d, forDirectPdf = false) {
     </table>
   </div>
 
-  <!-- Section: Elenco Catture Dettagliato -->
+  <!-- Section: Elenco Catture Dettagliato Ordinato per Data con Spot e Record -->
   <div class="sec-card">
-    <div class="sec-title"><span>📋 Registro Catture del Periodo</span><span style="font-size:10px;color:#64748b">${d.catches.length} Registrazioni</span></div>
+    <div class="sec-title"><span>📋 Registro Cronologico delle Uscite &amp; Catture</span><span style="font-size:10px;color:#0284c7;font-weight:800">${d.catches.length} Battute Ordinate per Data</span></div>
     <table class="table-stat">
-      <thead><tr><th>Data/Ora</th><th>Specie</th><th>Peso (kg)</th><th>Marea</th><th>Luna</th><th>Esca</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Data / Ora</th>
+          <th>📍 Località / Spot</th>
+          <th>Specie &amp; Quantità</th>
+          <th>Peso Totale</th>
+          <th>🏆 Preda Record</th>
+          <th>Marea</th>
+          <th>Fase Lunare</th>
+          <th>Esca / Tecnica</th>
+        </tr>
+      </thead>
       <tbody>
         ${d.catches.map(c => `
-          <tr>
-            <td>${c.date}</td>
-            <td><b>${c.sp}</b></td>
-            <td>${c.wt.toFixed(2)} kg</td>
-            <td><span style="color:#0284c7">${c.tide}</span></td>
-            <td><span style="color:#6366f1">${c.moon}</span></td>
-            <td>${c.bait}</td>
+          <tr style="${c.isBlank ? 'background:#f8fafc;color:#64748b' : ''}">
+            <td><b style="color:#0f172a">${c.date}</b></td>
+            <td><span style="color:#0284c7;font-weight:800">📍 ${c.spot || d.spotName || 'Spot Costiero'}</span></td>
+            <td>${c.isBlank ? '<span style="color:#64748b">🧥 Cappotto (0)</span>' : `<b>${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</b>`}</td>
+            <td><b>${c.isBlank ? '0.00' : (c.wt || 0).toFixed(2)} kg</b></td>
+            <td><span style="color:#8b5cf6;font-weight:900">${c.isBlank ? '—' : (getSingleFishWeight(c).toFixed(2) + ' kg')}</span></td>
+            <td><span style="color:#0284c7">${c.tide || '—'}</span></td>
+            <td><span style="color:#6366f1">🌙 ${c.moon || '—'}</span></td>
+            <td>${c.bait || '—'} <span style="font-size:9px;color:#64748b">(${c.tech || 'Surf'})</span></td>
           </tr>
         `).join('')}
       </tbody>
