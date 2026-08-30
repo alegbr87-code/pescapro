@@ -693,18 +693,40 @@
 
     .catch-photo {
       width: 100%;
-      height: 180px;
+      min-height: 220px;
+      max-height: 320px;
+      height: 260px;
       position: relative;
-      background: #cbd5e1;
+      background: #0b1329;
       overflow: hidden;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .catch-photo img {
+    .catch-photo-bg {
+      position: absolute;
+      top: -15%;
+      left: -15%;
+      width: 130%;
+      height: 130%;
+      object-fit: cover;
+      filter: blur(22px) brightness(0.45);
+      opacity: 0.85;
+      z-index: 1;
+      transform: scale(1.1);
+      pointer-events: none;
+    }
+
+    .catch-photo img.catch-main-img {
+      max-height: 260px;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       object-position: center;
+      position: relative;
+      z-index: 2;
     }
 
     .catch-badge {

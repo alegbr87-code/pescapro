@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v18-report-notes-included';
+const CACHE_NAME = 'pescapro-v19-photo-centering-ambient';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
