@@ -3456,6 +3456,25 @@ function pickPhoto(e) {
   r.readAsDataURL(f);
 }
 
+function formatCatchDateToIso(dateStr, rawDate) {
+  if (rawDate) return rawDate;
+  if (!dateStr) return new Date().toISOString().slice(0, 16);
+  const parts = dateStr.trim().split(' ');
+  const dParts = parts[0].split('/');
+  if (dParts.length === 3) {
+    const day = dParts[0].padStart(2, '0');
+    const month = dParts[1].padStart(2, '0');
+    const year = dParts[2];
+    let time = '12:00';
+    if (parts[1] && parts[1].includes(':')) {
+      const tParts = parts[1].split(':');
+      time = `${tParts[0].padStart(2, '0')}:${tParts[1].padStart(2, '0')}`;
+    }
+    return `${year}-${month}-${day}T${time}`;
+  }
+  return new Date().toISOString().slice(0, 16);
+}
+
 function openCatchModal(ex, forceCappotto = false) {
   photoB64 = null;
   document.getElementById('mc').classList.add('on');
@@ -3471,24 +3490,37 @@ function openCatchModal(ex, forceCappotto = false) {
   if (ex) {
     document.getElementById('mch').textContent = 'Modifica ✏️';
     document.getElementById('eid').value = ex.id;
-    const isBlank = ex.isBlank || ex.qty === 0 || ex.sp.toLowerCase().includes('cappotto');
+    const isBlank = ex.isBlank || ex.qty === 0 || (ex.sp && ex.sp.toLowerCase().includes('cappotto'));
     if (cappottoBox) cappottoBox.checked = isBlank;
     toggleCappottoMode(isBlank);
 
     if (!isBlank) {
-      document.getElementById('fs').value = ex.sp;
-      document.getElementById('fq').value = ex.qty || 1;
-      document.getElementById('fw').value = ex.wt;
-      document.getElementById('fl').value = ex.len || '';
+      if (ex.speciesList && Array.isArray(ex.speciesList) && ex.speciesList.length > 0) {
+        currentSpeciesBasket = JSON.parse(JSON.stringify(ex.speciesList));
+      } else {
+        currentSpeciesBasket = [{
+          sp: ex.sp || 'Orata',
+          qty: ex.qty || 1,
+          wt: ex.wt || 0,
+          singleRecordWt: ex.singleRecordWt || (ex.qty > 1 ? (ex.wt / ex.qty) : ex.wt)
+        }];
+      }
+    } else {
+      currentSpeciesBasket = [];
     }
-    document.getElementById('ft').value = ex.tech;
-    document.getElementById('fb').value = ex.bait;
+    renderSpeciesRows();
+
+    document.getElementById('ft').value = ex.tech || 'Surfcasting';
+    document.getElementById('fb').value = ex.bait || 'Cannolicchio vivo';
     document.getElementById('fsp').value = ex.spot || spot.name;
     document.getElementById('fn').value = ex.notes || '';
-    document.getElementById('fdt').value = ex.rawDate || nowIso;
+
+    const formattedStartDate = formatCatchDateToIso(ex.date, ex.rawDate);
+    document.getElementById('fdt').value = formattedStartDate;
     if (document.getElementById('fdt-end')) {
       document.getElementById('fdt-end').value = ex.rawEndDate || '';
     }
+
     if (ex.img && !isBlank) {
       p.src = ex.img;
       p.style.display = 'block';
@@ -3498,9 +3530,10 @@ function openCatchModal(ex, forceCappotto = false) {
   } else {
     document.getElementById('mch').textContent = forceCappotto ? 'Registra Cappotto 🧥' : 'Registra Cattura 🎣';
     document.getElementById('eid').value = '';
-    document.getElementById('fq').value = '1';
+    currentSpeciesBasket = [{ sp: 'Orata', qty: 1, wt: '', singleRecordWt: '' }];
+    renderSpeciesRows();
+
     document.getElementById('fdt').value = nowIso;
-    // Default end time +4 hours
     const endNow = new Date(now.getTime() + 4 * 3600000);
     const endIso = new Date(endNow.getTime() - endNow.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     if (document.getElementById('fdt-end')) document.getElementById('fdt-end').value = endIso;
