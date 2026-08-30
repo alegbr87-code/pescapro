@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v17-multispecies-basket';
+const CACHE_NAME = 'pescapro-v18-report-notes-included';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
