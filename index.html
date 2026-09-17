@@ -24,21 +24,21 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --emerald: #10b981;
-      --emerald-dark: #059669;
-      --amber: #f59e0b;
-      --orange: #f97316;
-      --purple: #8b5cf6;
-      --indigo: #6366f1;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --card-bg: #ffffff;
-      --shadow: 0 4px 12px rgba(0,0,0,.06);
-      --shadow-md: 0 10px 25px -5px rgba(0,0,0,.12);
+      --primary: #38bdf8;
+      --primary-dark: #0ea5e9;
+      --primary-light: #0c4a6e;
+      --emerald: #34d399;
+      --emerald-dark: #10b981;
+      --amber: #fbbf24;
+      --orange: #fb923c;
+      --purple: #a78bfa;
+      --indigo: #818cf8;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #1e293b;
+      --card-bg: #111c33;
+      --shadow: 0 4px 12px rgba(0,0,0,.4);
+      --shadow-md: 0 10px 25px -5px rgba(0,0,0,.5);
     }
     
     * {
@@ -55,8 +55,8 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #f8fafc;
-      color: #0f172a;
+      background: #0b1220;
+      color: #e2e8f0;
       -webkit-user-select: none;
       user-select: none;
     }
@@ -67,7 +67,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: #f8fafc;
+      background: #0b1220;
     }
 
     .app-bar {
@@ -104,7 +104,7 @@
     .screen-wrap {
       width: 100%;
       height: 100%;
-      background: #f8fafc;
+      background: #0b1220;
       border-radius: 36px;
       overflow: hidden;
       display: flex;
@@ -165,7 +165,7 @@
     .app-sub {
       font-size: 11px;
       font-weight: 700;
-      color: #f8fafc;
+      color: #0b1220;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -200,7 +200,7 @@
       top: 72px;
       left: 0;
       right: 0;
-      background: #fff;
+      background: #111c33;
       padding: 12px 14px;
       box-shadow: 0 10px 30px rgba(0,0,0,.2);
       z-index: 950;
@@ -216,7 +216,7 @@
     .search-box {
       display: flex;
       align-items: center;
-      background: #f1f5f9;
+      background: #16203a;
       border-radius: 12px;
       padding: 8px 12px;
       gap: 8px;
@@ -240,18 +240,18 @@
 
     .res-row {
       padding: 10px 12px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid #16203a;
       cursor: pointer;
       font-size: 12px;
       font-weight: 600;
-      color: #1e293b;
+      color: #cbd5e1;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
     .res-row:hover {
-      background: #e0f2fe;
+      background: #0c4a6e;
       color: var(--primary);
     }
 
@@ -260,7 +260,7 @@
       flex: 1;
       position: relative;
       overflow: hidden;
-      background: #f8fafc;
+      background: #0b1220;
     }
 
     .tab {
@@ -271,7 +271,7 @@
       height: 100%;
       display: none;
       flex-direction: column;
-      background: #f8fafc;
+      background: #0b1220;
     }
 
     .tab.on {
@@ -290,7 +290,7 @@
 
     /* Map Card */
     .map-card {
-      background: #fff;
+      background: #111c33;
       border-radius: 20px;
       overflow: hidden;
       border: 2px solid #0284c7;
@@ -320,7 +320,7 @@
 
     .map-toolbar {
       display: flex;
-      background: #f1f5f9;
+      background: #16203a;
       padding: 7px 10px;
       border-bottom: 1px solid var(--border);
       gap: 6px;
@@ -329,8 +329,8 @@
     }
 
     .pill {
-      background: #fff;
-      border: 1px solid #cbd5e1;
+      background: #111c33;
+      border: 1px solid #334155;
       padding: 5px 10px;
       border-radius: 10px;
       font-size: 11px;
@@ -345,7 +345,7 @@
     }
 
     .pill:hover {
-      background: #e0f2fe;
+      background: #0c4a6e;
       border-color: #38bdf8;
       color: var(--primary);
     }
@@ -402,7 +402,7 @@
       width: 40px;
       height: 40px;
       border-radius: 20px;
-      background: #fff;
+      background: #111c33;
       color: var(--text);
       border: 2px solid var(--primary);
       box-shadow: 0 4px 14px rgba(0,0,0,.25);
@@ -433,7 +433,7 @@
 
     /* Cards */
     .card {
-      background: #fff;
+      background: #111c33;
       border-radius: 18px;
       padding: 14px;
       border: 1px solid var(--border);
@@ -514,8 +514,8 @@
     }
 
     .solunar-period-pill {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #0b1220;
+      border: 1px solid #1e293b;
       border-radius: 12px;
       padding: 9px 10px;
       display: flex;
@@ -524,13 +524,13 @@
     }
 
     .solunar-period-pill.major {
-      border-color: #86efac;
-      background: #f0fdf4;
+      border-color: #4ade80;
+      background: #052e16;
     }
 
     .solunar-period-pill.minor {
-      border-color: #fde68a;
-      background: #fffbeb;
+      border-color: #fcd34d;
+      background: #451a03;
     }
 
     /* TELEMETRY 6-GRID METEOPESCA */
@@ -542,8 +542,8 @@
     }
 
     .tele-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #0b1220;
+      border: 1px solid #1e293b;
       border-radius: 12px;
       padding: 9px 6px;
       text-align: center;
@@ -562,20 +562,20 @@
     .tele-card .val {
       font-size: 12px;
       font-weight: 900;
-      color: #0f172a;
+      color: #e2e8f0;
       line-height: 1.2;
     }
 
     .tele-card .lbl {
       font-size: 9px;
       font-weight: 700;
-      color: #64748b;
+      color: #94a3b8;
       margin-top: 2px;
     }
 
     .tele-card .sub {
       font-size: 8px;
-      color: #0284c7;
+      color: #38bdf8;
       font-weight: 700;
     }
 
@@ -594,7 +594,7 @@
     }
 
     .tide-cell {
-      background: #f1f5f9;
+      background: #16203a;
       border-radius: 10px;
       padding: 7px 4px;
       text-align: center;
@@ -602,15 +602,15 @@
     }
 
     .tide-cell.high {
-      background: #ecfdf5;
-      border: 1px solid #a7f3d0;
-      color: #065f46;
+      background: #052e16;
+      border: 1px solid #065f46;
+      color: #34d399;
     }
 
     .tide-cell.low {
       background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1e40af;
+      border: 1px solid #1e3a8a;
+      color: #93c5fd;
     }
 
     /* Monthly Moon Strip */
@@ -624,8 +624,8 @@
     .moon-strip::-webkit-scrollbar { display: none; }
 
     .moon-day-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #0b1220;
+      border: 1px solid #1e293b;
       border-radius: 12px;
       padding: 8px 8px;
       display: flex;
@@ -638,13 +638,13 @@
 
     .moon-day-card.today {
       border: 2px solid var(--indigo);
-      background: #eef2ff;
+      background: #1e1b4b;
     }
 
     /* Diary */
     .diary-top {
       padding: 10px 14px;
-      background: #fff;
+      background: #111c33;
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
@@ -665,8 +665,8 @@
       border-radius: 14px;
       font-size: 11px;
       font-weight: 700;
-      background: #f1f5f9;
-      color: #64748b;
+      background: #16203a;
+      color: #94a3b8;
       cursor: pointer;
       white-space: nowrap;
       transition: all .2s;
@@ -684,7 +684,7 @@
     }
 
     .catch-card {
-      background: #fff;
+      background: #111c33;
       border-radius: 22px;
       overflow: hidden;
       border: 1px solid var(--border);
@@ -745,15 +745,15 @@
     .catch-inner { padding: 14px; }
     .auto-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
     .atag {
-      background: #f0fdf4;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+      background: #052e16;
+      color: #4ade80;
+      border: 1px solid #166534;
       padding: 3px 8px;
       border-radius: 6px;
       font-size: 10px;
       font-weight: 700;
     }
-    .atag.moon { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+    .atag.moon { background: #1e1b4b; color: #a5b4fc; border-color: #a5b4fc; }
 
     .catch-acts {
       display: flex;
@@ -761,7 +761,7 @@
       gap: 14px;
       margin-top: 10px;
       padding-top: 8px;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid #16203a;
     }
 
     .abtn {
@@ -769,7 +769,7 @@
       border: none;
       font-size: 12px;
       font-weight: 700;
-      color: #64748b;
+      color: #94a3b8;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -796,7 +796,7 @@
     .kpi.b4 { background: linear-gradient(135deg,#f59e0b,#b45309); }
 
     .stat-box {
-      background: #fff;
+      background: #111c33;
       border-radius: 20px;
       padding: 16px;
       border: 1px solid var(--border);
@@ -820,11 +820,11 @@
       font-size: 12px;
       font-weight: 700;
       margin-bottom: 3px;
-      color: #1e293b;
+      color: #cbd5e1;
     }
     .pbar-track {
       height: 8px;
-      background: #e2e8f0;
+      background: #1e293b;
       border-radius: 4px;
       overflow: hidden;
     }
@@ -837,7 +837,7 @@
     /* Bottom Nav */
     .bnav {
       height: 64px;
-      background: #fff;
+      background: #111c33;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-around;
@@ -855,7 +855,7 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      color: #64748b;
+      color: #94a3b8;
       cursor: pointer;
       background: none;
       border: none;
@@ -891,7 +891,7 @@
     .modal.on { display: flex; }
     .sheet {
       width: 100%;
-      background: #fff;
+      background: #111c33;
       border-radius: 26px 26px 0 0;
       padding: 18px;
       max-height: 88%;
@@ -904,7 +904,7 @@
     }
 
     .fg { margin-bottom: 10px; }
-    .fg label { display: block; font-size: 11px; font-weight: 800; color: #334155; margin-bottom: 3px; }
+    .fg label { display: block; font-size: 11px; font-weight: 800; color: #cbd5e1; margin-bottom: 3px; }
     .fg input, .fg select, .fg textarea {
       width: 100%;
       padding: 9px 12px;
@@ -912,11 +912,11 @@
       border: 1px solid var(--border);
       font-size: 12px;
       outline: none;
-      background: #f8fafc;
+      background: #0b1220;
     }
     .fg input:focus, .fg select:focus {
       border-color: var(--primary);
-      background: #fff;
+      background: #111c33;
     }
     .fr2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .submit-btn {
@@ -941,7 +941,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      background: #f1f5f9;
+      background: #16203a;
       overflow: hidden;
       position: relative;
     }
@@ -971,8 +971,8 @@
       pointer-events: none;
     }
     .scanner-btn {
-      background: #fff;
-      color: #312e81;
+      background: #111c33;
+      color: #c7d2fe;
       border: none;
       border-radius: 12px;
       padding: 12px 16px;
@@ -1045,7 +1045,7 @@
 
     /* Species Grid & Cards */
     .species-search-box {
-      background: #fff;
+      background: #111c33;
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 10px 12px;
@@ -1074,15 +1074,15 @@
     }
     .species-chips::-webkit-scrollbar { display: none; }
     .sp-chip {
-      background: #f1f5f9;
-      color: #475569;
+      background: #16203a;
+      color: #94a3b8;
       padding: 7px 14px;
       border-radius: 20px;
       font-size: 11px;
       font-weight: 700;
       white-space: nowrap;
       cursor: pointer;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #334155;
       transition: all 0.2s;
       flex-shrink: 0;
       line-height: 1;
@@ -1099,9 +1099,9 @@
       gap: 10px;
     }
     .sp-card {
-      background: #fff;
+      background: #111c33;
       border-radius: 14px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #1e293b;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       cursor: pointer;
@@ -1119,7 +1119,7 @@
       width: 100%;
       height: 105px;
       position: relative;
-      background: #f8fafc;
+      background: #0b1220;
     }
     .sp-card-img {
       width: 100%;
@@ -1168,14 +1168,14 @@
     .sp-latin {
       font-size: 10px;
       font-style: italic;
-      color: #64748b;
+      color: #94a3b8;
       margin-bottom: 6px;
     }
     .sp-cat-badge {
       display: inline-block;
-      background: #f0fdf4;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+      background: #052e16;
+      color: #4ade80;
+      border: 1px solid #166534;
       font-size: 9px;
       font-weight: 700;
       padding: 2px 6px;
@@ -1185,7 +1185,7 @@
 
     /* Modal Fullscreen Species Detail */
     .sp-modal-sheet {
-      background: #fff;
+      background: #111c33;
       border-radius: 20px 20px 0 0;
       max-height: 90vh;
       overflow-y: auto;
@@ -1232,15 +1232,15 @@
       margin: 14px 0;
     }
     .sp-stat-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #0b1220;
+      border: 1px solid #1e293b;
       border-radius: 10px;
       padding: 10px;
     }
     .sp-stat-box .title {
       font-size: 10px;
       font-weight: 700;
-      color: #64748b;
+      color: #94a3b8;
       text-transform: uppercase;
       margin-bottom: 3px;
     }
@@ -1250,8 +1250,8 @@
       color: var(--text);
     }
     .sp-section {
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: #111c33;
+      border: 1px solid #1e293b;
       border-radius: 12px;
       padding: 12px;
       margin-bottom: 10px;
@@ -1259,7 +1259,7 @@
     .sp-section h4 {
       font-size: 12px;
       font-weight: 800;
-      color: #1e293b;
+      color: #cbd5e1;
       margin-bottom: 6px;
       display: flex;
       align-items: center;
@@ -1268,7 +1268,7 @@
     .sp-section p {
       font-size: 11px;
       line-height: 1.5;
-      color: #334155;
+      color: #cbd5e1;
     }
 
     
@@ -1299,9 +1299,9 @@
       flex: 1;
       padding: 10px;
       border-radius: 10px;
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      color: #334155;
+      border: 1px solid #334155;
+      background: #0b1220;
+      color: #cbd5e1;
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
@@ -1313,8 +1313,8 @@
     }
     .report-opt-btn.on {
       border-color: var(--primary);
-      background: #e0f2fe;
-      color: #0369a1;
+      background: #0c4a6e;
+      color: #38bdf8;
     }
 
     
@@ -1330,7 +1330,7 @@
       border-radius: 50%;
     }
     input:checked + .slider {
-      background-color: #64748b !important;
+      background-color: #94a3b8 !important;
     }
     input:checked + .slider:before {
       transform: translateX(20px);
@@ -1355,7 +1355,7 @@
         top: 0 !important;
         width: 100vw !important;
         height: auto !important;
-        background: #ffffff !important;
+        background: #111c33 !important;
         padding: 0 !important;
         margin: 0 !important;
         display: block !important;
@@ -1371,7 +1371,7 @@
       }
       #modal-report-viewer #viewer-content {
         padding: 0 !important;
-        background: #ffffff !important;
+        background: #111c33 !important;
       }
       .no-print, .bnav, .header, #modal-report-viewer-header {
         display: none !important;
@@ -1391,9 +1391,9 @@
   display: none;
 }
 .webcam-pill {
-  background: #ffffff;
-  color: #1e293b;
-  border: 1.5px solid #cbd5e1;
+  background: #111c33;
+  color: #cbd5e1;
+  border: 1.5px solid #334155;
   border-radius: 20px;
   padding: 6px 14px;
   font-size: 11px;
@@ -1407,7 +1407,7 @@
 .webcam-pill.active {
   background: #0284c7 !important;
   color: #ffffff !important;
-  border-color: #0284c7 !important;
+  border-color: #38bdf8 !important;
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4) !important;
   font-weight: 900 !important;
 }
@@ -1436,7 +1436,7 @@
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--primary)"></i>
         <input id="sq" placeholder="Cerca qualsiasi comune, costa o porto d'Italia..." oninput="filterLoc(this.value)">
-        <button onclick="toggleSearch()" style="background:none;border:none;color:#64748b;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="toggleSearch()" style="background:none;border:none;color:#94a3b8;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="results" id="sr"></div>
     </div>
@@ -1509,52 +1509,52 @@
           <div class="card">
             <div class="card-h">
               <h3><i class="fa-solid fa-bullseye" style="color:#10b981"></i> Finestre di Mangianza Solunari (Meteopesca)</h3>
-              <span style="font-size:10px; font-weight:800; color:#10b981; background:#ecfdf5; padding:2px 8px; border-radius:6px;">Migliori Momenti</span>
+              <span style="font-size:10px; font-weight:800; color:#10b981; background:#052e16; padding:2px 8px; border-radius:6px;">Migliori Momenti</span>
             </div>
             
             <div class="solunar-periods-grid">
               <div class="solunar-period-pill major">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <b style="color:#15803d; font-size:11px;"><i class="fa-solid fa-fire"></i> Periodo Maggiore 1</b>
-                  <span style="font-size:9px; font-weight:800; color:#15803d;">⭐⭐⭐ TOP</span>
+                  <b style="color:#4ade80; font-size:11px;"><i class="fa-solid fa-fire"></i> Periodo Maggiore 1</b>
+                  <span style="font-size:9px; font-weight:800; color:#4ade80;">⭐⭐⭐ TOP</span>
                 </div>
-                <div style="font-size:14px; font-weight:900; color:#0f172a;" id="sol-maj1-time">14:20 – 16:20</div>
-                <div style="font-size:9px; color:#64748b;">Transito Lunare • Attività Massima</div>
+                <div style="font-size:14px; font-weight:900; color:#e2e8f0;" id="sol-maj1-time">14:20 – 16:20</div>
+                <div style="font-size:9px; color:#94a3b8;">Transito Lunare • Attività Massima</div>
               </div>
 
               <div class="solunar-period-pill major">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <b style="color:#15803d; font-size:11px;"><i class="fa-solid fa-fire"></i> Periodo Maggiore 2</b>
-                  <span style="font-size:9px; font-weight:800; color:#15803d;">⭐⭐⭐ TOP</span>
+                  <b style="color:#4ade80; font-size:11px;"><i class="fa-solid fa-fire"></i> Periodo Maggiore 2</b>
+                  <span style="font-size:9px; font-weight:800; color:#4ade80;">⭐⭐⭐ TOP</span>
                 </div>
-                <div style="font-size:14px; font-weight:900; color:#0f172a;" id="sol-maj2-time">02:00 – 04:00</div>
-                <div style="font-size:9px; color:#64748b;">Transito Opposto • Molto Alta</div>
+                <div style="font-size:14px; font-weight:900; color:#e2e8f0;" id="sol-maj2-time">02:00 – 04:00</div>
+                <div style="font-size:9px; color:#94a3b8;">Transito Opposto • Molto Alta</div>
               </div>
 
               <div class="solunar-period-pill minor">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <b style="color:#b45309; font-size:11px;"><i class="fa-solid fa-bolt"></i> Periodo Minore 1</b>
-                  <span style="font-size:9px; font-weight:800; color:#b45309;">⭐⭐ MEDIA</span>
+                  <b style="color:#fcd34d; font-size:11px;"><i class="fa-solid fa-bolt"></i> Periodo Minore 1</b>
+                  <span style="font-size:9px; font-weight:800; color:#fcd34d;">⭐⭐ MEDIA</span>
                 </div>
-                <div style="font-size:13px; font-weight:900; color:#0f172a;" id="sol-min1-time">08:15 – 09:15</div>
-                <div style="font-size:9px; color:#64748b;">Sorgere Luna • 1 Ora</div>
+                <div style="font-size:13px; font-weight:900; color:#e2e8f0;" id="sol-min1-time">08:15 – 09:15</div>
+                <div style="font-size:9px; color:#94a3b8;">Sorgere Luna • 1 Ora</div>
               </div>
 
               <div class="solunar-period-pill minor">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <b style="color:#b45309; font-size:11px;"><i class="fa-solid fa-bolt"></i> Periodo Minore 2</b>
-                  <span style="font-size:9px; font-weight:800; color:#b45309;">⭐⭐ MEDIA</span>
+                  <b style="color:#fcd34d; font-size:11px;"><i class="fa-solid fa-bolt"></i> Periodo Minore 2</b>
+                  <span style="font-size:9px; font-weight:800; color:#fcd34d;">⭐⭐ MEDIA</span>
                 </div>
-                <div style="font-size:13px; font-weight:900; color:#0f172a;" id="sol-min2-time">21:40 – 22:40</div>
-                <div style="font-size:9px; color:#64748b;">Tramonto Luna • 1 Ora</div>
+                <div style="font-size:13px; font-weight:900; color:#e2e8f0;" id="sol-min2-time">21:40 – 22:40</div>
+                <div style="font-size:9px; color:#94a3b8;">Tramonto Luna • 1 Ora</div>
               </div>
             </div>
 
             <!-- Chart Solunare & Maree 24h -->
             <div style="margin-top:12px;">
-              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:#0f172a; margin-bottom:2px;">
+              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:#e2e8f0; margin-bottom:2px;">
                 <span>Curva Solunare &amp; Marea 24h</span>
-                <span style="color:#059669;" id="tide-phase-desc">Flusso Crescente</span>
+                <span style="color:#34d399;" id="tide-phase-desc">Flusso Crescente</span>
               </div>
               <div class="chart-box-h"><canvas id="feedingTideChart"></canvas></div>
             </div>
@@ -1563,8 +1563,8 @@
           <!-- 4. TAVOLA DELLE MAREE METEOPESCA (ORARI E LIVELLI REALISTICI MEDITERRANEO) -->
           <div class="card">
             <div class="card-h">
-              <h3><i class="fa-solid fa-water" style="color:#0284c7"></i> Tavola delle Maree Odierna</h3>
-              <span style="font-size:10px; font-weight:800; color:#0369a1;">Coeff. <span id="mp-coeff-badge">68</span></span>
+              <h3><i class="fa-solid fa-water" style="color:#38bdf8"></i> Tavola delle Maree Odierna</h3>
+              <span style="font-size:10px; font-weight:800; color:#38bdf8;">Coeff. <span id="mp-coeff-badge">68</span></span>
             </div>
             
             <div class="tide-table-row" id="tide-table-cells">
@@ -1595,7 +1595,7 @@
           <div class="card">
             <div class="card-h">
               <h3><i class="fa-solid fa-compass" style="color:var(--primary)"></i> Condizioni Marine &amp; Meteo Live</h3>
-              <span style="font-size:10px; font-weight:800; color:#059669;" id="live-update-time">🟢 Meteo Reale Open-Meteo</span>
+              <span style="font-size:10px; font-weight:800; color:#34d399;" id="live-update-time">🟢 Meteo Reale Open-Meteo</span>
             </div>
 
             <div class="tele-grid-6">
@@ -1607,7 +1607,7 @@
               </div>
 
               <div class="tele-card">
-                <i class="fa-solid fa-water" style="color:#0284c7;"></i>
+                <i class="fa-solid fa-water" style="color:#38bdf8;"></i>
                 <div class="val" id="vt-sea">26.4°C</div>
                 <div class="lbl">Temp. Acqua</div>
                 <div class="sub">Mare Tirreno</div>
@@ -1644,9 +1644,9 @@
 
             <!-- Wave 24h Chart -->
             <div style="margin-top:14px;">
-              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:#0f172a; margin-bottom:2px;">
+              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:#e2e8f0; margin-bottom:2px;">
                 <span>Andamento Moto Ondoso 24h (Altezza Onde in Metri)</span>
-                <span style="color:#0284c7;" id="wave-state-lbl">Mare Poco Mosso</span>
+                <span style="color:#38bdf8;" id="wave-state-lbl">Mare Poco Mosso</span>
               </div>
               <div class="chart-box-h"><canvas id="waveChart24h"></canvas></div>
             </div>
@@ -1655,8 +1655,8 @@
           <!-- 6. CALENDARIO MENSILE DELLE FASI LUNARI (ASTRONOMICO MEUS REALE) -->
           <div class="card">
             <div class="card-h">
-              <h3><i class="fa-solid fa-moon" style="color:#4f46e5"></i> Fase Lunare &amp; Calendario Astronomico</h3>
-              <span style="font-size:10px; font-weight:800; color:#4f46e5;" id="current-moon-title">Oggi</span>
+              <h3><i class="fa-solid fa-moon" style="color:#a5b4fc"></i> Fase Lunare &amp; Calendario Astronomico</h3>
+              <span style="font-size:10px; font-weight:800; color:#a5b4fc;" id="current-moon-title">Oggi</span>
             </div>
 
             <!-- Riquadro Oggi in Evidenza (Nessuno scorrimento necessario) -->
@@ -1670,12 +1670,12 @@
                 </div>
               </div>
               <div style="text-align:right">
-                <div style="font-size:9px;font-weight:800;background:rgba(255,255,255,0.15);padding:3px 8px;border-radius:12px;color:#e0e7ff">IMPATTO</div>
+                <div style="font-size:9px;font-weight:800;background:rgba(255,255,255,0.15);padding:3px 8px;border-radius:12px;color:#c7d2fe">IMPATTO</div>
                 <div id="moon-today-impact" style="font-size:11px;font-weight:900;color:#38bdf8;margin-top:2px">⭐⭐ Buono</div>
               </div>
             </div>
 
-            <div style="font-size:10px;font-weight:800;color:#64748b;margin-bottom:4px;text-transform:uppercase">Tavola di tutto il mese:</div>
+            <div style="font-size:10px;font-weight:800;color:#94a3b8;margin-bottom:4px;text-transform:uppercase">Tavola di tutto il mese:</div>
             <div class="moon-strip" id="monthly-moon-strip"></div>
           </div>
 
@@ -1689,7 +1689,7 @@
           <div style="background:linear-gradient(135deg, #0f172a 0%, #0369a1 100%);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;box-shadow:0 6px 16px rgba(0,0,0,0.15);border:1px solid #38bdf8">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <div style="font-size:10px;font-weight:900;background:#ef4444;color:#fff;padding:3px 8px;border-radius:12px;display:flex;align-items:center;gap:4px">
-                <span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block"></span> DIRETTE MARE LIVE
+                <span style="width:6px;height:6px;border-radius:50%;background:#111c33;display:inline-block"></span> DIRETTE MARE LIVE
               </div>
               <div style="display:flex;gap:6px">
                 <button onclick="openAddWebcamModal()" style="background:#0284c7;color:#fff;border:1px solid #38bdf8;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2)">
@@ -1705,14 +1705,14 @@
           </div>
 
           <!-- Search Bar -->
-          <div class="search-box" style="padding:7px 12px;margin-bottom:10px;background:#ffffff;border:1.5px solid #cbd5e1;border-radius:10px">
-            <i class="fa-solid fa-magnifying-glass" style="color:#64748b;font-size:13px"></i>
+          <div class="search-box" style="padding:7px 12px;margin-bottom:10px;background:#111c33;border:1.5px solid #334155;border-radius:10px">
+            <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:13px"></i>
             <input type="text" id="webcam-search" placeholder="Cerca webcam (es. Passetto, Portonovo, Senigallia, Sirolo...)" oninput="filterWebcams()" style="font-size:13px">
           </div>
 
           <!-- High-Contrast Filter Bar -->
           <div style="margin-bottom:14px">
-            <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:4px;letter-spacing:0.5px">Filtra per Zona / Provincia:</div>
+            <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;letter-spacing:0.5px">Filtra per Zona / Provincia:</div>
             <div class="webcam-filter-bar" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch">
               <button class="webcam-pill active" onclick="setWebcamRegion('Ancona & Conero', this)">📍 Ancona &amp; Conero</button>
               <button class="webcam-pill" onclick="setWebcamRegion('Tutte le Marche', this)">🏖️ Tutte le Marche</button>
@@ -1735,16 +1735,16 @@
       <div class="tab" id="t2">
         <div class="diary-top">
           <!-- Backup & Recovery Action Strip -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;background:#f0f9ff;border:1px solid #bae6fd;padding:6px 10px;border-radius:8px">
-            <span style="font-size:10px;font-weight:800;color:#0369a1"><i class="fa-solid fa-shield-halved"></i> Memoria Diario</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;background:#0c4a6e;border:1px solid #075985;padding:6px 10px;border-radius:8px">
+            <span style="font-size:10px;font-weight:800;color:#38bdf8"><i class="fa-solid fa-shield-halved"></i> Memoria Diario</span>
             <div style="display:flex;gap:4px">
               <button onclick="manualRecoverCatches()" style="background:#0284c7;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer">
                 🔍 Recupera Catture
               </button>
-              <button onclick="exportCatchesBackup()" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer" title="Salva file di Backup">
+              <button onclick="exportCatchesBackup()" style="background:#16203a;color:#cbd5e1;border:1px solid #334155;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer" title="Salva file di Backup">
                 📥 Backup
               </button>
-              <button onclick="document.getElementById('import-file-input').click()" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer" title="Ripristina file">
+              <button onclick="document.getElementById('import-file-input').click()" style="background:#16203a;color:#cbd5e1;border:1px solid #334155;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer" title="Ripristina file">
                 📤 Ripristina
               </button>
               <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importCatchesBackup(event)">
@@ -1762,7 +1762,7 @@
             <div class="chip" onclick="setFilter('Sarago',this)">Sarago</div>
             <div class="chip" onclick="setFilter('Dentice',this)">Dentice</div>
             <div class="chip" onclick="setFilter('Mormora',this)">Mormora</div>
-            <div class="chip" onclick="setFilter('Cappotti',this)" style="background:#f1f5f9;color:#475569;border-color:#cbd5e1">🧥 Cappotti</div>
+            <div class="chip" onclick="setFilter('Cappotti',this)" style="background:#16203a;color:#94a3b8;border-color:#cbd5e1">🧥 Cappotti</div>
           </div>
         </div>
         <div class="scroll-pane" style="padding-top:10px;">
@@ -1785,7 +1785,7 @@
                 <h4 style="font-size:14px;font-weight:900;color:#fff;margin:2px 0">Report Correlazione Catture</h4>
                 <div style="font-size:11px;color:#cbd5e1;line-height:1.3">Scopri con quali maree, lune e venti hai pescato di più!</div>
               </div>
-              <button class="pill" style="background:#38bdf8;color:#0f172a;font-weight:900;border:none;padding:9px 13px;border-radius:10px;cursor:pointer;white-space:nowrap;font-size:11px;display:flex;align-items:center;gap:6px" onclick="openReportModal()">
+              <button class="pill" style="background:#38bdf8;color:#e2e8f0;font-weight:900;border:none;padding:9px 13px;border-radius:10px;cursor:pointer;white-space:nowrap;font-size:11px;display:flex;align-items:center;gap:6px" onclick="openReportModal()">
                 <i class="fa-solid fa-download"></i> Scarica Report
               </button>
             </div>
@@ -1874,33 +1874,33 @@
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
             <div>
               <h2 id="sp-detail-name" style="font-size:18px;font-weight:900;color:var(--text)">Nome Pesce</h2>
-              <div id="sp-detail-latin" style="font-size:12px;font-style:italic;color:#64748b">Nome Scientifico</div>
+              <div id="sp-detail-latin" style="font-size:12px;font-style:italic;color:#94a3b8">Nome Scientifico</div>
             </div>
-            <div id="sp-detail-conf-wrap" style="display:none;background:#ecfdf5;border:1px solid #a7f3d0;padding:4px 8px;border-radius:8px;text-align:right">
-              <div style="font-size:9px;font-weight:700;color:#065f46">CONFIDENZA IA</div>
-              <div id="sp-detail-conf" style="font-size:13px;font-weight:900;color:#059669">98% Match</div>
+            <div id="sp-detail-conf-wrap" style="display:none;background:#052e16;border:1px solid #065f46;padding:4px 8px;border-radius:8px;text-align:right">
+              <div style="font-size:9px;font-weight:700;color:#34d399">CONFIDENZA IA</div>
+              <div id="sp-detail-conf" style="font-size:13px;font-weight:900;color:#34d399">98% Match</div>
             </div>
           </div>
 
           <!-- Quick Visual Species Selector with Photo Thumbnails -->
-          <div id="sp-candidates-box" style="margin:10px 0 14px 0;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px">
-            <div style="font-size:11px;font-weight:900;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+          <div id="sp-candidates-box" style="margin:10px 0 14px 0;background:#0b1220;border:1.5px solid #1e293b;border-radius:12px;padding:10px">
+            <div style="font-size:11px;font-weight:900;color:#cbd5e1;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
               <span>🎯 Conferma o Cambia Specie con 1 Tocco:</span>
             </div>
             <div id="sp-quick-grid" style="display:grid;grid-template-columns:repeat(4, 1fr);gap:6px;margin-bottom:8px">
               <!-- Top species visual buttons with real fish photo thumbnails -->
             </div>
             
-            <div style="padding-top:8px;border-top:1px dashed #cbd5e1;display:flex;align-items:center;gap:6px">
-              <label style="font-size:11px;font-weight:800;color:#475569;white-space:nowrap">Tutte le 33 Specie:</label>
-              <select id="sp-manual-select" style="flex:1;font-size:11px;font-weight:700;padding:6px 8px;border:1px solid #94a3b8;border-radius:8px;background:#fff" onchange="openSpeciesModal(this.value, 99, false)"></select>
+            <div style="padding-top:8px;border-top:1px dashed #334155;display:flex;align-items:center;gap:6px">
+              <label style="font-size:11px;font-weight:800;color:#94a3b8;white-space:nowrap">Tutte le 33 Specie:</label>
+              <select id="sp-manual-select" style="flex:1;font-size:11px;font-weight:700;padding:6px 8px;border:1px solid #94a3b8;border-radius:8px;background:#111c33" onchange="openSpeciesModal(this.value, 99, false)"></select>
             </div>
           </div>
 
           <div class="sp-stat-grid">
             <div class="sp-stat-box">
               <div class="title">📏 Misura Minima Legale</div>
-              <div class="val" id="sp-detail-min-size" style="color:#0284c7">20 cm (DPR 1639/68)</div>
+              <div class="val" id="sp-detail-min-size" style="color:#38bdf8">20 cm (DPR 1639/68)</div>
             </div>
             <div class="sp-stat-box">
               <div class="title">📅 Periodo Migliore</div>
@@ -1917,9 +1917,9 @@
           </div>
 
           <!-- Section: Tecniche ed Esche Top -->
-          <div class="sp-section" style="background:#f0fdf4;border-color:#bbf7d0">
-            <h4 style="color:#166534"><i class="fa-solid fa-worm" style="color:#15803d"></i> Esche & Tecniche Consigliate</h4>
-            <p id="sp-detail-baits" style="color:#14532d;font-weight:600">Cannolicchio vivo, Bibi, Arenicola, Cozza, Americano.</p>
+          <div class="sp-section" style="background:#052e16;border-color:#4ade80">
+            <h4 style="color:#4ade80"><i class="fa-solid fa-worm" style="color:#4ade80"></i> Esche & Tecniche Consigliate</h4>
+            <p id="sp-detail-baits" style="color:#4ade80;font-weight:600">Cannolicchio vivo, Bibi, Arenicola, Cozza, Americano.</p>
           </div>
 
           <!-- Section: Biologia & Curiosità -->
@@ -1929,7 +1929,7 @@
           </div>
 
           <!-- Section: Avviso di Sicurezza (se pericoloso) -->
-          <div class="sp-section" id="sp-detail-safety-box" style="display:none;background:#fef2f2;border-color:#fecaca">
+          <div class="sp-section" id="sp-detail-safety-box" style="display:none;background:#450a0a;border-color:#7f1d1d">
             <h4 style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> Avviso di Manipolazione & Sicurezza</h4>
             <p id="sp-detail-safety" style="color:#991b1b"></p>
           </div>
@@ -1947,11 +1947,11 @@
     <div class="modal" id="modal-report">
       <div class="sheet" style="max-height:85vh;overflow-y:auto">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <h3 style="font-size:15px;font-weight:900"><i class="fa-solid fa-file-pdf" style="color:#0284c7"></i> Genera Report Meteomarino</h3>
-          <button onclick="closeReportModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+          <h3 style="font-size:15px;font-weight:900"><i class="fa-solid fa-file-pdf" style="color:#38bdf8"></i> Genera Report Meteomarino</h3>
+          <button onclick="closeReportModal()" style="background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer">✕</button>
         </div>
 
-        <div style="font-size:11px;color:#64748b;margin-bottom:14px;line-height:1.4">
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:14px;line-height:1.4">
           Genera un documento completo e impaginato per analizzare l'impatto di <b>Maree, Fasi Lunari, Vento ed Esche</b> sulle tue catture.
         </div>
 
@@ -1981,7 +1981,7 @@
         </div>
 
         <!-- Analysis Highlights Preview -->
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:#334155">
+        <div style="background:#0b1220;border:1px solid #1e293b;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:#cbd5e1">
           <div style="font-weight:800;color:var(--primary);margin-bottom:4px"><i class="fa-solid fa-chart-pie"></i> Sezioni incluse nel report:</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:10px">
             <div>✓ Matrice Rendimento Maree</div>
@@ -2006,7 +2006,7 @@
           </button>
 
           <!-- 3. Direct HTML Offline Document Download -->
-          <button type="button" class="submit-btn" style="background:#f1f5f9;color:#334155;border:1.5px solid #cbd5e1;font-size:12px;padding:10px" onclick="executeDirectHtmlDownload()">
+          <button type="button" class="submit-btn" style="background:#16203a;color:#cbd5e1;border:1.5px solid #334155;font-size:12px;padding:10px" onclick="executeDirectHtmlDownload()">
             <i class="fa-solid fa-download"></i> Scarica File HTML Autonomo
           </button>
         </div>
@@ -2016,7 +2016,7 @@
     
     <!-- MODAL: IN-APP REPORT VIEWER (100% RELIABLE ON IPHONE & PWA) -->
     <div class="modal" id="modal-report-viewer" style="z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(10px)">
-      <div style="background:#ffffff;width:96%;max-width:850px;height:92vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5)">
+      <div style="background:#111c33;width:96%;max-width:850px;height:92vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5)">
         <!-- Top Toolbar -->
         <div id="modal-report-viewer-header" style="background:#0f172a;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;border-bottom:1px solid #334155">
           <div style="display:flex;align-items:center;gap:8px">
@@ -2040,7 +2040,7 @@
           </div>
         </div>
         <!-- Scrollable Report Body -->
-        <div id="viewer-content" style="flex:1;overflow-y:auto;padding:16px;background:#f8fafc"></div>
+        <div id="viewer-content" style="flex:1;overflow-y:auto;padding:16px;background:#0b1220"></div>
       </div>
     </div>
 
@@ -2068,7 +2068,7 @@
             <a id="player-main-stream-btn" href="#" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg, #0284c7, #0369a1);color:#fff;text-decoration:none;font-weight:900;font-size:14px;padding:12px 20px;border-radius:12px;box-shadow:0 6px 20px rgba(2,132,199,0.7);border:1.5px solid #38bdf8">
               <i class="fa-solid fa-play" style="font-size:16px"></i> <span>APRI STREAMING UFFICIALE</span>
             </a>
-            <div style="color:#e2e8f0;font-size:10px;font-weight:700;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.8)">
+            <div style="color:#cbd5e1;font-size:10px;font-weight:700;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.8)">
               📡 Fonte: <span id="player-source-badge">Vedetta.org / Skyline</span>
             </div>
           </div>
@@ -2089,7 +2089,7 @@
             <a id="player-external-link" href="#" target="_blank" style="flex:2;background:#0284c7;color:#fff;text-decoration:none;font-weight:900;font-size:12px;padding:9px;border-radius:8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px">
               <i class="fa-solid fa-arrow-up-right-from-square"></i> Guarda Diretta su Browser
             </a>
-            <button onclick="copyCurrentWebcamLink()" style="flex:1;background:#334155;color:#e2e8f0;border:1px solid #475569;font-weight:800;font-size:11px;padding:9px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+            <button onclick="copyCurrentWebcamLink()" style="flex:1;background:#334155;color:#cbd5e1;border:1px solid #475569;font-weight:800;font-size:11px;padding:9px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
               <i class="fa-solid fa-copy"></i> Copia Link
             </button>
           </div>
@@ -2100,17 +2100,17 @@
     <!-- MODAL: AGGIUNGI / MODIFICA WEBCAM CON ASSISTENTE E INCOLLA APPUNTI -->
     <div class="modal" id="modal-add-webcam">
       <div class="sheet" style="max-height:88vh;overflow-y:auto">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e2e8f0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #1e293b">
           <h3 style="font-size:15px;font-weight:900" id="w-form-title"><i class="fa-solid fa-video" style="color:var(--primary)"></i> Nuova Webcam Spot</h3>
-          <button onclick="closeAddWebcamModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+          <button onclick="closeAddWebcamModal()" style="background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer">✕</button>
         </div>
 
         <!-- Selettore Rapido da Catalogo Marche (Senza dover digitare URL) -->
-        <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:10px;margin-bottom:14px">
-          <div style="font-size:11px;font-weight:900;color:#0369a1;display:flex;align-items:center;gap:5px;margin-bottom:6px">
+        <div style="background:#0c4a6e;border:1.5px solid #075985;border-radius:10px;padding:10px;margin-bottom:14px">
+          <div style="font-size:11px;font-weight:900;color:#38bdf8;display:flex;align-items:center;gap:5px;margin-bottom:6px">
             <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Compilazione Rapida da Catalogo Marche (1 Tocco)</span>
           </div>
-          <select id="w-preset-select" onchange="applyPresetWebcam(this.value)" style="width:100%;font-size:12px;font-weight:700;padding:8px;border-radius:8px;border:1px solid #93c5fd;background:#ffffff">
+          <select id="w-preset-select" onchange="applyPresetWebcam(this.value)" style="width:100%;font-size:12px;font-weight:700;padding:8px;border-radius:8px;border:1px solid #1e40af;background:#111c33">
             <option value="">-- Seleziona uno spot per autocompilare --</option>
             <option value="ancona-passetto">📍 Ancona - Monumento del Passetto & Scogli (SkylineWebcams)</option>
             <option value="portonovo-baia">🏖️ Portonovo - Baia del Conero & Scoglio della Vela (Vedetta.org)</option>
@@ -2162,7 +2162,7 @@
               </button>
             </div>
             <input type="url" id="w-url" required placeholder="https://www.vedetta.org/... o https://www.skylinewebcams.com/..." style="font-size:12px">
-            <div style="font-size:10px;color:#64748b;margin-top:2px">Puoi incollare qualsiasi link da Vedetta.org, SkylineWebcams, YouTube Live o sito webcam.</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">Puoi incollare qualsiasi link da Vedetta.org, SkylineWebcams, YouTube Live o sito webcam.</div>
           </div>
 
           <div class="fg">
@@ -2181,7 +2181,7 @@
           </div>
 
           <div style="display:flex;gap:8px;margin-top:14px">
-            <button type="button" onclick="closeAddWebcamModal()" style="flex:1;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:10px;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">Annulla</button>
+            <button type="button" onclick="closeAddWebcamModal()" style="flex:1;background:#16203a;color:#94a3b8;border:1px solid #334155;padding:10px;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">Annulla</button>
             <button type="submit" class="submit-btn" style="flex:2;margin:0;font-size:13px">
               <i class="fa-solid fa-check"></i> <span id="w-submit-btn-text">Salva Webcam</span>
             </button>
@@ -2195,18 +2195,18 @@
       <div class="sheet">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <h3 style="font-size:15px;font-weight:900" id="mch">Registra Cattura 🎣</h3>
-          <button onclick="closeCatchModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+          <button onclick="closeCatchModal()" style="background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer">✕</button>
         </div>
         <form id="cf" onsubmit="saveCatch(event)">
           <input type="hidden" id="eid" value="">
 
           <!-- Switch Battuta a Vuoto / Cappotto -->
-          <div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+          <div style="background:#16203a;border:1px solid #334155;border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:8px">
               <span style="font-size:20px">🧥</span>
               <div>
-                <div style="font-size:12px;font-weight:800;color:#0f172a">Battuta a Vuoto / Cappotto</div>
-                <div style="font-size:10px;color:#64748b">Registra 0 catture per le statistiche meteo</div>
+                <div style="font-size:12px;font-weight:800;color:#e2e8f0">Battuta a Vuoto / Cappotto</div>
+                <div style="font-size:10px;color:#94a3b8">Registra 0 catture per le statistiche meteo</div>
               </div>
             </div>
             <label style="position:relative;display:inline-block;width:44px;height:24px">
@@ -2217,7 +2217,7 @@
 
           <div id="catch-photo-section" class="fg"><label>Foto Cattura</label>
             <div class="photo-box" onclick="document.getElementById('pf').click()">
-              <img id="pp" src="" style="display:none"><div id="pph" style="text-align:center;color:#64748b"><i class="fa-solid fa-camera" style="font-size:26px;color:var(--primary);margin-bottom:4px"></i><div style="font-size:11px;font-weight:700">Tocca per caricare foto reale</div></div>
+              <img id="pp" src="" style="display:none"><div id="pph" style="text-align:center;color:#94a3b8"><i class="fa-solid fa-camera" style="font-size:26px;color:var(--primary);margin-bottom:4px"></i><div style="font-size:11px;font-weight:700">Tocca per caricare foto reale</div></div>
             </div>
             <input type="file" id="pf" accept="image/*" style="display:none" onchange="pickPhoto(event)">
           </div>
@@ -2225,27 +2225,27 @@
           <!-- Selettore Data e Ora Inizio e Fine Battuta -->
           <div class="fr2">
             <div class="fg">
-              <label><i class="fa-solid fa-play" style="color:#059669"></i> Inizio Battuta *</label>
-              <input type="datetime-local" id="fdt" required onchange="updateCatchSolunarParams()" style="background:#fff;font-weight:700">
+              <label><i class="fa-solid fa-play" style="color:#34d399"></i> Inizio Battuta *</label>
+              <input type="datetime-local" id="fdt" required onchange="updateCatchSolunarParams()" style="background:#111c33;font-weight:700">
             </div>
             <div class="fg">
               <label><i class="fa-solid fa-flag-checkered" style="color:#dc2626"></i> Fine Battuta</label>
-              <input type="datetime-local" id="fdt-end" onchange="updateCatchSolunarParams()" style="background:#fff;font-weight:700">
+              <input type="datetime-local" id="fdt-end" onchange="updateCatchSolunarParams()" style="background:#111c33;font-weight:700">
             </div>
           </div>
 
-          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:#1e40af">
+          <div style="background:#eff6ff;border:1px solid #1e3a8a;border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:#93c5fd">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <b>⚡ Parametri Solunari &amp; Meteo:</b>
-              <span id="catch-duration-badge" style="background:#dbeafe;color:#1e40af;font-weight:800;padding:2px 6px;border-radius:6px;font-size:10px">⏱️ 4h 00m</span>
+              <span id="catch-duration-badge" style="background:#dbeafe;color:#93c5fd;font-weight:800;padding:2px 6px;border-radius:6px;font-size:10px">⏱️ 4h 00m</span>
             </div>
             <div id="auto-info" style="margin-top:2px;font-size:10px">🌙 Calcolo in corso... • 🌊 Calcolo marea... • 📍 Spot</div>
           </div>
 
                     <!-- Dettagli Pesce / Cestino Multi-Specie (nascosti in modalità cappotto) -->
           <div id="catch-fish-fields">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:#f0f9ff;border:1px solid #bae6fd;padding:6px 10px;border-radius:10px">
-              <label style="font-size:12px;font-weight:900;color:#0369a1;display:flex;align-items:center;gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:#0c4a6e;border:1px solid #075985;padding:6px 10px;border-radius:10px">
+              <label style="font-size:12px;font-weight:900;color:#38bdf8;display:flex;align-items:center;gap:6px">
                 <i class="fa-solid fa-basket-shopping"></i> Pescato della Battuta
               </label>
               <button type="button" onclick="addSpeciesRow()" style="background:#0284c7;color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(2,132,199,0.3)">
@@ -2257,14 +2257,14 @@
             <div id="species-rows-container" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
 
             <!-- Riepilogo Live Totali Battuta -->
-            <div id="trip-live-summary" style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:10px 12px;margin-bottom:10px">
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:#166534">
+            <div id="trip-live-summary" style="background:#052e16;border:1.5px solid #166534;border-radius:12px;padding:10px 12px;margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:#4ade80">
                 <span>🐟 Pescato Totale: <b id="summary-total-qty">1 pesce</b></span>
-                <span id="summary-total-wt" style="font-size:14px;color:#15803d">0.00 kg</span>
+                <span id="summary-total-wt" style="font-size:14px;color:#4ade80">0.00 kg</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#15803d;margin-top:4px;padding-top:4px;border-top:1px dashed #bbf7d0">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#4ade80;margin-top:4px;padding-top:4px;border-top:1px dashed #166534">
                 <span>🏆 Singola Preda Più Grande:</span>
-                <b id="summary-max-single" style="color:#047857;font-weight:900">0.00 kg</b>
+                <b id="summary-max-single" style="color:#34d399;font-weight:900">0.00 kg</b>
               </div>
             </div>
           </div>
@@ -2303,9 +2303,9 @@
           </div>
 
           <!-- Spot & Località Georeferenziata per la Mappa Satellitare -->
-          <div class="fg" style="background:#f8fafc;border:1.5px solid #cbd5e1;padding:10px;border-radius:12px;margin-bottom:10px">
+          <div class="fg" style="background:#0b1220;border:1.5px solid #334155;padding:10px;border-radius:12px;margin-bottom:10px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <label style="font-weight:900;color:#0f172a;font-size:11px">
+              <label style="font-weight:900;color:#e2e8f0;font-size:11px">
                 <i class="fa-solid fa-map-pin" style="color:#ef4444"></i> Località / Spot della Pescata *
               </label>
               <button type="button" onclick="useCurrentGpsForCatch()" style="background:#0284c7;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
@@ -2314,21 +2314,21 @@
             </div>
 
             <!-- Spot Input con Datalist per Suggerimenti Rapidi -->
-            <input type="text" id="fsp" list="catch-spot-suggestions" placeholder="Scrivi es. Portonovo, Senigallia, Sirolo, Passetto..." required oninput="onCatchSpotInput(this.value)" style="background:#fff;font-weight:800;border:1px solid #94a3b8">
+            <input type="text" id="fsp" list="catch-spot-suggestions" placeholder="Scrivi es. Portonovo, Senigallia, Sirolo, Passetto..." required oninput="onCatchSpotInput(this.value)" style="background:#111c33;font-weight:800;border:1px solid #94a3b8">
             <datalist id="catch-spot-suggestions"></datalist>
 
             <!-- Coordinate GPS Nascoste e Badge Stato Posizione -->
             <input type="hidden" id="flat" value="">
             <input type="hidden" id="flng" value="">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:10px">
-              <span id="spot-geo-status" style="color:#0284c7;font-weight:800">📍 Posizione Mappa: Riconoscimento automatico</span>
-              <span id="spot-coords-badge" style="color:#64748b;font-size:9px"></span>
+              <span id="spot-geo-status" style="color:#38bdf8;font-weight:800">📍 Posizione Mappa: Riconoscimento automatico</span>
+              <span id="spot-coords-badge" style="color:#94a3b8;font-size:9px"></span>
             </div>
 
             <!-- Menu Rapido Miei Preferiti -->
-            <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #cbd5e1;display:flex;align-items:center;gap:6px">
-              <span style="font-size:10px;font-weight:800;color:#475569;white-space:nowrap">⭐ Miei Preferiti:</span>
-              <select id="quick-fav-spot-select" onchange="pickFavoriteSpotForCatch(this.value)" style="font-size:10px;padding:4px 6px;border-radius:6px;background:#fff;border:1px solid #cbd5e1;flex:1">
+            <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #334155;display:flex;align-items:center;gap:6px">
+              <span style="font-size:10px;font-weight:800;color:#94a3b8;white-space:nowrap">⭐ Miei Preferiti:</span>
+              <select id="quick-fav-spot-select" onchange="pickFavoriteSpotForCatch(this.value)" style="font-size:10px;padding:4px 6px;border-radius:6px;background:#111c33;border:1px solid #334155;flex:1">
                 <option value="">-- Seleziona uno Spot Salvato --</option>
               </select>
             </div>
@@ -2345,13 +2345,13 @@
       <div class="sheet">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <h3 style="font-size:15px;font-weight:900">Salva Spot nei Preferiti ⭐</h3>
-          <button onclick="closeSpotModal()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+          <button onclick="closeSpotModal()" style="background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer">✕</button>
         </div>
         <form onsubmit="saveSpot(event)">
           <div class="fg"><label>Nome Spot *</label><input type="text" id="sn" placeholder="es. Scogliera Faro Sud" required></div>
           <div class="fg"><label>Tipo Fondale</label><select id="ssb"><option>Misto Sabbia e Roccia</option><option>Sabbia pura con canaloni</option><option>Scogliera naturale profonda</option><option>Posidonia e ciottoli</option><option>Foce di fiume</option></select></div>
           <div class="fg"><label>Specie Target</label><input type="text" id="stt" placeholder="Orata, Spigola, Sarago"></div>
-          <div class="fg"><label>Coordinate GPS</label><input type="text" id="sco" readonly style="background:#e2e8f0"></div>
+          <div class="fg"><label>Coordinate GPS</label><input type="text" id="sco" readonly style="background:#1e293b"></div>
           <button type="submit" class="submit-btn">Salva Spot</button>
         </form>
       </div>
@@ -2362,7 +2362,7 @@
       <div class="sheet">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <h3 style="font-size:15px;font-weight:900">⭐ Miei Spot Preferiti</h3>
-          <button onclick="closeSpotsList()" style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer">✕</button>
+          <button onclick="closeSpotsList()" style="background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer">✕</button>
         </div>
         <div id="sl" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
@@ -2754,7 +2754,7 @@ function filterLoc(q) {
     <div class="res-row" onclick="pickLoc('${s.name}')">
       <i class="fa-solid fa-location-dot" style="color:var(--primary)"></i>
       <div>
-        <b>${s.name}</b> <span style="font-size:10px;color:#64748b">(${s.reg})</span>
+        <b>${s.name}</b> <span style="font-size:10px;color:#94a3b8">(${s.reg})</span>
       </div>
     </div>
   `).join('');
@@ -2784,9 +2784,9 @@ async function fetchOnlineLocations(q) {
         }
         const row = document.createElement('div');
         row.className = 'res-row';
-        row.style.background = '#f0fdf4';
+        row.style.background = '#052e16';
         row.style.borderLeft = '3px solid #10b981';
-        row.innerHTML = `<i class="fa-solid fa-earth-europe" style="color:#059669"></i> <div><b>${x.name}</b> <span style="font-size:10px;color:#059669">(${x.admin1 || 'Italia'})</span></div>`;
+        row.innerHTML = `<i class="fa-solid fa-earth-europe" style="color:#34d399"></i> <div><b>${x.name}</b> <span style="font-size:10px;color:#34d399">(${x.admin1 || 'Italia'})</span></div>`;
         row.onclick = () => {
           spot = { name: placeName, reg: x.admin1 || 'Italia', lat: x.latitude, lng: x.longitude, seaBase: 26.5 };
           pickLoc(placeName);
@@ -3147,7 +3147,7 @@ function updateCharts(waveData24) {
         plugins: { legend: { display: false } },
         scales: {
           x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#64748b' } },
-          y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, color: '#64748b', callback: v => v + 'm' }, min: 0, max: 1.0 }
+          y: { grid: { color: '#16203a' }, ticks: { font: { size: 9 }, color: '#64748b', callback: v => v + 'm' }, min: 0, max: 1.0 }
         }
       }
     });
@@ -3194,11 +3194,11 @@ function generateMonthlyMoonStrip() {
     const isToday = d === currentDay;
     const mData = getAstronomicalMoon(testDate);
     html += `
-      <div id="${isToday ? 'moon-card-today' : ''}" class="moon-day-card ${isToday ? 'today' : ''}" style="${isToday ? 'border:2px solid #4f46e5;background:#eef2ff;' : ''}">
+      <div id="${isToday ? 'moon-card-today' : ''}" class="moon-day-card ${isToday ? 'today' : ''}" style="${isToday ? 'border:2px solid #4f46e5;background:#1e1b4b;' : ''}">
         <div style="font-size:9px; font-weight:800; color:${isToday ? '#4338ca' : '#64748b'};">${d} ${currentMonthName}</div>
         <div style="font-size:20px; margin:2px 0;">${mData.icon}</div>
-        <div style="font-size:9px; font-weight:700; color:#1e293b;">${mData.illum}%</div>
-        ${isToday ? '<div style="font-size:8px; font-weight:900; color:#4f46e5;">OGGI</div>' : ''}
+        <div style="font-size:9px; font-weight:700; color:#cbd5e1;">${mData.illum}%</div>
+        ${isToday ? '<div style="font-size:8px; font-weight:900; color:#a5b4fc;">OGGI</div>' : ''}
       </div>
     `;
   }
@@ -3240,14 +3240,14 @@ function saveSpot(e) {
 function openSpotsList() {
   const c = document.getElementById('sl');
   c.innerHTML = spots.length ? spots.map(s => `
-    <div style="background:#f8fafc;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0">
+    <div style="background:#0b1220;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border:1px solid #1e293b">
       <div>
         <div style="font-weight:800;font-size:13px;color:var(--text)">⭐ ${s.name}</div>
-        <div style="font-size:11px;color:#64748b">${s.sb} • Target: ${s.tgt}</div>
+        <div style="font-size:11px;color:#94a3b8">${s.sb} • Target: ${s.tgt}</div>
       </div>
       <div style="display:flex;gap:6px">
         <button onclick="goSpot(${s.lat},${s.lng})" style="background:var(--primary);color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer">Vai</button>
-        <button onclick="deleteSpotItem(${s.id})" style="background:#fee2e2;color:#dc2626;border:none;padding:6px 8px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer"><i class="fa-solid fa-trash"></i></button>
+        <button onclick="deleteSpotItem(${s.id})" style="background:#7f1d1d;color:#dc2626;border:none;padding:6px 8px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
   `).join('') : '<div style="text-align:center;padding:20px;color:#94a3b8">Nessuno spot salvato.</div>';
@@ -3341,7 +3341,7 @@ function toggleCappottoMode(isCappotto) {
 
 let currentSpeciesBasket = [];
 
-const SPECIES_SELECT_OPTIONS = `<option value="Orata">Orata</option><option value="Spigola">Spigola</option><option value="Sarago">Sarago</option><option value="Mormora">Mormora</option><option value="Dentice">Dentice</option><option value="Pesce Serra">Pesce Serra</option><option value="Ricciola">Ricciola</option><option value="Palamita">Palamita</option><option value="Calamaro">Calamaro</option><option value="Seppia">Seppia</option><option value="Cefalo">Cefalo</option><option value="Tracina">Tracina</option><option value="Pagello">Pagello</option><option value="Aguglia">Aguglia</option><option value="Sgombro">Sgombro</option><option value="Occhiata">Occhiata</option><option value="Leccia">Leccia</option><option value="Altro">Altro</option>`;
+const SPECIES_SELECT_OPTIONS = `<option value="Orata">Orata</option><option value="Spigola">Spigola</option><option value="Sarago">Sarago</option><option value="Mormora">Mormora</option><option value="Ombrina">Ombrina</option><option value="Corvina">Corvina</option><option value="Dentice">Dentice</option><option value="Pesce Serra">Pesce Serra</option><option value="Ricciola">Ricciola</option><option value="Palamita">Palamita</option><option value="Calamaro">Calamaro</option><option value="Seppia">Seppia</option><option value="Cefalo">Cefalo</option><option value="Tracina">Tracina</option><option value="Pagello">Pagello</option><option value="Aguglia">Aguglia</option><option value="Sgombro">Sgombro</option><option value="Occhiata">Occhiata</option><option value="Leccia">Leccia</option><option value="Altro">Altro</option>`;
 
 function getSpeciesSelectHtml(selected) {
   if (!selected) selected = 'Orata';
@@ -3357,13 +3357,13 @@ function renderSpeciesRows() {
   }
 
   container.innerHTML = currentSpeciesBasket.map((item, idx) => `
-    <div class="species-row-card" data-idx="${idx}" style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px;position:relative">
+    <div class="species-row-card" data-idx="${idx}" style="background:#0b1220;border:1.5px solid #334155;border-radius:12px;padding:10px;position:relative">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-size:11px;font-weight:900;color:#0369a1;background:#e0f2fe;padding:2px 8px;border-radius:6px">
+        <span style="font-size:11px;font-weight:900;color:#38bdf8;background:#0c4a6e;padding:2px 8px;border-radius:6px">
           🐟 Specie #${idx + 1}
         </span>
         ${currentSpeciesBasket.length > 1 ? `
-          <button type="button" onclick="removeSpeciesRow(${idx})" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer">
+          <button type="button" onclick="removeSpeciesRow(${idx})" style="background:#7f1d1d;color:#dc2626;border:1px solid #7f1d1d;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer">
             <i class="fa-solid fa-trash"></i> Elimina
           </button>
         ` : ''}
@@ -3575,7 +3575,7 @@ function onCatchSpotInput(val) {
   if (latInput) latInput.value = coords.lat;
   if (lngInput) lngInput.value = coords.lng;
 
-  if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#059669">${coords.source}</b> (${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)})`;
+  if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#34d399">${coords.source}</b> (${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)})`;
   updateCatchSolunarParams();
 }
 
@@ -3591,7 +3591,7 @@ function pickFavoriteSpotForCatch(spotName) {
   if (fav) {
     if (latInput) latInput.value = fav.lat;
     if (lngInput) lngInput.value = fav.lng;
-    if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#059669">⭐ ${fav.name}</b> (${fav.lat.toFixed(3)}, ${fav.lng.toFixed(3)})`;
+    if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#34d399">⭐ ${fav.name}</b> (${fav.lat.toFixed(3)}, ${fav.lng.toFixed(3)})`;
   }
   updateCatchSolunarParams();
 }
@@ -3622,7 +3622,7 @@ function useCurrentGpsForCatch() {
       if (spInput && (!spInput.value || spInput.value.includes('Spot'))) {
         spInput.value = realName;
       }
-      if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#059669">GPS Reale</b> (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+      if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#34d399">GPS Reale</b> (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
       updateCatchSolunarParams();
       alert(`📍 Coordinate GPS agganciate con successo!
 Posizione: ${realName}`);
@@ -3901,16 +3901,16 @@ function renderDiary() {
     const isBlank = c.isBlank || c.qty === 0 || c.sp.toLowerCase().includes('cappotto');
     if (isBlank) {
       return `
-        <div class="catch-card" style="border-left:4px solid #64748b;background:#f8fafc">
-          <div style="padding:10px 12px;background:#f1f5f9;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0">
+        <div class="catch-card" style="border-left:4px solid #64748b;background:#0b1220">
+          <div style="padding:10px 12px;background:#16203a;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b">
             <div style="display:flex;align-items:center;gap:6px">
               <span style="font-size:16px">🧥</span>
-              <span style="font-size:13px;font-weight:900;color:#334155">Cappotto (0 Catture)</span>
+              <span style="font-size:13px;font-weight:900;color:#cbd5e1">Cappotto (0 Catture)</span>
             </div>
-            <span style="font-size:11px;font-weight:800;color:#64748b"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
+            <span style="font-size:11px;font-weight:800;color:#94a3b8"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
           </div>
           <div class="catch-inner" style="padding-top:8px">
-            <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#64748b">
+            <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#94a3b8">
               <span>📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''}</span>
               ${c.spot ? `<span>📍 ${c.spot}</span>` : ''}
             </div>
@@ -3918,8 +3918,8 @@ function renderDiary() {
               <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
               <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
             </div>
-            <div style="font-size:11px;color:#475569;margin-top:2px"><b>🪱 Esche provate:</b> ${c.bait}</div>
-            ${c.notes ? `<div style="font-size:11px;color:#64748b;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px"><b>🪱 Esche provate:</b> ${c.bait}</div>
+            ${c.notes ? `<div style="font-size:11px;color:#94a3b8;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
             <div class="catch-acts">
               <button class="abtn" onclick="openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
               <button class="abtn del" onclick="delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
@@ -3940,10 +3940,10 @@ function renderDiary() {
           <div class="auto-tags">
             <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
             <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
-            ${c.spot ? `<div class="atag" style="background:#fffbeb;color:#b45309;border-color:#fde68a"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
+            ${c.spot ? `<div class="atag" style="background:#451a03;color:#fcd34d;border-color:#fcd34d"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
           </div>
-          <div style="font-size:11px;color:#334155;margin-top:4px"><b>🪱 Esca:</b> ${c.bait}</div>
-          ${c.notes ? `<div style="font-size:11px;color:#64748b;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
+          <div style="font-size:11px;color:#cbd5e1;margin-top:4px"><b>🪱 Esca:</b> ${c.bait}</div>
+          ${c.notes ? `<div style="font-size:11px;color:#94a3b8;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
           <div class="catch-acts">
             <button class="abtn" onclick="openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
             <button class="abtn del" onclick="delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
@@ -4116,7 +4116,7 @@ function renderStats() {
         return `
           <div class="pbar">
             <div class="pbar-label">
-              <span><b>🐟 ${spName}</b> <span style="font-size:10px;color:#0284c7;font-weight:800">(Record Singolo: ${maxSingleW} kg)</span></span>
+              <span><b>🐟 ${spName}</b> <span style="font-size:10px;color:#38bdf8;font-weight:800">(Record Singolo: ${maxSingleW} kg)</span></span>
               <span style="color:var(--primary)"><b>${count} pesci</b> (Tot. ${totalW} kg • ${pct}%)</span>
             </div>
             <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%;background:var(--primary)"></div></div>
@@ -5068,9 +5068,9 @@ function renderWebcams() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center;padding:36px 18px;color:#64748b;background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+      <div style="text-align:center;padding:36px 18px;color:#94a3b8;background:#111c33;border-radius:12px;border:1px solid #1e293b;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
         <i class="fa-solid fa-video-slash" style="font-size:32px;color:#94a3b8;margin-bottom:10px"></i>
-        <div style="font-size:14px;font-weight:900;color:#0f172a">Nessuna webcam trovata in questo filtro</div>
+        <div style="font-size:14px;font-weight:900;color:#e2e8f0">Nessuna webcam trovata in questo filtro</div>
         <div style="font-size:12px;margin-top:4px">Puoi cambiare filtro in alto o aggiungere la tua webcam personale con il tasto "+ Nuova Webcam".</div>
         <button onclick="openAddWebcamModal()" style="margin-top:12px;background:#0284c7;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer">
           <i class="fa-solid fa-plus"></i> Aggiungi Webcam Spot
@@ -5080,7 +5080,7 @@ function renderWebcams() {
   }
 
   container.innerHTML = filtered.map(w => `
-    <div class="webcam-card" style="background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 14px rgba(0,0,0,0.06);display:flex;flex-direction:column">
+    <div class="webcam-card" style="background:#111c33;border-radius:14px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 4px 14px rgba(0,0,0,0.06);display:flex;flex-direction:column">
       <!-- Thumbnail Video Header -->
       <div style="position:relative;width:100%;height:180px;background:#0f172a;cursor:pointer" onclick="openWebcamPlayer('${w.id}')">
         <img src="${w.thumb || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80'}" style="width:100%;height:100%;object-fit:cover;opacity:0.9" alt="${w.name}">
@@ -5093,7 +5093,7 @@ function renderWebcams() {
         <!-- Badges (Live + Source) -->
         <div style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:4px;align-items:flex-start">
           <span style="background:rgba(239,68,68,0.95);color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px;display:flex;align-items:center;gap:4px">
-            <span style="width:5px;height:5px;border-radius:50%;background:#fff"></span> LIVE
+            <span style="width:5px;height:5px;border-radius:50%;background:#111c33"></span> LIVE
           </span>
           <span style="background:rgba(15,23,42,0.85);backdrop-filter:blur(4px);color:#38bdf8;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px">
             📡 ${w.source || 'Webcam Live'}
@@ -5116,25 +5116,25 @@ function renderWebcams() {
       <div style="padding:12px 14px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
-            <div style="font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;margin-bottom:2px">
-              📍 ${w.prov || w.reg} • <span style="color:#64748b">${w.reg}</span>
+            <div style="font-size:10px;font-weight:800;color:#38bdf8;text-transform:uppercase;margin-bottom:2px">
+              📍 ${w.prov || w.reg} • <span style="color:#94a3b8">${w.reg}</span>
             </div>
-            <h4 style="font-size:14px;font-weight:900;color:#0f172a;margin:0 0 4px 0">${w.name}</h4>
-            <div style="font-size:11px;color:#475569;line-height:1.3">${w.spot || 'Spot di pesca costiero'}</div>
+            <h4 style="font-size:14px;font-weight:900;color:#e2e8f0;margin:0 0 4px 0">${w.name}</h4>
+            <div style="font-size:11px;color:#94a3b8;line-height:1.3">${w.spot || 'Spot di pesca costiero'}</div>
           </div>
         </div>
 
         <!-- Action Toolbar: Play, Edit, Delete, External -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid #16203a;gap:6px">
           <button onclick="openWebcamPlayer('${w.id}')" style="flex:2;background:#0284c7;color:#fff;border:none;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
             <i class="fa-solid fa-play"></i> Guarda
           </button>
           
-          <button onclick="openEditWebcamModal('${w.id}')" title="Modifica URL o dettagli" style="background:#f8fafc;color:#0369a1;border:1px solid #bae6fd;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+          <button onclick="openEditWebcamModal('${w.id}')" title="Modifica URL o dettagli" style="background:#0b1220;color:#38bdf8;border:1px solid #075985;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
             <i class="fa-solid fa-pen-to-square"></i> Modifica
           </button>
 
-          <a href="${w.streamUrl}" target="_blank" title="Apri stream nel browser" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:7px 9px;border-radius:8px;font-size:11px;font-weight:800;text-decoration:none;display:flex;align-items:center">
+          <a href="${w.streamUrl}" target="_blank" title="Apri stream nel browser" style="background:#16203a;color:#cbd5e1;border:1px solid #334155;padding:7px 9px;border-radius:8px;font-size:11px;font-weight:800;text-decoration:none;display:flex;align-items:center">
             <i class="fa-solid fa-arrow-up-right-from-square"></i>
           </a>
 
@@ -5259,7 +5259,7 @@ function openEditWebcamModal(id) {
   const w = coastalWebcams.find(item => item.id === id);
   if (!w) return;
 
-  document.getElementById('w-form-title').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:#0284c7"></i> Modifica Webcam Spot';
+  document.getElementById('w-form-title').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:#38bdf8"></i> Modifica Webcam Spot';
   document.getElementById('w-submit-btn-text').textContent = 'Salva Modifiche';
   document.getElementById('w-id').value = w.id;
   document.getElementById('w-name').value = w.name || '';
