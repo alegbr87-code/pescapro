@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v23-notturna';
+const CACHE_NAME = 'pescapro-v24-webcam-tides';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
