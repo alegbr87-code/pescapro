@@ -2049,6 +2049,20 @@
       </div>
     </div>
 
+    <!-- MODAL: PHOTO VIEWER CATTURA -->
+    <div class="modal" id="modal-catch-photo" style="z-index:9999;background:rgba(0,0,0,0.94);backdrop-filter:blur(8px)">
+      <div style="background:#0b1220;width:94%;max-width:560px;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.6);max-height:92vh">
+        <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:#1e293b;border-bottom:1px solid #334155">
+          <div style="color:#fff;font-weight:900;font-size:14px" id="cp-title">Foto Cattura</div>
+          <button onclick="closeCatchPhoto()" style="background:#334155;color:#fff;border:none;width:30px;height:30px;border-radius:6px;font-size:14px;cursor:pointer">✕</button>
+        </div>
+        <div style="width:100%;height:52vh;background:#020617;display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <img id="cp-img" src="" style="width:100%;height:100%;object-fit:contain;object-position:center" alt="Foto cattura">
+        </div>
+        <div style="padding:14px;background:#0f172a;overflow-y:auto" id="cp-summary"></div>
+      </div>
+    </div>
+
     <!-- MODAL: WEBCAM LIVE HUB & DIRECT STREAM PLAYER -->
     <div class="modal" id="modal-webcam-player" style="z-index:9999;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px)">
       <div style="background:#0f172a;width:96%;max-width:600px;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #334155;box-shadow:0 20px 40px rgba(0,0,0,0.6)">
@@ -3702,6 +3716,33 @@ function formatCatchDateToIso(dateStr, rawDate) {
   return new Date().toISOString().slice(0, 16);
 }
 
+function openCatchPhoto(id) {
+  const c = catches.find(x => x.id === id);
+  if (!c || !c.img) return;
+  document.getElementById('cp-img').src = c.img;
+  document.getElementById('cp-title').textContent = (c.qty && c.qty > 1 ? c.qty + 'x ' : '') + c.sp;
+  document.getElementById('cp-summary').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div style="font-size:16px;font-weight:900;color:#fff">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div>
+      <div style="font-size:14px;font-weight:900;color:#38bdf8">${c.wt.toFixed(2)} kg${c.len ? ' • ' + c.len + ' cm' : ''}</div>
+    </div>
+    <div style="font-size:12px;color:#cbd5e1;margin-top:6px">📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''}</div>
+    <div class="auto-tags" style="margin:8px 0">
+      <div class="atag"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</div>
+      <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
+      <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
+      ${c.spot ? `<div class="atag" style="background:#451a03;color:#fcd34d;border-color:#fcd34d"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
+    </div>
+    <div style="font-size:12px;color:#cbd5e1"><b>🪱 Esca:</b> ${c.bait}</div>
+    ${c.notes ? `<div style="font-size:12px;color:#94a3b8;margin-top:6px;font-style:italic">"${c.notes}"</div>` : ''}
+  `;
+  document.getElementById('modal-catch-photo').classList.add('on');
+}
+
+function closeCatchPhoto() {
+  document.getElementById('modal-catch-photo').classList.remove('on');
+}
+
 function openCatchModal(ex, forceCappotto = false) {
   photoB64 = null;
   document.getElementById('mc').classList.add('on');
@@ -3925,23 +3966,30 @@ function renderDiary() {
     }
 
     return `
-      <div class="catch-card">
-        <div class="catch-photo"><img src="${c.img}" alt="${c.sp}"><div class="catch-badge l">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div><div class="catch-badge r">${c.qty && c.qty > 1 ? c.qty + 'x • ' : ''}${c.wt.toFixed(2)} kg ${c.len ? '• ' + c.len + ' cm' : ''}</div></div>
-        <div class="catch-inner">
-          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--text)">
-            <span>📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''}</span>
-            <span style="color:var(--primary)"><i class="fa-solid fa-crosshairs"></i> ${c.tech}</span>
+      <div class="catch-card" onclick="openCatchPhoto(${c.id})" style="cursor:pointer">
+        <div style="display:flex;gap:10px;padding:10px;align-items:center">
+          <div style="width:68px;height:68px;border-radius:12px;overflow:hidden;flex-shrink:0;background:#0b1329;border:1px solid #1e293b">
+            <img src="${c.img}" alt="${c.sp}" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block">
           </div>
-          <div class="auto-tags">
-            <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
-            <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
-            ${c.spot ? `<div class="atag" style="background:#451a03;color:#fcd34d;border-color:#fcd34d"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <span style="font-size:14px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</span>
+              <span style="font-size:12px;font-weight:800;color:var(--primary);white-space:nowrap">${c.wt.toFixed(2)} kg${c.len ? ' • ' + c.len + ' cm' : ''}</span>
+            </div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px">📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''} • <span style="color:var(--primary)">${c.tech}</span></div>
+            <div class="auto-tags" style="margin:5px 0 0">
+              <div class="atag moon"><i class="fa-solid fa-moon"></i> ${c.moon}</div>
+              <div class="atag"><i class="fa-solid fa-water"></i> ${c.tide}</div>
+              ${c.spot ? `<div class="atag" style="background:#451a03;color:#fcd34d;border-color:#fcd34d"><i class="fa-solid fa-location-dot"></i> ${c.spot}</div>` : ''}
+            </div>
           </div>
-          <div style="font-size:11px;color:#cbd5e1;margin-top:4px"><b>🪱 Esca:</b> ${c.bait}</div>
+        </div>
+        <div style="padding:8px 10px 10px;border-top:1px solid #16203a">
+          <div style="font-size:11px;color:#cbd5e1"><b>🪱 Esca:</b> ${c.bait}</div>
           ${c.notes ? `<div style="font-size:11px;color:#94a3b8;margin-top:4px;font-style:italic">"${c.notes}"</div>` : ''}
           <div class="catch-acts">
-            <button class="abtn" onclick="openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
-            <button class="abtn del" onclick="delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
+            <button class="abtn" onclick="event.stopPropagation(); openCatchModal(catches.find(x=>x.id===${c.id}))"><i class="fa-solid fa-pen-to-square"></i> Modifica</button>
+            <button class="abtn del" onclick="event.stopPropagation(); delCatch(${c.id})"><i class="fa-solid fa-trash-can"></i> Elimina</button>
           </div>
         </div>
       </div>
