@@ -165,7 +165,7 @@
     .app-sub {
       font-size: 11px;
       font-weight: 700;
-      color: #0b1220;
+      color: #f1f5f9;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -913,7 +913,12 @@
       font-size: 12px;
       outline: none;
       background: #0b1220;
+      color: #f1f5f9;
     }
+
+    input, select, textarea { color: #f1f5f9; }
+    input::placeholder, textarea::placeholder { color: #94a3b8; }
+    select option { color: #0f172a; background: #ffffff; }
     .fg input:focus, .fg select:focus {
       border-color: var(--primary);
       background: #111c33;
@@ -1931,7 +1936,7 @@
           <!-- Section: Avviso di Sicurezza (se pericoloso) -->
           <div class="sp-section" id="sp-detail-safety-box" style="display:none;background:#450a0a;border-color:#7f1d1d">
             <h4 style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> Avviso di Manipolazione & Sicurezza</h4>
-            <p id="sp-detail-safety" style="color:#991b1b"></p>
+            <p id="sp-detail-safety" style="color:#fda4af"></p>
           </div>
 
           <!-- Quick Action Button: Aggiungi al Diario -->
@@ -3113,7 +3118,7 @@ function updateCharts(waveData24) {
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#0f172a' } },
+          x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#cbd5e1' } },
           yFeed: { display: false, min: 0, max: 120 },
           yTide: { display: false, min: 0, max: 0.6 }
         }
@@ -3146,8 +3151,8 @@ function updateCharts(waveData24) {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#64748b' } },
-          y: { grid: { color: '#16203a' }, ticks: { font: { size: 9 }, color: '#64748b', callback: v => v + 'm' }, min: 0, max: 1.0 }
+          x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } },
+          y: { grid: { color: '#334155' }, ticks: { font: { size: 9 }, color: '#94a3b8', callback: v => v + 'm' }, min: 0, max: 1.0 }
         }
       }
     });
@@ -3195,7 +3200,7 @@ function generateMonthlyMoonStrip() {
     const mData = getAstronomicalMoon(testDate);
     html += `
       <div id="${isToday ? 'moon-card-today' : ''}" class="moon-day-card ${isToday ? 'today' : ''}" style="${isToday ? 'border:2px solid #4f46e5;background:#1e1b4b;' : ''}">
-        <div style="font-size:9px; font-weight:800; color:${isToday ? '#4338ca' : '#64748b'};">${d} ${currentMonthName}</div>
+        <div style="font-size:9px; font-weight:800; color:${isToday ? '#a5b4fc' : '#94a3b8'};">${d} ${currentMonthName}</div>
         <div style="font-size:20px; margin:2px 0;">${mData.icon}</div>
         <div style="font-size:9px; font-weight:700; color:#cbd5e1;">${mData.illum}%</div>
         ${isToday ? '<div style="font-size:8px; font-weight:900; color:#a5b4fc;">OGGI</div>' : ''}
@@ -4083,9 +4088,9 @@ function renderStats() {
   const stTide = document.getElementById('st-tide');
   const stSp = document.getElementById('st-sp');
 
-  if (stMoon) stMoon.innerHTML = bar(gc(catches, c => c.moon), '🌙', '#4f46e5', 'FASE');
-  if (stBait) stBait.innerHTML = bar(gc(catches, c => c.bait), '🪱', '#ea580c', 'ESCA');
-  if (stTide) stTide.innerHTML = bar(gc(catches, c => c.tide), '🌊', '#059669', 'MAREA');
+  if (stMoon) stMoon.innerHTML = bar(gc(catches, c => c.moon), '🌙', '#818cf8', 'FASE');
+  if (stBait) stBait.innerHTML = bar(gc(catches, c => c.bait), '🪱', '#fb923c', 'ESCA');
+  if (stTide) stTide.innerHTML = bar(gc(catches, c => c.tide), '🌊', '#34d399', 'MAREA');
 
   if (stSp) {
     const spCount = {};
