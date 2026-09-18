@@ -1632,6 +1632,7 @@
                 <div style="font-size:9px;" id="tb-h2-h">0.42 m</div>
               </div>
             </div>
+            <div style="font-size:8.5px;color:#64748b;text-align:center;margin-top:5px" id="tide-source-note">🌊 Altezze sul minimo del giorno • Modello maree Open-Meteo</div>
           </div>
 
           <!-- 5. CONDIZIONI METEO MARINE REALI IN TEMPO REALE (METEOPESCA LIVE) -->
@@ -3036,6 +3037,12 @@ function computeMeteopescaTides(date, lat, lng) {
 }
 
 
+function isoToHours(iso) {
+  const t = String(iso).split('T')[1] || '00:00';
+  const p = t.split(':');
+  return (parseInt(p[0], 10) || 0) + (parseInt(p[1], 10) || 0) / 60;
+}
+
 async function fetchMeteopescaData(lat, lng, locName) {
   const timeBadge = document.getElementById('live-update-time');
   if (timeBadge) timeBadge.innerHTML = '🔄 Aggiornamento Dati...';
@@ -3043,6 +3050,36 @@ async function fetchMeteopescaData(lat, lng, locName) {
   const today = new Date();
   const mp = computeMeteopescaTides(today, lat, lng);
   const moon = mp.moon;
+
+  // === MAREE REALI da modello numerico Open-Meteo (sea_level_height_msl) — gratis, senza chiave ===
+  let realTideExtremes = null;
+  let realTideSeries = null;
+  try {
+    const tResp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&minutely_15=sea_level_height_msl&timezone=auto&forecast_days=2`);
+    const tData = await tResp.json();
+    if (tData && tData.minutely_15 && tData.minutely_15.sea_level_height_msl && tData.minutely_15.time) {
+      const tTimes = tData.minutely_15.time;
+      const tVals = tData.minutely_15.sea_level_height_msl;
+      const dayCount = 96; // 24 ore a passi di 15 minuti
+      const todayVals = tVals.slice(0, dayCount).filter(v => v !== null && v !== undefined);
+      if (todayVals.length > 10) {
+        const dmin = Math.min.apply(null, todayVals);
+        const norm = tVals.map(v => (v === null || v === undefined) ? null : Math.round((v - dmin) * 100) / 100);
+        const ext = [];
+        for (let i = 1; i < dayCount - 1; i++) {
+          const a = tVals[i - 1], b = tVals[i], c = tVals[i + 1];
+          if (a === null || b === null || c === null) continue;
+          const hh = isoToHours(tTimes[i]);
+          if (b > a && b >= c) ext.push({ type: 'high', name: 'ALTA', time: hh, h: norm[i] });
+          else if (b < a && b <= c) ext.push({ type: 'low', name: 'BASSA', time: hh, h: norm[i] });
+        }
+        if (ext.length >= 2) realTideExtremes = ext;
+        realTideSeries = { times: tTimes.slice(0, dayCount), values: norm.slice(0, dayCount) };
+      }
+    }
+  } catch (e) {}
+  mp.realTideExtremes = realTideExtremes;
+  mp.realTideSeries = realTideSeries;
 
   // 1. Aggiorna Dati Lunari & Solunari
   const mIcon = document.getElementById('mp-moon-icon');
@@ -3072,16 +3109,24 @@ async function fetchMeteopescaData(lat, lng, locName) {
   if (sn1) sn1.textContent = mp.solunar.min1;
   if (sn2) sn2.textContent = mp.solunar.min2;
 
-  // 4. Aggiorna Tavola delle Maree Odierna (4 Eventi Dinamici)
+  // 4. Aggiorna Tavola delle Maree Odierna (4 Eventi) — dati REALI Open-Meteo se disponibili
   const tableCells = document.getElementById('tide-table-cells');
-  if (tableCells && mp.tideEvents.length >= 4) {
-    tableCells.innerHTML = mp.tideEvents.map((t, idx) => `
+  const useReal = (realTideExtremes && realTideExtremes.length >= 2);
+  const tideEventsToShow = useReal ? realTideExtremes.slice(0, 4) : mp.tideEvents;
+  if (tableCells && tideEventsToShow.length >= 2) {
+    tableCells.innerHTML = tideEventsToShow.map((t, idx) => `
       <div class="tide-cell ${t.type}">
         <div style="font-size:8px; font-weight:800;">${idx + 1}ª ${t.name}</div>
         <div style="font-weight:900; font-size:11px;">${mp.formatH(t.time)}</div>
-        <div style="font-size:9px;">${t.h.toFixed(2)} m</div>
+        <div style="font-size:9px;">${(t.h || 0).toFixed(2)} m</div>
       </div>
     `).join('');
+  }
+  const tideSrcNote = document.getElementById('tide-source-note');
+  if (tideSrcNote) {
+    tideSrcNote.innerHTML = useReal
+      ? '🟢 Maree REALI (modello Open-Meteo) • Altezze sul minimo del giorno'
+      : '⚠️ Stima astronomica (modello maree non disponibile) • Altezze sul minimo del giorno';
   }
 
   // 5. Fetch Meteo Reale da Open-Meteo
@@ -3164,8 +3209,16 @@ async function fetchMeteopescaData(lat, lng, locName) {
 function updateCharts(waveData24, mp) {
   const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00'];
 
-  // === CURVA MAREA 24h: calcolata dai dati astronomici (computeMeteopescaTides), non più fissa ===
+  // === CURVA MAREA 24h: usa le maree REALI (Open-Meteo) se disponibili, altrimenti stima astronomica ===
   const tideHeights = (() => {
+    if (mp && mp.realTideSeries && mp.realTideSeries.values && mp.realTideSeries.values.length >= 96) {
+      const vals = mp.realTideSeries.values;
+      const picks = [0, 12, 24, 36, 48, 60, 72, 84, 95]; // campioni ogni 3 ore (passo 15 min)
+      return picks.map(i => {
+        const v = vals[i];
+        return (v === null || v === undefined) ? 0.15 : Math.round(v * 100) / 100;
+      });
+    }
     if (!mp || !mp.tideEvents || mp.tideEvents.length < 2) return [0.18, 0.14, 0.20, 0.30, 0.34, 0.24, 0.16, 0.22, 0.34];
     const highs = mp.tideEvents.filter(e => e.type === 'high');
     const lows = mp.tideEvents.filter(e => e.type === 'low');
