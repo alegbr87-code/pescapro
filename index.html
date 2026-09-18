@@ -363,6 +363,24 @@
       background: #0b132b;
     }
 
+    /* Windy wind map: modalità schermo intero */
+    .map-card.windy-fs {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 10000;
+      border-radius: 0;
+      border: none;
+      display: flex;
+      flex-direction: column;
+    }
+    .map-card.windy-fs .map-frame {
+      flex: 1 1 auto;
+      height: auto;
+    }
+    .map-card.windy-fs #windy-frame {
+      height: 100%;
+    }
+
     #mapview {
       width: 100%;
       height: 300px;
@@ -1451,6 +1469,26 @@
       <!-- TAB 1: HOME (METEOPESCA LIVE, SOLUNARE, MAREE, MAPPA & GRAFICI) -->
       <div class="tab on" id="t0">
         <div class="scroll-pane" id="home-scroll-pane">
+
+          <!-- 0. MAPPA DEI VENTI LIVE (WINDY) -->
+          <div class="map-card" id="windy-card" style="border-color:#0ea5e9">
+            <div class="map-hdr">
+              <div style="display:flex;align-items:center;gap:6px"><i class="fa-solid fa-wind" style="color:#38bdf8;font-size:14px"></i> Mappa dei Venti Live <span style="font-size:9px;color:#94a3b8;font-weight:600">· Windy</span></div>
+              <div class="map-badge"><i class="fa-solid fa-gauge-high"></i> km/h</div>
+            </div>
+            <div class="map-toolbar" style="flex-wrap:wrap;justify-content:flex-start">
+              <button class="pill pri" onclick="windyRecenter()"><i class="fa-solid fa-location-crosshairs"></i> Il mio Spot</button>
+              <button class="pill pri" id="windy-pill-wind" onclick="setWindyOverlay('wind')"><i class="fa-solid fa-wind"></i> Vento</button>
+              <button class="pill" id="windy-pill-waves" onclick="setWindyOverlay('waves')"><i class="fa-solid fa-water"></i> Onde</button>
+              <button class="pill" id="windy-fs-btn" onclick="windyFullscreen()"><i class="fa-solid fa-expand"></i> Zoom</button>
+            </div>
+            <div class="map-frame" id="windy-frame-box">
+              <iframe id="windy-frame" src="about:blank" style="width:100%;height:100%;border:0;display:block" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mappa dei Venti Live Windy"></iframe>
+            </div>
+            <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
+              🌬️ Pizzica la mappa per zoomare sulla tua località • Direzione e velocità del vento in km/h • Dati Windy.com
+            </div>
+          </div>
 
           <!-- 1. MAPPA SATELLITARE GOOGLE IBRIDA -->
           <div class="map-card">
@@ -2630,6 +2668,48 @@ function toggleView() {
   d.classList.toggle('full');
   t.textContent = d.classList.contains('full') ? 'Vista Smartphone' : 'Schermo Intero';
   setTimeout(() => { if (map) map.invalidateSize(); }, 300);
+}
+
+// === MAPPA DEI VENTI LIVE (WINDY EMBED) ===
+let windyOverlay = 'wind';
+
+function buildWindyUrl(lat, lon, zoom) {
+  const ov = windyOverlay || 'wind';
+  return 'https://embed.windy.com/embed2.html'
+    + '?lat=' + lat.toFixed(4) + '&lon=' + lon.toFixed(4)
+    + '&detailLat=' + lat.toFixed(4) + '&detailLon=' + lon.toFixed(4)
+    + '&zoom=' + (zoom || 9)
+    + '&level=surface&overlay=' + ov + '&product=ecmwf'
+    + '&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail='
+    + '&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1';
+}
+
+function loadWindyMap(zoom) {
+  const frame = document.getElementById('windy-frame');
+  if (!frame) return;
+  const lat = (spot && typeof spot.lat === 'number') ? spot.lat : 43.6158;
+  const lon = (spot && typeof spot.lng === 'number') ? spot.lng : 13.5189;
+  frame.src = buildWindyUrl(lat, lon, zoom || 9);
+}
+
+function windyRecenter() { loadWindyMap(11); }
+
+function setWindyOverlay(ov) {
+  windyOverlay = ov;
+  const w = document.getElementById('windy-pill-wind');
+  const wv = document.getElementById('windy-pill-waves');
+  if (w) w.classList.toggle('pri', ov === 'wind');
+  if (wv) wv.classList.toggle('pri', ov === 'waves');
+  loadWindyMap(11);
+}
+
+function windyFullscreen() {
+  const card = document.getElementById('windy-card');
+  const btn = document.getElementById('windy-fs-btn');
+  if (!card) return;
+  const on = card.classList.toggle('windy-fs');
+  if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> Chiudi' : '<i class="fa-solid fa-expand"></i> Zoom';
+  setTimeout(() => { if (map) map.invalidateSize(); }, 250);
 }
 
 // === MAPPA GOOGLE SATELLITARE ===
@@ -5941,6 +6021,7 @@ function executeDirectHtmlDownload() {
 // === INIZIALIZZAZIONE ===
 window.addEventListener('DOMContentLoaded', () => {
   initMap();
+  loadWindyMap();
   generateMonthlyMoonStrip();
   fetchMeteopescaData(spot.lat, spot.lng, spot.name);
   renderWebcams();

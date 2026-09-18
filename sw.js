@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v25-diary';
+const CACHE_NAME = 'pescapro-v26-windy';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
