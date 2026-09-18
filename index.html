@@ -1632,7 +1632,7 @@
                 <div style="font-size:9px;" id="tb-h2-h">0.42 m</div>
               </div>
             </div>
-            <div style="font-size:8.5px;color:#64748b;text-align:center;margin-top:5px" id="tide-source-note">🌊 Altezze sul minimo del giorno • Modello maree Open-Meteo</div>
+            <div style="font-size:8.5px;color:#64748b;text-align:center;margin-top:5px" id="tide-source-note">🌊 Altezze relative al minimo • Maree: modello Open-Meteo</div>
           </div>
 
           <!-- 5. CONDIZIONI METEO MARINE REALI IN TEMPO REALE (METEOPESCA LIVE) -->
@@ -2957,6 +2957,28 @@ async function searchOnline(q) {
 // === FETCH DATI METEOPESCA (CALCOLI ASTRONOMICI + METEO REALE OPEN-METEO) ===
 
 // === CALCOLO REALE PARAMETRI METEOPESCA (ASTRONOMIA + MAREE + SOLUNARE) ===
+// Transito lunare REALE (dipende dalla longitudine) — formula astronomica Meeus semplificata
+function computeLunarTransitHour(date, lng) {
+  const rad = Math.PI / 180;
+  const ref = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+  const jd = ref.getTime() / 86400000 + 2440587.5;
+  const d = jd - 2451545.0;
+  const L = (218.316 + 13.176396 * d) % 360;
+  const M = (134.963 + 13.064993 * d) % 360;
+  const F = (93.272 + 13.229350 * d) % 360;
+  const lambda = L + 6.289 * Math.sin(M * rad);
+  const beta = 5.128 * Math.sin(F * rad);
+  const eps = (23.439 - 0.0000004 * d) * rad;
+  const raDeg = Math.atan2(Math.sin(lambda * rad) * Math.cos(eps) - Math.tan(beta * rad) * Math.sin(eps), Math.cos(lambda * rad)) / rad;
+  const T = d / 36525;
+  let gmst = 280.46061837 + 360.98564736629 * d + 0.000387933 * T * T - (T * T * T) / 38710000;
+  gmst = ((gmst % 360) + 360) % 360;
+  const diff = (((raDeg - gmst - lng) % 360) + 360) % 360;
+  let transit = (diff / 14.4919) % 24;
+  if (transit < 0) transit += 24;
+  return transit;
+}
+
 function computeMeteopescaTides(date, lat, lng) {
   const moon = getAstronomicalMoon(date);
   
@@ -2972,8 +2994,7 @@ function computeMeteopescaTides(date, lat, lng) {
 
   // 2. ORARI REALI DI ALTA E BASSA MAREA (Ciclo semidiurno lunare 12h 25m)
   // In Adriatico (Ancona) ed Italia l'alta marea segue il transito lunare
-  const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-  const lunarTransitHour = ((moon.age * 0.84) + 12.0) % 24; // Ora transito lunare
+  const lunarTransitHour = computeLunarTransitHour(date, lng); // Ora REALE del transito lunare (dipende dalla longitudine)
   
   // High / Low tide hours
   let h1 = (lunarTransitHour + 0.5) % 24;
@@ -3055,24 +3076,56 @@ async function fetchMeteopescaData(lat, lng, locName) {
   let realTideExtremes = null;
   let realTideSeries = null;
   try {
-    const tResp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&minutely_15=sea_level_height_msl&timezone=auto&forecast_days=2`);
+    const tResp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&minutely_15=sea_level_height_msl&timezone=auto&forecast_days=3`);
     const tData = await tResp.json();
     if (tData && tData.minutely_15 && tData.minutely_15.sea_level_height_msl && tData.minutely_15.time) {
       const tTimes = tData.minutely_15.time;
       const tVals = tData.minutely_15.sea_level_height_msl;
       const dayCount = 96; // 24 ore a passi di 15 minuti
+      const totalN = Math.min(tVals.length, 288); // analizza 3 giorni per avere abbastanza estremi
       const todayVals = tVals.slice(0, dayCount).filter(v => v !== null && v !== undefined);
       if (todayVals.length > 10) {
         const dmin = Math.min.apply(null, todayVals);
         const norm = tVals.map(v => (v === null || v === undefined) ? null : Math.round((v - dmin) * 100) / 100);
-        const ext = [];
-        for (let i = 1; i < dayCount - 1; i++) {
-          const a = tVals[i - 1], b = tVals[i], c = tVals[i + 1];
-          if (a === null || b === null || c === null) continue;
-          const hh = isoToHours(tTimes[i]);
-          if (b > a && b >= c) ext.push({ type: 'high', name: 'ALTA', time: hh, h: norm[i] });
-          else if (b < a && b <= c) ext.push({ type: 'low', name: 'BASSA', time: hh, h: norm[i] });
+        // Segnale lisciato (media mobile 75 min) per eliminare il rumore del modello numerico
+        const sm = [];
+        for (let i = 0; i < totalN; i++) {
+          let sum = 0, cnt = 0;
+          for (let k = -2; k <= 2; k++) {
+            const j = i + k;
+            if (j >= 0 && j < totalN && tVals[j] !== null && tVals[j] !== undefined) { sum += tVals[j]; cnt++; }
+          }
+          sm.push(cnt ? sum / cnt : null);
         }
+
+        // Estremi locali sul segnale lisciato
+        const raw = [];
+        for (let i = 1; i < totalN - 1; i++) {
+          const a = sm[i - 1], b = sm[i], c = sm[i + 1];
+          if (a === null || b === null || c === null) continue;
+          if (b > a && b >= c) raw.push({ type: 'high', i: i });
+          else if (b < a && b <= c) raw.push({ type: 'low', i: i });
+        }
+
+        // Forza l'ALTERNANZA alta/bassa (unisce estremi consecutivi dello stesso tipo, tenendo il più estremo)
+        const alt = [];
+        raw.forEach(e => {
+          const last = alt[alt.length - 1];
+          if (last && last.type === e.type) {
+            const more = e.type === 'high' ? (sm[e.i] > sm[last.i]) : (sm[e.i] < sm[last.i]);
+            if (more) alt[alt.length - 1] = e;
+          } else {
+            alt.push(e);
+          }
+        });
+
+        // Seleziona 4 estremi CONTIGUI a partire dal primo di oggi: l'alternanza alta/bassa è garantita
+        const extAll = alt.map(e => ({ type: e.type, name: e.type === 'high' ? 'ALTA' : 'BASSA', time: isoToHours(tTimes[e.i]) % 24, rawH: tVals[e.i], idx: e.i }));
+        let startPos = extAll.findIndex(e => e.idx < dayCount);
+        if (startPos < 0) startPos = 0;
+        const sel = extAll.slice(startPos, startPos + 4);
+        const selMin = sel.length ? Math.min.apply(null, sel.map(e => e.rawH)) : 0;
+        const ext = sel.map(e => ({ type: e.type, name: e.name, time: e.time, h: Math.round((e.rawH - selMin) * 100) / 100, day: Math.floor(e.idx / dayCount) }));
         if (ext.length >= 2) realTideExtremes = ext;
         realTideSeries = { times: tTimes.slice(0, dayCount), values: norm.slice(0, dayCount) };
       }
@@ -3080,6 +3133,10 @@ async function fetchMeteopescaData(lat, lng, locName) {
   } catch (e) {}
   mp.realTideExtremes = realTideExtremes;
   mp.realTideSeries = realTideSeries;
+  if (realTideSeries && realTideSeries.values) {
+    const vv = realTideSeries.values.filter(v => v !== null && v !== undefined);
+    if (vv.length) mp.localTideRange = Math.round((Math.max.apply(null, vv) - Math.min.apply(null, vv)) * 100) / 100;
+  }
 
   // 1. Aggiorna Dati Lunari & Solunari
   const mIcon = document.getElementById('mp-moon-icon');
@@ -3095,7 +3152,7 @@ async function fetchMeteopescaData(lat, lng, locName) {
   const coeffValEl = document.getElementById('mp-coeff-val');
   const coeffBadgeEl = document.getElementById('mp-coeff-badge');
   if (actTextEl) actTextEl.textContent = mp.solunar.actText;
-  if (actDescEl) actDescEl.textContent = mp.solunar.actDesc;
+  if (actDescEl) actDescEl.textContent = mp.solunar.actDesc + (mp.localTideRange ? ` • Escursione marea locale oggi: ${mp.localTideRange.toFixed(2)} m` : '');
   if (coeffValEl) coeffValEl.textContent = mp.coeff;
   if (coeffBadgeEl) coeffBadgeEl.textContent = mp.coeff;
 
@@ -3114,19 +3171,22 @@ async function fetchMeteopescaData(lat, lng, locName) {
   const useReal = (realTideExtremes && realTideExtremes.length >= 2);
   const tideEventsToShow = useReal ? realTideExtremes.slice(0, 4) : mp.tideEvents;
   if (tableCells && tideEventsToShow.length >= 2) {
-    tableCells.innerHTML = tideEventsToShow.map((t, idx) => `
+    let hc = 0, lc = 0;
+    tableCells.innerHTML = tideEventsToShow.map((t) => {
+      const ord = (t.type === 'high') ? (++hc) : (++lc);
+      return `
       <div class="tide-cell ${t.type}">
-        <div style="font-size:8px; font-weight:800;">${idx + 1}ª ${t.name}</div>
-        <div style="font-weight:900; font-size:11px;">${mp.formatH(t.time)}</div>
+        <div style="font-size:8px; font-weight:800;">${ord}ª ${t.name}</div>
+        <div style="font-weight:900; font-size:11px;">${mp.formatH(t.time)}${t.day ? '<span style="font-size:7px;color:#94a3b8"> +1</span>' : ''}</div>
         <div style="font-size:9px;">${(t.h || 0).toFixed(2)} m</div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
   const tideSrcNote = document.getElementById('tide-source-note');
   if (tideSrcNote) {
     tideSrcNote.innerHTML = useReal
-      ? '🟢 Maree REALI (modello Open-Meteo) • Altezze sul minimo del giorno'
-      : '⚠️ Stima astronomica (modello maree non disponibile) • Altezze sul minimo del giorno';
+      ? '🟢 Maree REALI (modello Open-Meteo) • Altezze relative al minimo'
+      : '⚠️ Stima astronomica (modello maree non disponibile) • Altezze relative';
   }
 
   // 5. Fetch Meteo Reale da Open-Meteo
