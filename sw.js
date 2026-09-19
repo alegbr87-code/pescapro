@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v32-radar-timeline';
+const CACHE_NAME = 'pescapro-v33-esche-tecniche-mappe';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

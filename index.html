@@ -281,7 +281,9 @@
     .scroll-pane {
       flex: 1;
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      /* NOTA: non usare -webkit-overflow-scrolling qui: su iOS renderebbe questo
+         contenitore il "containing block" delle mappe a schermo intero (position:fixed),
+         facendole apparire confinate e con i pulsanti coperti dalla barra dell'app. */
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -363,45 +365,16 @@
       background: #0b132b;
     }
 
-    /* Windy wind map: modalità schermo intero */
-    .map-card.windy-fs {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 10000;
-      border-radius: 0;
-      border: none;
-      display: flex;
-      flex-direction: column;
-    }
-    .map-card.windy-fs .map-frame {
-      flex: 1 1 auto;
-      height: auto;
-    }
-    .map-card.windy-fs #windy-frame {
-      height: 100%;
-    }
-    /* In fullscreen: pulsante di chiusura piccolo in ALTO a SINISTRA
-       (sotto la status bar, lontano dal notch centrale e dalla barra del tempo di Windy) */
-    .map-card.windy-fs #windy-fs-close,
-    .map-card.radar-fs #radar-fs-close {
-      display: flex !important;
-      top: 58px !important;
-      left: 8px !important;
-      right: auto !important;
-      bottom: auto !important;
-      transform: none;
-      padding: 7px 11px !important;
-      font-size: 11px !important;
-      border-radius: 9px !important;
-      z-index: 10002 !important;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.75) !important;
-    }
-    .map-card.windy-fs .map-hdr,
-    .map-card.windy-fs .map-toolbar {
+    /* ===== MAPPE A SCHERMO INTERO (Windy + Radar) =====
+       Mentre una mappa è a schermo intero la barra dell'app e la barra di
+       navigazione in basso vengono nascoste: in questo modo i pulsanti
+       "Chiudi" non restano mai coperti (era il bug segnalato). */
+    body.map-fs-open .app-bar,
+    body.map-fs-open .bnav {
       display: none !important;
     }
 
-    /* Radar meteo: modalità schermo intero */
+    .map-card.windy-fs,
     .map-card.radar-fs {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -410,17 +383,39 @@
       border: none;
       display: flex;
       flex-direction: column;
+      height: 100%;
     }
+    .map-card.windy-fs .map-frame,
     .map-card.radar-fs .map-frame {
       flex: 1 1 auto;
       height: auto;
+      min-height: 0;
+    }
+    .map-card.windy-fs #windy-frame {
+      height: 100%;
     }
     .map-card.radar-fs #radarview {
       height: 100%;
     }
+    /* Pulsante di chiusura: piccolo, in ALTO a SINISTRA, sempre sotto la
+       status bar / notch (lontano dalla barra del tempo di Windy). */
+    .map-card.windy-fs #windy-fs-close,
     .map-card.radar-fs #radar-fs-close {
       display: flex !important;
+      top: 70px !important;
+      top: max(70px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
+      left: 10px !important;
+      right: auto !important;
+      bottom: auto !important;
+      transform: none;
+      padding: 8px 12px !important;
+      font-size: 11px !important;
+      border-radius: 9px !important;
+      z-index: 10002 !important;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.75) !important;
     }
+    .map-card.windy-fs .map-hdr,
+    .map-card.windy-fs .map-toolbar,
     .map-card.radar-fs .map-hdr,
     .map-card.radar-fs .map-toolbar {
       display: none !important;
@@ -1528,7 +1523,7 @@
             </div>
             <div class="map-frame" id="radar-frame-box" style="height:320px">
               <div id="radarview" style="width:100%;height:100%"></div>
-              <button id="radar-fs-close" onclick="radarZoom()" style="display:none;position:absolute;top:58px;right:auto;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
+              <button id="radar-fs-close" onclick="radarZoom()" style="display:none;position:absolute;top:70px;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
             </div>
             <!-- Timeline radar: Pausa/Play + cursore manuale + ora del frame -->
             <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#0f172a;border-top:1px solid #1e293b">
@@ -1536,8 +1531,16 @@
               <input type="range" id="radar-slider" min="0" max="0" value="0" oninput="radarScrub(this.value)" style="flex:1;min-width:0;accent-color:#6366f1">
               <span id="radar-time-lbl" style="font-size:11px;font-weight:800;color:#a5b4fc;min-width:48px;text-align:right">--:--</span>
             </div>
+            <!-- Previsione precipitazioni OGGI + DOMANI, ora per ora (Open-Meteo) -->
+            <div style="background:#0b1220;border-top:1px solid #1e293b">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px 4px">
+                <span style="font-size:10px;font-weight:900;color:#a5b4fc;white-space:nowrap"><i class="fa-solid fa-calendar-days"></i> Pioggia Oggi + Domani</span>
+                <span id="precip-strip-info" style="font-size:9.5px;font-weight:800;color:#94a3b8;text-align:right">calcolo…</span>
+              </div>
+              <div id="precip-strip" style="display:flex;gap:2px;overflow-x:auto;padding:0 8px 8px;-webkit-overflow-scrolling:touch"></div>
+            </div>
             <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
-              🌧️ Muovi il cursore per scorrere il tempo • Pizzica per zoomare • Radar: RainViewer (dettaglio max zoom 7)
+              🌧️ Radar RainViewer: ultime 2h + 30 min • Barre orarie = mm di pioggia previsti (tutta la giornata di oggi + domani, traccia grigia = solo probabilità) • Pizzica la mappa per zoomare
             </div>
           </div>
 
@@ -1554,8 +1557,8 @@
               <button class="pill" id="windy-fs-btn" onclick="windyFullscreen()"><i class="fa-solid fa-expand"></i> Zoom</button>
             </div>
             <div class="map-frame" id="windy-frame-box">
-              <iframe id="windy-frame" src="about:blank" style="width:100%;height:100%;border:0;display:block" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mappa dei Venti Live Windy"></iframe>
-              <button id="windy-fs-close" onclick="windyFullscreen()" style="display:none;position:absolute;top:58px;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
+              <iframe id="windy-frame" src="about:blank" style="width:100%;height:100%;border:0;display:block" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="Mappa dei Venti Live Windy"></iframe>
+              <button id="windy-fs-close" onclick="windyFullscreen()" style="display:none;position:absolute;top:70px;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
             </div>
             <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
               🌬️ Pizzica la mappa per zoomare sulla tua località • Direzione e velocità del vento in km/h • Dati Windy.com
@@ -2370,13 +2373,14 @@
               </label>
               <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
                 <span style="font-size:10px;font-weight:800;color:#38bdf8"><i class="fa-solid fa-crosshairs"></i> Tecnica:</span>
-                <select id="ft" style="font-size:11px;padding:4px 6px;border-radius:8px;background:#111c33;border:1px solid #334155;color:#e2e8f0;font-weight:800">
+                <select id="ft" onchange="onTechniqueChange(this.value)" style="font-size:11px;padding:4px 6px;border-radius:8px;background:#111c33;border:1px solid #334155;color:#e2e8f0;font-weight:800">
                   <option>Surfcasting</option>
+                  <option>Beach Ledgering</option>
                   <option>Bolognese</option>
                   <option>Spinning</option>
                   <option>Barca / Traina</option>
-                  <option>Fondo / Rockfishing</option>
-                  <option>Eging (Cefalopodi)</option>
+                  <option>Rockfishing</option>
+                  <option>Eging</option>
                 </select>
                 <button type="button" onclick="addSpeciesRow()" style="background:#0284c7;color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(2,132,199,0.3)">
                   <i class="fa-solid fa-plus"></i> + Altra Specie
@@ -2571,7 +2575,7 @@ const DB_SPOTS_KEY = "PESCAPRO_SPOTS_DB";
 
 const defaultCatches = [
   { id: 1, sp: 'Orata', wt: 2.35, len: 48, tech: 'Surfcasting', bait: 'Cannolicchio vivo', spot: 'Spiaggia Sant\'Agostino', moon: 'Luna Crescente', tide: 'Flusso Crescente', date: '14/08/2026 21:15', lat: 42.095, lng: 11.785, img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80', notes: 'Mangiata sul secondo canalone a 85m da riva.' },
-  { id: 2, sp: 'Spigola', wt: 4.85, len: 74, tech: 'Spinning', bait: 'Artificiale Minnow / Jerk', spot: 'Scogliera del Faro', moon: 'Luna Nuova', tide: 'Culmine Alta Marea', date: '11/08/2026 05:40', lat: 42.088, lng: 11.799, img: 'https://images.unsplash.com/photo-1534043464124-3be32fe000c9?w=600&q=80', notes: 'Attacco fulmineo all\'alba con mare in scaduta.' },
+  { id: 2, sp: 'Spigola', wt: 4.85, len: 74, tech: 'Spinning', bait: 'Minnow', spot: 'Scogliera del Faro', moon: 'Luna Nuova', tide: 'Culmine Alta Marea', date: '11/08/2026 05:40', lat: 42.088, lng: 11.799, img: 'https://images.unsplash.com/photo-1534043464124-3be32fe000c9?w=600&q=80', notes: 'Attacco fulmineo all\'alba con mare in scaduta.' },
   { id: 3, sp: 'Sarago', wt: 1.15, len: 35, tech: 'Bolognese', bait: 'Gambero vivo', spot: 'Molo di Ponente', moon: 'Primo Quarto', tide: 'Riflusso Calante', date: '06/08/2026 19:20', lat: 42.101, lng: 11.791, img: 'https://images.unsplash.com/photo-1510137600163-2729bc6959a6?w=600&q=80', notes: 'Bolognese sul fondo con fluorocarbon 0.12.' },
   { id: 4, sp: 'Mormora', wt: 0.85, len: 32, tech: 'Surfcasting', bait: 'Arenicola (Verme di sabbia)', spot: 'Spiaggia delle Saline', moon: 'Luna Crescente', tide: 'Flusso Crescente', date: '30/07/2026 23:00', lat: 42.082, lng: 11.81, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=80', notes: 'Doppietta mormore a 70m con trave 2 ami.' }
 ];
@@ -2759,9 +2763,12 @@ function initRadarMap() {
   const lat = (spot && typeof spot.lat === 'number') ? spot.lat : 43.6158;
   const lon = (spot && typeof spot.lng === 'number') ? spot.lng : 13.5189;
   radarMap = L.map('radarview', { zoomControl: false, attributionControl: true }).setView([lat, lon], 8);
-  radarBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 18, attribution: 'Base: Esri, HERE, Garmin, &copy; OpenStreetMap' }).addTo(radarMap);
+  // Base NAUTICA: mare azzurro con batimetria e costa ben visibile
+  // (la vecchia "World_Dark_Gray_Base" rendeva il mare completamente nero)
+  radarBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 18, attribution: 'Base: Esri, GEBCO, NOAA, HERE, Garmin, &copy; OpenStreetMap' }).addTo(radarMap);
   radarMap.attributionControl.setPrefix('');
   radarLoadFrames();
+  loadPrecipForecast(lat, lon);
   setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
 }
 
@@ -2780,7 +2787,7 @@ async function radarLoadFrames() {
     if (radarRainLayer && radarMap) radarMap.removeLayer(radarRainLayer);
     // RainViewer: zoom massimo supportato = 7 (oltre restituisce "Zoom Level Not Supported").
     // maxNativeZoom fa ingrandire i tile esistenti senza richiedere livelli inesistenti.
-    radarRainLayer = L.tileLayer(radarTileUrl(radarFrames[radarIdx].path), { opacity: 0.75, zIndex: 5, tileSize: 256, maxNativeZoom: 7, attribution: 'Radar: RainViewer' }).addTo(radarMap);
+    radarRainLayer = L.tileLayer(radarTileUrl(radarFrames[radarIdx].path), { opacity: 0.8, zIndex: 5, tileSize: 256, maxNativeZoom: 7, attribution: 'Radar: RainViewer' }).addTo(radarMap);
     const sl = document.getElementById('radar-slider');
     if (sl) { sl.max = radarFrames.length - 1; sl.value = radarIdx; }
     radarUpdateLabel();
@@ -2842,15 +2849,138 @@ function radarCenter() {
   radarMap.setView([lat, lon], 9);
 }
 
+// === SCHERMO INTERO MAPPE: nasconde barra app + barra di navigazione ======
+// (in questo modo i pulsanti "Chiudi" non vengono mai coperti)
+let mapFsSavedScroll = null;
+
+function syncMapFullscreen() {
+  const anyFs = !!document.querySelector('.map-card.radar-fs, .map-card.windy-fs');
+  document.body.classList.toggle('map-fs-open', anyFs);
+  document.body.style.overflow = anyFs ? 'hidden' : '';
+  const pane = document.getElementById('home-scroll-pane');
+  if (pane) {
+    if (anyFs) {
+      if (mapFsSavedScroll === null) mapFsSavedScroll = pane.scrollTop;
+      pane.scrollTop = 0;
+    } else if (mapFsSavedScroll !== null) {
+      pane.scrollTop = mapFsSavedScroll;
+      mapFsSavedScroll = null;
+    }
+  }
+}
+
 function radarZoom() {
   const card = document.getElementById('radar-card');
   const btn = document.getElementById('radar-fs-btn');
   if (!card) return;
   const on = card.classList.toggle('radar-fs');
-  document.body.style.overflow = on ? 'hidden' : '';
+  syncMapFullscreen();
   if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> Chiudi' : '<i class="fa-solid fa-expand"></i> Zoom';
   setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 250);
+  setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 700);
 }
+// === PIOGGIA OGGI + DOMANI ORA PER ORA (Open-Meteo, gratis e senza chiave) ===
+// Il radar RainViewer copre solo le ultime 2h + 30 min: questa striscia mostra
+// invece TUTTA la giornata di oggi e tutta la giornata di domani.
+let precipHours = [];
+let precipLastKey = '';
+const PRECIP_CELL_W = 30;
+
+function precipColor(mm) {
+  if (!mm || mm <= 0.02) return '#1e293b';
+  if (mm < 0.2) return '#38bdf8';
+  if (mm < 0.5) return '#22c55e';
+  if (mm < 1.5) return '#eab308';
+  if (mm < 3) return '#f97316';
+  return '#ef4444';
+}
+
+function precipIsSameHour(d1, d2) {
+  return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate() && d1.getHours() === d2.getHours();
+}
+
+async function loadPrecipForecast(lat, lng) {
+  const info = document.getElementById('precip-strip-info');
+  const host = document.getElementById('precip-strip');
+  if (!lat && lat !== 0) return;
+  const key = Number(lat).toFixed(3) + ',' + Number(lng).toFixed(3);
+  if (key === precipLastKey && precipHours.length) return; // già caricato per questo spot
+  precipLastKey = key;
+  if (info) info.textContent = 'calcolo…';
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng +
+      '&hourly=precipitation,precipitation_probability&forecast_days=2&timezone=auto&precipitation_unit=mm';
+    const r = await fetch(url);
+    const d = await r.json();
+    const h = d && d.hourly;
+    if (!h || !h.time || !h.time.length) throw new Error('nessun dato');
+    precipHours = h.time.map((t, i) => ({
+      date: new Date(t),
+      mm: (h.precipitation && h.precipitation[i] !== null && h.precipitation[i] !== undefined) ? h.precipitation[i] : 0,
+      prob: (h.precipitation_probability && h.precipitation_probability[i] !== null && h.precipitation_probability[i] !== undefined) ? h.precipitation_probability[i] : null
+    }));
+    renderPrecipStrip();
+  } catch (e) {
+    precipHours = [];
+    if (info) info.textContent = 'previsione non disponibile';
+    if (host) host.innerHTML = '<div style="font-size:10px;color:#94a3b8;padding:4px 8px">Previsione oraria non disponibile: riprova tra poco.</div>';
+  }
+}
+
+function renderPrecipStrip() {
+  const host = document.getElementById('precip-strip');
+  if (!host || !precipHours.length) return;
+  const now = new Date();
+  const maxMm = Math.max(0.6, Math.max.apply(null, precipHours.map(h => h.mm || 0)));
+  const two = n => String(n).padStart(2, '0');
+  let html = '';
+  precipHours.forEach((h, i) => {
+    const sameDayAsToday = h.date.toDateString() === now.toDateString();
+    const isNow = precipIsSameHour(h.date, now);
+    // Barra piena = pioggia prevista (mm). Traccia tenue = solo probabilità di pioggia.
+    let pct = 0, color = precipColor(h.mm);
+    if (h.mm > 0) {
+      pct = Math.max(10, Math.round(Math.min(1, h.mm / maxMm) * 100));
+    } else if (h.prob !== null && h.prob >= 30) {
+      pct = Math.max(8, Math.round(h.prob * 0.2));
+      color = '#334155';
+    }
+    const bar = pct
+      ? '<div style="position:absolute;bottom:0;left:3px;right:3px;height:' + pct + '%;background:' + color + ';border-radius:3px 3px 0 0"></div>'
+      : '';
+    html += '<div onclick="precipShowHour(' + i + ')" style="flex:0 0 ' + PRECIP_CELL_W + 'px;width:' + PRECIP_CELL_W + 'px;cursor:pointer">'
+      + '<div style="position:relative;height:34px;background:#0f172a;border-radius:5px;border:1px solid ' + (isNow ? '#6366f1' : '#1e293b') + ';border-bottom:2px solid ' + (isNow ? '#6366f1' : '#334155') + '">' + bar + '</div>'
+      + '<div style="font-size:8.5px;font-weight:' + (isNow ? 900 : 700) + ';color:' + (isNow ? '#a5b4fc' : '#94a3b8') + ';text-align:center;margin-top:1px">' + two(h.date.getHours()) + '</div>'
+      + (h.date.getHours() === 0
+        ? '<div style="font-size:7.5px;font-weight:900;color:' + (sameDayAsToday ? '#4ade80' : '#fbbf24') + ';text-align:center">' + (sameDayAsToday ? 'OGGI' : 'DOMANI') + ' ' + two(h.date.getDate()) + '/' + two(h.date.getMonth() + 1) + '</div>'
+        : '')
+      + '</div>';
+  });
+  host.innerHTML = html;
+
+  const sums = {};
+  precipHours.forEach(h => { const k = h.date.toDateString(); sums[k] = (sums[k] || 0) + (h.mm || 0); });
+  const keys = Object.keys(sums);
+  const info = document.getElementById('precip-strip-info');
+  if (info) {
+    info.innerHTML = keys.map((k, i) => (i === 0 ? 'Oggi' : 'Domani') + ' <b style="color:#38bdf8">' + sums[k].toFixed(1) + ' mm</b>').join(' · ');
+  }
+  const nowIdx = precipHours.findIndex(h => precipIsSameHour(h.date, now));
+  if (nowIdx >= 0) host.scrollLeft = Math.max(0, (nowIdx - 2) * (PRECIP_CELL_W + 2));
+}
+
+function precipShowHour(i) {
+  const h = precipHours[i];
+  const info = document.getElementById('precip-strip-info');
+  if (!h || !info) return;
+  const now = new Date();
+  const dayName = h.date.toDateString() === now.toDateString() ? 'Oggi' : 'Domani';
+  const hhmm = String(h.date.getHours()).padStart(2, '0') + ':00';
+  info.innerHTML = dayName + ' ' + hhmm + ' · <b style="color:' + precipColor(h.mm) + '">' + (h.mm || 0).toFixed(1) + ' mm/h</b>' + (h.prob !== null ? ' · ' + h.prob + '%' : '');
+}
+
+
 
 // === MAPPA DEI VENTI LIVE (WINDY EMBED) ===
 let windyOverlay = 'wind';
@@ -2890,7 +3020,7 @@ function windyFullscreen() {
   const btn = document.getElementById('windy-fs-btn');
   if (!card) return;
   const on = card.classList.toggle('windy-fs');
-  document.body.style.overflow = on ? 'hidden' : '';
+  syncMapFullscreen();
   if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> Chiudi' : '<i class="fa-solid fa-expand"></i> Zoom';
   setTimeout(() => { if (map) map.invalidateSize(); }, 250);
 }
@@ -3253,6 +3383,9 @@ async function fetchMeteopescaData(lat, lng, locName) {
   const today = new Date();
   const mp = computeMeteopescaTides(today, lat, lng);
   const moon = mp.moon;
+
+  // Previsione pioggia oggi + domani (striscia sotto il radar)
+  loadPrecipForecast(lat, lng);
 
   // === MAREE REALI da modello numerico Open-Meteo (sea_level_height_msl) — gratis, senza chiave ===
   let realTideExtremes = null;
@@ -3785,15 +3918,85 @@ function getSpeciesSelectHtml(selected) {
   return SPECIES_SELECT_OPTIONS.replace(`value="${selected}"`, `value="${selected}" selected`);
 }
 
-const BAIT_SELECT_OPTIONS = `<option value="Cannolicchio vivo">Cannolicchio vivo</option><option value="Arenicola (Verme di sabbia)">Arenicola (Verme di sabbia)</option><option value="Bibi nostrano">Bibi nostrano</option><option value="Americano (Bloodworm)">Americano (Bloodworm)</option><option value="Coreano">Coreano</option><option value="Muriddu (Verme rosso)">Muriddu (Verme rosso)</option><option value="Sarda a tocchetti / rivoltata">Sarda a tocchetti / rivoltata</option><option value="Strisciolina di Seppia / Calamaro">Strisciolina di Seppia / Calamaro</option><option value="Granchio vivo di sabbia">Granchio vivo di sabbia</option><option value="Cozza / Fasolaro">Cozza / Fasolaro</option><option value="Gambero vivo">Gambero vivo</option><option value="Trancio di Pesce">Trancio di Pesce</option><option value="Artificiale Minnow / Jerk / Gomma">Artificiale Minnow / Jerk / Gomma</option><option value="Altro / Personalizzato">Altro / Personalizzato</option>`;
+// === ESCHE: due menu distinti in base alla tecnica scelta ==================
+// Tecniche "naturali": Surfcasting, Beach Ledgering, Bolognese, Barca / Traina, Rockfishing
+const BAIT_LIST_NATURAL = [
+  'Cannolicchio vivo', 'Arenicola', 'Bibi', 'Americano', 'Coreano', 'Muriddu',
+  'Sarda', 'Seppia / Calamaro', 'Granchio vivo / morto', 'Cozza', 'Gambero vivo',
+  'Trancio di Pesce', 'Bigattino', 'Verme di Rimini', 'Corbola', 'Tremuliggione'
+];
+// Tecniche "artificiali": Spinning ed Eging
+const BAIT_LIST_ARTIFICIAL = [
+  'Minnow', 'Jerk', 'Gomma', 'Jig', 'Needle', 'WTD', 'Lipless'
+];
 
-function getBaitSelectHtml(selected) {
-  if (!selected) selected = 'Cannolicchio vivo';
-  // Se l'esca salvata non è tra le opzioni standard (valore libero/legacy), la aggiunge dinamicamente
-  if (BAIT_SELECT_OPTIONS.indexOf('value="' + selected + '"') === -1) {
-    return '<option value="' + selected + '" selected>' + selected + '</option>' + BAIT_SELECT_OPTIONS;
+function techniqueIsArtificial(tech) {
+  const t = (tech || '').toLowerCase();
+  return t.indexOf('spinning') !== -1 || t.indexOf('eging') !== -1;
+}
+
+function getBaitsForTechnique(tech) {
+  return techniqueIsArtificial(tech) ? BAIT_LIST_ARTIFICIAL : BAIT_LIST_NATURAL;
+}
+
+function currentTechnique() {
+  const el = document.getElementById('ft');
+  return el && el.value ? el.value : 'Surfcasting';
+}
+
+// Le catture salvate con i vecchi nomi di tecnica vengono riallineate al nuovo menu
+function normalizeTechniqueName(tech) {
+  const t = (tech || '').trim();
+  if (!t) return 'Surfcasting';
+  const low = t.toLowerCase();
+  if (low.indexOf('ledger') !== -1) return 'Beach Ledgering';
+  if (low.indexOf('surf') !== -1) return 'Surfcasting';
+  if (low.indexOf('bolo') !== -1) return 'Bolognese';
+  if (low.indexOf('spinning') !== -1) return 'Spinning';
+  if (low.indexOf('eging') !== -1 || low.indexOf('cefalopod') !== -1) return 'Eging';
+  if (low.indexOf('barca') !== -1 || low.indexOf('traina') !== -1) return 'Barca / Traina';
+  if (low.indexOf('rock') !== -1 || low.indexOf('fondo') !== -1) return 'Rockfishing';
+  return t;
+}
+
+function setTechniqueValue(tech) {
+  const el = document.getElementById('ft');
+  if (!el) return 'Surfcasting';
+  let name = normalizeTechniqueName(tech);
+  const valid = Array.prototype.slice.call(el.options).map(o => o.value);
+  if (valid.indexOf(name) === -1) name = valid[0] || 'Surfcasting';
+  el.value = name;
+  return name;
+}
+
+function defaultBaitForTechnique(tech) {
+  return getBaitsForTechnique(tech || currentTechnique())[0];
+}
+
+function getBaitSelectHtml(selected, tech) {
+  const list = getBaitsForTechnique(tech || currentTechnique());
+  const cur = selected || list[0];
+  const opts = list.map(b => '<option value="' + b + '"' + (b === cur ? ' selected' : '') + '>' + b + '</option>').join('');
+  // Esche salvate in passato con vecchi nomi (non più in menu): restano visibili in cima
+  if (list.indexOf(cur) === -1) {
+    return '<option value="' + cur + '" selected>' + cur + '</option>' + opts;
   }
-  return BAIT_SELECT_OPTIONS.replace(`value="${selected}"`, `value="${selected}" selected`);
+  return opts;
+}
+
+// Cambiando tecnica si aggiorna il menu esche di tutte le righe specie
+function onTechniqueChange(tech) {
+  const container = document.getElementById('species-rows-container');
+  if (container) {
+    const cards = container.querySelectorAll('.species-row-card');
+    for (let i = 0; i < cards.length; i++) syncSpeciesBasketData(i);
+  }
+  const list = getBaitsForTechnique(tech);
+  currentSpeciesBasket.forEach(item => {
+    if (!item) return;
+    if (!item.bait || list.indexOf(item.bait) === -1) item.bait = list[0];
+  });
+  renderSpeciesRows();
 }
 
 // Etichetta leggibile delle specie: "Orata ×3 · Spigola ×4" (invece di "3x Orata, 4x Spigola" combinato)
@@ -3854,7 +4057,7 @@ function renderSpeciesRows() {
       <div class="fg" style="margin-bottom:0;margin-top:6px">
         <label style="color:#4ade80"><i class="fa-solid fa-worm"></i> Esca usata per questa specie</label>
         <select class="row-bait" onchange="syncSpeciesBasketData(${idx})">
-          ${getBaitSelectHtml(item.bait || 'Cannolicchio vivo')}
+          ${getBaitSelectHtml(item.bait || defaultBaitForTechnique())}
         </select>
       </div>
     </div>
@@ -3864,8 +4067,7 @@ function renderSpeciesRows() {
 }
 
 function addSpeciesRow() {
-  const gb = document.getElementById('fb') ? document.getElementById('fb').value : 'Cannolicchio vivo';
-  currentSpeciesBasket.push({ sp: 'Spigola', qty: 1, wt: '', singleRecordWt: '', bait: gb || 'Cannolicchio vivo' });
+  currentSpeciesBasket.push({ sp: 'Spigola', qty: 1, wt: '', singleRecordWt: '', bait: defaultBaitForTechnique() });
   renderSpeciesRows();
 }
 
@@ -4256,9 +4458,10 @@ function openCatchModal(ex, forceCappotto = false) {
     } else {
       currentSpeciesBasket = [];
     }
+    // La tecnica va impostata PRIMA di disegnare le righe: il menu esche dipende dalla tecnica
+    setTechniqueValue(ex.tech || 'Surfcasting');
     renderSpeciesRows();
 
-    document.getElementById('ft').value = ex.tech || 'Surfcasting';
     const fbEl = document.getElementById('fb');
     if (fbEl) fbEl.value = ex.bait || 'Cannolicchio vivo';
     document.getElementById('fsp').value = ex.spot || spot.name;
@@ -4283,7 +4486,8 @@ function openCatchModal(ex, forceCappotto = false) {
   } else {
     document.getElementById('mch').textContent = forceCappotto ? 'Registra Cappotto 🧥' : 'Registra Cattura 🎣';
     document.getElementById('eid').value = '';
-    currentSpeciesBasket = [{ sp: 'Orata', qty: 1, wt: '', singleRecordWt: '', bait: 'Cannolicchio vivo' }];
+    setTechniqueValue(currentTechnique());
+    currentSpeciesBasket = [{ sp: 'Orata', qty: 1, wt: '', singleRecordWt: '', bait: defaultBaitForTechnique() }];
     renderSpeciesRows();
 
     document.getElementById('fdt').value = nowIso;
@@ -4367,7 +4571,7 @@ function saveCatch(e) {
     wt: isCappotto ? 0 : totalWt,
     singleRecordWt: isCappotto ? 0 : maxSingleRecordWt,
     isBlank: isCappotto,
-    tech: document.getElementById('ft').value,
+    tech: normalizeTechniqueName(document.getElementById('ft').value),
     bait: catchBaitLevel,
     spot: document.getElementById('fsp').value || spot.name,
     moon: moon.name,
