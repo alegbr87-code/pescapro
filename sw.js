@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v29-maree-solunare';
+const CACHE_NAME = 'pescapro-v30-radar-fix';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

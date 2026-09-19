@@ -380,6 +380,38 @@
     .map-card.windy-fs #windy-frame {
       height: 100%;
     }
+    /* In fullscreen: pulsante di chiusura sempre visibile (in alto a destra) */
+    .map-card.windy-fs #windy-fs-close {
+      display: flex !important;
+    }
+    .map-card.windy-fs .map-hdr,
+    .map-card.windy-fs .map-toolbar {
+      display: none !important;
+    }
+
+    /* Radar meteo: modalità schermo intero */
+    .map-card.radar-fs {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 10000;
+      border-radius: 0;
+      border: none;
+      display: flex;
+      flex-direction: column;
+    }
+    .map-card.radar-fs .map-frame {
+      flex: 1 1 auto;
+      height: auto;
+    }
+    .map-card.radar-fs #radarview {
+      height: 100%;
+    }
+    .map-card.radar-fs #radar-fs-close {
+      display: flex !important;
+    }
+    .map-card.radar-fs .map-hdr {
+      display: none !important;
+    }
 
     #mapview {
       width: 100%;
@@ -1470,6 +1502,27 @@
       <div class="tab on" id="t0">
         <div class="scroll-pane" id="home-scroll-pane">
 
+          <!-- -1. METEO & RADAR PRECIPITAZIONI (RainViewer) -->
+          <div class="map-card" id="radar-card" style="border-color:#6366f1">
+            <div class="map-hdr">
+              <div style="display:flex;align-items:center;gap:6px"><i class="fa-solid fa-cloud-showers-heavy" style="color:#818cf8;font-size:14px"></i> Meteo &amp; Radar Precipitazioni <span style="font-size:9px;color:#94a3b8;font-weight:600">· LIVE</span></div>
+              <div class="map-badge" style="background:#6366f1"><i class="fa-solid fa-satellite-dish"></i> Radar</div>
+            </div>
+            <div class="map-toolbar" style="flex-wrap:wrap;justify-content:flex-start">
+              <button class="pill pri" id="radar-play-btn" onclick="radarTogglePlay()"><i class="fa-solid fa-pause"></i> Pausa</button>
+              <button class="pill" onclick="radarCenter()"><i class="fa-solid fa-location-crosshairs"></i> Il mio Spot</button>
+              <span class="pill" id="radar-time-lbl" style="cursor:default;background:#1e1b4b;color:#a5b4fc;border-color:#4338ca">🕒 --:--</span>
+              <button class="pill" id="radar-fs-btn" onclick="radarZoom()"><i class="fa-solid fa-expand"></i> Zoom</button>
+            </div>
+            <div class="map-frame" id="radar-frame-box" style="height:320px">
+              <div id="radarview" style="width:100%;height:100%"></div>
+              <button id="radar-fs-close" onclick="radarZoom()" style="display:none;position:absolute;top:10px;right:10px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:10px 15px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi Mappa</button>
+            </div>
+            <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
+              🌧️ Precipitazioni in avanzamento (ultime 2h + previsione 30 min) • Pizzica per zoomare • Radar: RainViewer
+            </div>
+          </div>
+
           <!-- 0. MAPPA DEI VENTI LIVE (WINDY) -->
           <div class="map-card" id="windy-card" style="border-color:#0ea5e9">
             <div class="map-hdr">
@@ -1484,6 +1537,7 @@
             </div>
             <div class="map-frame" id="windy-frame-box">
               <iframe id="windy-frame" src="about:blank" style="width:100%;height:100%;border:0;display:block" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mappa dei Venti Live Windy"></iframe>
+              <button id="windy-fs-close" onclick="windyFullscreen()" style="display:none;position:absolute;top:10px;right:10px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:10px 15px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi Mappa</button>
             </div>
             <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
               🌬️ Pizzica la mappa per zoomare sulla tua località • Direzione e velocità del vento in km/h • Dati Windy.com
@@ -2292,13 +2346,24 @@
 
                     <!-- Dettagli Pesce / Cestino Multi-Specie (nascosti in modalità cappotto) -->
           <div id="catch-fish-fields">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:#0c4a6e;border:1px solid #075985;padding:6px 10px;border-radius:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:#0c4a6e;border:1px solid #075985;padding:6px 10px;border-radius:10px;gap:6px;flex-wrap:wrap">
               <label style="font-size:12px;font-weight:900;color:#38bdf8;display:flex;align-items:center;gap:6px">
                 <i class="fa-solid fa-basket-shopping"></i> Pescato della Battuta
               </label>
-              <button type="button" onclick="addSpeciesRow()" style="background:#0284c7;color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(2,132,199,0.3)">
-                <i class="fa-solid fa-plus"></i> + Altra Specie
-              </button>
+              <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                <span style="font-size:10px;font-weight:800;color:#38bdf8"><i class="fa-solid fa-crosshairs"></i> Tecnica:</span>
+                <select id="ft" style="font-size:11px;padding:4px 6px;border-radius:8px;background:#111c33;border:1px solid #334155;color:#e2e8f0;font-weight:800">
+                  <option>Surfcasting</option>
+                  <option>Bolognese</option>
+                  <option>Spinning</option>
+                  <option>Barca / Traina</option>
+                  <option>Fondo / Rockfishing</option>
+                  <option>Eging (Cefalopodi)</option>
+                </select>
+                <button type="button" onclick="addSpeciesRow()" style="background:#0284c7;color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(2,132,199,0.3)">
+                  <i class="fa-solid fa-plus"></i> + Altra Specie
+                </button>
+              </div>
             </div>
 
             <!-- Contenitore Righe Specie Dinamiche -->
@@ -2314,39 +2379,17 @@
                 <span>🏆 Singola Preda Più Grande:</span>
                 <b id="summary-max-single" style="color:#34d399;font-weight:900">0.00 kg</b>
               </div>
+              <div id="summary-species-breakdown" style="font-size:11px;color:#86efac;margin-top:4px;padding-top:4px;border-top:1px dashed #166534">🐟 Nessuna specie inserita</div>
             </div>
           </div>
 
-                    <div class="fr2">
-            <div class="fg">
-              <label>Tecnica Utilizzata *</label>
-              <select id="ft">
-                <option>Surfcasting</option>
-                <option>Bolognese</option>
-                <option>Spinning</option>
-                <option>Barca / Traina</option>
-                <option>Fondo / Rockfishing</option>
-                <option>Eging (Cefalopodi)</option>
-              </select>
+                    <!-- (Tecnica Utilizzata spostata nel riquadro "Pescato della Battuta" sopra) -->
+          <div class="fg">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <label style="margin-bottom:0"><i class="fa-solid fa-worm" style="color:#4ade80"></i> Esche per Specie</label>
             </div>
-            <div class="fg">
-              <label>Esca Provata (default per le specie)</label>
-              <select id="fb">
-                <option>Cannolicchio vivo</option>
-                <option>Arenicola (Verme di sabbia)</option>
-                <option>Bibi nostrano</option>
-                <option>Americano (Bloodworm)</option>
-                <option>Coreano</option>
-                <option>Muriddu (Verme rosso)</option>
-                <option>Sarda a tocchetti / rivoltata</option>
-                <option>Strisciolina di Seppia / Calamaro</option>
-                <option>Granchio vivo di sabbia</option>
-                <option>Cozza / Fasolaro</option>
-                <option>Gambero vivo</option>
-                <option>Trancio di Pesce</option>
-                <option>Artificiale Minnow / Jerk / Gomma</option>
-                <option>Altro / Personalizzato</option>
-              </select>
+            <div style="font-size:10px;color:#94a3b8;line-height:1.4">
+              Ogni specie ha la sua esca dedicata direttamente nel riquadro qui sopra 👆
             </div>
           </div>
 
@@ -2559,7 +2602,10 @@ function deepScanAndRecoverCatches() {
                   isBlank: !!item.isBlank,
                   qty: item.qty || 1,
                   hours: item.hours || 4.0,
-                  singleRecordWt: item.singleRecordWt || (item.wt || 0)
+                  singleRecordWt: item.singleRecordWt || (item.wt || 0),
+                  rawDate: item.rawDate || null,
+                  rawEndDate: item.rawEndDate || null,
+                  speciesList: Array.isArray(item.speciesList) ? item.speciesList : null
                 });
               }
             }
@@ -2573,6 +2619,15 @@ function deepScanAndRecoverCatches() {
 }
 
 function loadCatchesFromDB() {
+  // 1. Chiave UFFICIALE del diario: preserva TUTTI i campi (specie multiple, date ISO, esche per specie)
+  try {
+    const raw = localStorage.getItem(DB_CATCHES_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  // 2. Fallback: scansione di recupero di eventuali dati sparsi
   const scanned = deepScanAndRecoverCatches();
   if (scanned && scanned.length > 0) {
     return scanned;
@@ -2671,6 +2726,96 @@ function toggleView() {
   setTimeout(() => { if (map) map.invalidateSize(); }, 300);
 }
 
+// === MAPPA METEO & RADAR PRECIPITAZIONI (RainViewer — gratis, senza chiave) ===
+let radarMap = null, radarBaseLayer = null, radarRainLayer = null;
+let radarHost = 'https://tilecache.rainviewer.com';
+let radarFrames = [], radarIdx = 0, radarTimer = null, radarPlaying = true;
+
+function radarTileUrl(path) {
+  return radarHost + path + '/256/{z}/{x}/{y}/4/1_1.png';
+}
+
+function initRadarMap() {
+  const el = document.getElementById('radarview');
+  if (!el || radarMap || typeof L === 'undefined') return;
+  const lat = (spot && typeof spot.lat === 'number') ? spot.lat : 43.6158;
+  const lon = (spot && typeof spot.lng === 'number') ? spot.lng : 13.5189;
+  radarMap = L.map('radarview', { zoomControl: false, attributionControl: true }).setView([lat, lon], 8);
+  radarBaseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, subdomains: 'abcd', attribution: '&copy; OpenStreetMap, &copy; CARTO' }).addTo(radarMap);
+  radarMap.attributionControl.setPrefix('');
+  radarLoadFrames();
+  setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+}
+
+async function radarLoadFrames() {
+  try {
+    const r = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+    const d = await r.json();
+    if (d && d.host) radarHost = d.host;
+    const past = (d && d.radar && d.radar.past) ? d.radar.past : [];
+    const nwc = (d && d.radar && d.radar.nowcast) ? d.radar.nowcast : [];
+    radarFrames = past.concat(nwc);
+    if (!radarFrames.length) return;
+    radarIdx = radarFrames.length - 1 - nwc.length;
+    if (radarIdx < 0) radarIdx = 0;
+    if (radarRainLayer && radarMap) radarMap.removeLayer(radarRainLayer);
+    radarRainLayer = L.tileLayer(radarTileUrl(radarFrames[radarIdx].path), { opacity: 0.75, zIndex: 5, tileSize: 256, attribution: 'Radar: RainViewer' }).addTo(radarMap);
+    radarUpdateLabel();
+    radarPlay();
+  } catch (e) {}
+}
+
+function radarUpdateLabel() {
+  const el = document.getElementById('radar-time-lbl');
+  if (!el || !radarFrames[radarIdx]) return;
+  const dt = new Date(radarFrames[radarIdx].time * 1000);
+  const hh = String(dt.getHours()).padStart(2, '0');
+  const mm = String(dt.getMinutes()).padStart(2, '0');
+  el.textContent = '🕒 ' + hh + ':' + mm;
+}
+
+function radarPlay() {
+  if (radarTimer) clearInterval(radarTimer);
+  radarPlaying = true;
+  const btn = document.getElementById('radar-play-btn');
+  if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausa';
+  radarTimer = setInterval(() => {
+    if (!radarFrames.length || !radarRainLayer) return;
+    radarIdx = (radarIdx + 1) % radarFrames.length;
+    radarRainLayer.setUrl(radarTileUrl(radarFrames[radarIdx].path));
+    radarUpdateLabel();
+  }, 700);
+}
+
+function radarTogglePlay() {
+  if (radarPlaying) {
+    radarPlaying = false;
+    if (radarTimer) clearInterval(radarTimer);
+    radarTimer = null;
+    const btn = document.getElementById('radar-play-btn');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i> Play';
+  } else {
+    radarPlay();
+  }
+}
+
+function radarCenter() {
+  if (!radarMap) return;
+  const lat = (spot && typeof spot.lat === 'number') ? spot.lat : 43.6158;
+  const lon = (spot && typeof spot.lng === 'number') ? spot.lng : 13.5189;
+  radarMap.setView([lat, lon], 9);
+}
+
+function radarZoom() {
+  const card = document.getElementById('radar-card');
+  const btn = document.getElementById('radar-fs-btn');
+  if (!card) return;
+  const on = card.classList.toggle('radar-fs');
+  document.body.style.overflow = on ? 'hidden' : '';
+  if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> Chiudi' : '<i class="fa-solid fa-expand"></i> Zoom';
+  setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 250);
+}
+
 // === MAPPA DEI VENTI LIVE (WINDY EMBED) ===
 let windyOverlay = 'wind';
 
@@ -2709,6 +2854,7 @@ function windyFullscreen() {
   const btn = document.getElementById('windy-fs-btn');
   if (!card) return;
   const on = card.classList.toggle('windy-fs');
+  document.body.style.overflow = on ? 'hidden' : '';
   if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> Chiudi' : '<i class="fa-solid fa-expand"></i> Zoom';
   setTimeout(() => { if (map) map.invalidateSize(); }, 250);
 }
@@ -3614,6 +3760,16 @@ function getBaitSelectHtml(selected) {
   return BAIT_SELECT_OPTIONS.replace(`value="${selected}"`, `value="${selected}" selected`);
 }
 
+// Etichetta leggibile delle specie: "Orata ×3 · Spigola ×4" (invece di "3x Orata, 4x Spigola" combinato)
+function getCatchSpeciesLabel(c) {
+  if (!c) return 'Pesce';
+  if (c.isBlank || c.qty === 0 || (c.sp && String(c.sp).toLowerCase().includes('cappotto'))) return 'Cappotto';
+  if (Array.isArray(c.speciesList) && c.speciesList.length > 0) {
+    return c.speciesList.map(s => `${s.sp} ×${parseInt(s.qty, 10) || 1}`).join(' · ');
+  }
+  return c.sp || 'Pesce';
+}
+
 function renderSpeciesRows() {
   const container = document.getElementById('species-rows-container');
   if (!container) return;
@@ -3731,10 +3887,19 @@ function updateTripSummary() {
   const qtyEl = document.getElementById('summary-total-qty');
   const wtEl = document.getElementById('summary-total-wt');
   const singleEl = document.getElementById('summary-max-single');
+  const bkEl = document.getElementById('summary-species-breakdown');
 
   if (qtyEl) qtyEl.textContent = `${totalQty} pesci (${currentSpeciesBasket.length} specie)`;
   if (wtEl) wtEl.textContent = `${totalWt.toFixed(2)} kg`;
   if (singleEl) singleEl.textContent = maxSingle > 0 ? `${maxSingle.toFixed(2)} kg (${maxSingleSpecies})` : '0.00 kg';
+  if (bkEl) {
+    const parts = currentSpeciesBasket.filter(it => it && it.sp).map(it => {
+      const q = parseInt(it.qty, 10) || 1;
+      const w = parseFloat(it.wt) || 0;
+      return `${it.sp} ×${q} (${w.toFixed(2)} kg)`;
+    });
+    bkEl.innerHTML = parts.length ? '🐟 Specie registrate: ' + parts.join(' · ') : '🐟 Nessuna specie inserita';
+  }
 }
 
 
@@ -3895,8 +4060,9 @@ function useCurrentGpsForCatch() {
       } catch(e){}
 
       const spInput = document.getElementById('fsp');
-      if (spInput && (!spInput.value || spInput.value.includes('Spot'))) {
+      if (spInput) {
         spInput.value = realName;
+        spInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
       if (statusEl) statusEl.innerHTML = `📍 Mappa: <b style="color:#34d399">GPS Reale</b> (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
       updateCatchSolunarParams();
@@ -3987,10 +4153,10 @@ function openCatchPhoto(id) {
   const c = catches.find(x => x.id === id);
   if (!c || !c.img) return;
   document.getElementById('cp-img').src = c.img;
-  document.getElementById('cp-title').textContent = (c.qty && c.qty > 1 ? c.qty + 'x ' : '') + c.sp;
+  document.getElementById('cp-title').textContent = getCatchSpeciesLabel(c);
   document.getElementById('cp-summary').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <div style="font-size:16px;font-weight:900;color:#fff">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</div>
+      <div style="font-size:16px;font-weight:900;color:#fff">🐟 ${getCatchSpeciesLabel(c)}</div>
       <div style="font-size:14px;font-weight:900;color:#38bdf8">${c.wt.toFixed(2)} kg${c.len ? ' • ' + c.len + ' cm' : ''}</div>
     </div>
     <div style="font-size:12px;color:#cbd5e1;margin-top:6px">📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''}</div>
@@ -4057,7 +4223,8 @@ function openCatchModal(ex, forceCappotto = false) {
     renderSpeciesRows();
 
     document.getElementById('ft').value = ex.tech || 'Surfcasting';
-    document.getElementById('fb').value = ex.bait || 'Cannolicchio vivo';
+    const fbEl = document.getElementById('fb');
+    if (fbEl) fbEl.value = ex.bait || 'Cannolicchio vivo';
     document.getElementById('fsp').value = ex.spot || spot.name;
     document.getElementById('flat').value = ex.lat || '';
     document.getElementById('flng').value = ex.lng || '';
@@ -4256,7 +4423,7 @@ function renderDiary() {
           </div>
           <div style="flex:1;min-width:0">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-              <span style="font-size:14px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🐟 ${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</span>
+              <span style="font-size:14px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🐟 ${getCatchSpeciesLabel(c)}</span>
               <span style="font-size:12px;font-weight:800;color:var(--primary);white-space:nowrap">${c.wt.toFixed(2)} kg${c.len ? ' • ' + c.len + ' cm' : ''}</span>
             </div>
             <div style="font-size:11px;color:#94a3b8;margin-top:2px">📅 ${c.date} ${c.hours ? '• ⏱️ ' + c.hours + 'h' : ''} • <span style="color:var(--primary)">${c.tech}</span></div>
@@ -4456,7 +4623,10 @@ function renderStats() {
 function go(i) {
   document.querySelectorAll('.ntab').forEach((b, j) => b.classList.toggle('on', j === i));
   document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('on', j === i));
-  if (i === 0 && map) setTimeout(() => map.invalidateSize(), 200);
+  if (i === 0) {
+    if (map) setTimeout(() => map.invalidateSize(), 200);
+    if (radarMap) setTimeout(() => radarMap.invalidateSize(), 200);
+  }
   if (i === 1) renderWebcams();
   if (i === 2) renderDiary();
   if (i === 3) renderStats();
@@ -6074,6 +6244,25 @@ function generateReportHTML(d, forDirectPdf = false) {
     </table>
   </div>
 
+  <!-- Section: Tecniche di Pesca -->
+  <div class="sec-card">
+    <div class="sec-title"><span>🎣 Tecniche di Pesca</span><span style="font-size:10px;color:#0284c7">Rendimento per Tecnica</span></div>
+    <table class="table-stat">
+      <thead><tr><th>Tecnica</th><th>Uscite</th><th>Peso Totale</th><th>Resa %</th><th>Grafico</th></tr></thead>
+      <tbody>
+        ${d.techniques.length ? d.techniques.map(t => `
+          <tr>
+            <td><b>${t.name}</b></td>
+            <td>${t.count} uscite</td>
+            <td>${t.weight.toFixed(2)} kg</td>
+            <td><b>${t.pct}%</b></td>
+            <td><div class="bar-wrap"><div class="bar-val" style="width:${t.pct}%;background:#0284c7"></div></div></td>
+          </tr>
+        `).join('') : '<tr><td colspan="5" style="color:#94a3b8">Nessuna tecnica registrata</td></tr>'}
+      </tbody>
+    </table>
+  </div>
+
   <!-- Section: Analisi Catture per Specie -->
   <div class="sec-card">
     <div class="sec-title"><span>🐟 Catture per Specie</span><span style="font-size:10px;color:#059669">Resa per Specie</span></div>
@@ -6114,7 +6303,7 @@ function generateReportHTML(d, forDirectPdf = false) {
           <tr style="${c.isBlank ? 'background:#f8fafc;color:#64748b' : ''}">
             <td style="white-space:nowrap"><b style="color:#0f172a">${c.date}</b><div style="font-size:9px;color:#64748b">${c.hours ? '⏱️ ' + c.hours + 'h' : ''}</div></td>
             <td><span style="color:#0284c7;font-weight:800">📍 ${c.spot || d.spotName || 'Spot Costiero'}</span></td>
-            <td>${c.isBlank ? '<span style="color:#64748b">🧥 Cappotto (0)</span>' : `<b>${c.qty && c.qty > 1 ? c.qty + 'x ' : ''}${c.sp}</b>`}</td>
+            <td>${c.isBlank ? '<span style="color:#64748b">🧥 Cappotto (0)</span>' : `<b>${getCatchSpeciesLabel(c)}</b>`}</td>
             <td><b>${c.isBlank ? '0.00' : (c.wt || 0).toFixed(2)} kg</b></td>
             <td><span style="color:#8b5cf6;font-weight:900">${c.isBlank ? '—' : (getSingleFishWeight(c).toFixed(2) + ' kg')}</span></td>
             <td>
@@ -6262,6 +6451,7 @@ function executeDirectHtmlDownload() {
 window.addEventListener('DOMContentLoaded', () => {
   initMap();
   loadWindyMap();
+  initRadarMap();
   generateMonthlyMoonStrip();
   fetchMeteopescaData(spot.lat, spot.lng, spot.name);
   renderWebcams();
