@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v30-radar-fix';
+const CACHE_NAME = 'pescapro-v31-radar-esri';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

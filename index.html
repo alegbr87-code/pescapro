@@ -380,9 +380,20 @@
     .map-card.windy-fs #windy-frame {
       height: 100%;
     }
-    /* In fullscreen: pulsante di chiusura sempre visibile (in alto a destra) */
-    .map-card.windy-fs #windy-fs-close {
+    /* In fullscreen: pulsante di chiusura GRANDE in BASSO al centro (sempre visibile, evita il notch in alto) */
+    .map-card.windy-fs #windy-fs-close,
+    .map-card.radar-fs #radar-fs-close {
       display: flex !important;
+      top: auto !important;
+      bottom: 42px !important;
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%);
+      padding: 13px 24px !important;
+      font-size: 14px !important;
+      border-radius: 14px !important;
+      z-index: 10002 !important;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.85) !important;
     }
     .map-card.windy-fs .map-hdr,
     .map-card.windy-fs .map-toolbar {
@@ -409,7 +420,8 @@
     .map-card.radar-fs #radar-fs-close {
       display: flex !important;
     }
-    .map-card.radar-fs .map-hdr {
+    .map-card.radar-fs .map-hdr,
+    .map-card.radar-fs .map-toolbar {
       display: none !important;
     }
 
@@ -2741,7 +2753,7 @@ function initRadarMap() {
   const lat = (spot && typeof spot.lat === 'number') ? spot.lat : 43.6158;
   const lon = (spot && typeof spot.lng === 'number') ? spot.lng : 13.5189;
   radarMap = L.map('radarview', { zoomControl: false, attributionControl: true }).setView([lat, lon], 8);
-  radarBaseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, subdomains: 'abcd', attribution: '&copy; OpenStreetMap, &copy; CARTO' }).addTo(radarMap);
+  radarBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 18, attribution: 'Base: Esri, HERE, Garmin, &copy; OpenStreetMap' }).addTo(radarMap);
   radarMap.attributionControl.setPrefix('');
   radarLoadFrames();
   setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
