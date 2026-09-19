@@ -380,20 +380,21 @@
     .map-card.windy-fs #windy-frame {
       height: 100%;
     }
-    /* In fullscreen: pulsante di chiusura GRANDE in BASSO al centro (sempre visibile, evita il notch in alto) */
+    /* In fullscreen: pulsante di chiusura piccolo in ALTO a SINISTRA
+       (sotto la status bar, lontano dal notch centrale e dalla barra del tempo di Windy) */
     .map-card.windy-fs #windy-fs-close,
     .map-card.radar-fs #radar-fs-close {
       display: flex !important;
-      top: auto !important;
-      bottom: 42px !important;
-      left: 50% !important;
+      top: 58px !important;
+      left: 8px !important;
       right: auto !important;
-      transform: translateX(-50%);
-      padding: 13px 24px !important;
-      font-size: 14px !important;
-      border-radius: 14px !important;
+      bottom: auto !important;
+      transform: none;
+      padding: 7px 11px !important;
+      font-size: 11px !important;
+      border-radius: 9px !important;
       z-index: 10002 !important;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.85) !important;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.75) !important;
     }
     .map-card.windy-fs .map-hdr,
     .map-card.windy-fs .map-toolbar {
@@ -1521,17 +1522,22 @@
               <div class="map-badge" style="background:#6366f1"><i class="fa-solid fa-satellite-dish"></i> Radar</div>
             </div>
             <div class="map-toolbar" style="flex-wrap:wrap;justify-content:flex-start">
-              <button class="pill pri" id="radar-play-btn" onclick="radarTogglePlay()"><i class="fa-solid fa-pause"></i> Pausa</button>
               <button class="pill" onclick="radarCenter()"><i class="fa-solid fa-location-crosshairs"></i> Il mio Spot</button>
-              <span class="pill" id="radar-time-lbl" style="cursor:default;background:#1e1b4b;color:#a5b4fc;border-color:#4338ca">🕒 --:--</span>
               <button class="pill" id="radar-fs-btn" onclick="radarZoom()"><i class="fa-solid fa-expand"></i> Zoom</button>
+              <span style="font-size:10px;color:#94a3b8;font-weight:700">🌧️ Radar: ultime 2h + previsione 30 min</span>
             </div>
             <div class="map-frame" id="radar-frame-box" style="height:320px">
               <div id="radarview" style="width:100%;height:100%"></div>
-              <button id="radar-fs-close" onclick="radarZoom()" style="display:none;position:absolute;top:10px;right:10px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:10px 15px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi Mappa</button>
+              <button id="radar-fs-close" onclick="radarZoom()" style="display:none;position:absolute;top:58px;right:auto;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
+            </div>
+            <!-- Timeline radar: Pausa/Play + cursore manuale + ora del frame -->
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#0f172a;border-top:1px solid #1e293b">
+              <button class="pill pri" id="radar-play-btn" onclick="radarTogglePlay()" style="min-width:78px;justify-content:center"><i class="fa-solid fa-pause"></i> Pausa</button>
+              <input type="range" id="radar-slider" min="0" max="0" value="0" oninput="radarScrub(this.value)" style="flex:1;min-width:0;accent-color:#6366f1">
+              <span id="radar-time-lbl" style="font-size:11px;font-weight:800;color:#a5b4fc;min-width:48px;text-align:right">--:--</span>
             </div>
             <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
-              🌧️ Precipitazioni in avanzamento (ultime 2h + previsione 30 min) • Pizzica per zoomare • Radar: RainViewer
+              🌧️ Muovi il cursore per scorrere il tempo • Pizzica per zoomare • Radar: RainViewer (dettaglio max zoom 7)
             </div>
           </div>
 
@@ -1549,7 +1555,7 @@
             </div>
             <div class="map-frame" id="windy-frame-box">
               <iframe id="windy-frame" src="about:blank" style="width:100%;height:100%;border:0;display:block" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mappa dei Venti Live Windy"></iframe>
-              <button id="windy-fs-close" onclick="windyFullscreen()" style="display:none;position:absolute;top:10px;right:10px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:10px 15px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi Mappa</button>
+              <button id="windy-fs-close" onclick="windyFullscreen()" style="display:none;position:absolute;top:58px;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
             </div>
             <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
               🌬️ Pizzica la mappa per zoomare sulla tua località • Direzione e velocità del vento in km/h • Dati Windy.com
@@ -2741,7 +2747,7 @@ function toggleView() {
 // === MAPPA METEO & RADAR PRECIPITAZIONI (RainViewer — gratis, senza chiave) ===
 let radarMap = null, radarBaseLayer = null, radarRainLayer = null;
 let radarHost = 'https://tilecache.rainviewer.com';
-let radarFrames = [], radarIdx = 0, radarTimer = null, radarPlaying = true;
+let radarFrames = [], radarIdx = 0, radarTimer = null, radarPlaying = true, radarNowcastStart = 0;
 
 function radarTileUrl(path) {
   return radarHost + path + '/256/{z}/{x}/{y}/4/1_1.png';
@@ -2768,10 +2774,15 @@ async function radarLoadFrames() {
     const nwc = (d && d.radar && d.radar.nowcast) ? d.radar.nowcast : [];
     radarFrames = past.concat(nwc);
     if (!radarFrames.length) return;
+    radarNowcastStart = past.length;
     radarIdx = radarFrames.length - 1 - nwc.length;
     if (radarIdx < 0) radarIdx = 0;
     if (radarRainLayer && radarMap) radarMap.removeLayer(radarRainLayer);
-    radarRainLayer = L.tileLayer(radarTileUrl(radarFrames[radarIdx].path), { opacity: 0.75, zIndex: 5, tileSize: 256, attribution: 'Radar: RainViewer' }).addTo(radarMap);
+    // RainViewer: zoom massimo supportato = 7 (oltre restituisce "Zoom Level Not Supported").
+    // maxNativeZoom fa ingrandire i tile esistenti senza richiedere livelli inesistenti.
+    radarRainLayer = L.tileLayer(radarTileUrl(radarFrames[radarIdx].path), { opacity: 0.75, zIndex: 5, tileSize: 256, maxNativeZoom: 7, attribution: 'Radar: RainViewer' }).addTo(radarMap);
+    const sl = document.getElementById('radar-slider');
+    if (sl) { sl.max = radarFrames.length - 1; sl.value = radarIdx; }
     radarUpdateLabel();
     radarPlay();
   } catch (e) {}
@@ -2783,7 +2794,25 @@ function radarUpdateLabel() {
   const dt = new Date(radarFrames[radarIdx].time * 1000);
   const hh = String(dt.getHours()).padStart(2, '0');
   const mm = String(dt.getMinutes()).padStart(2, '0');
-  el.textContent = '🕒 ' + hh + ':' + mm;
+  el.textContent = (radarIdx >= radarNowcastStart ? '⏩ ' : '🕒 ') + hh + ':' + mm;
+}
+
+function radarSetFrame(i) {
+  if (!radarFrames.length || !radarRainLayer) return;
+  let v = parseInt(i, 10);
+  if (isNaN(v)) v = 0;
+  if (v < 0) v = radarFrames.length - 1;
+  if (v > radarFrames.length - 1) v = 0;
+  radarIdx = v;
+  radarRainLayer.setUrl(radarTileUrl(radarFrames[radarIdx].path));
+  radarUpdateLabel();
+  const sl = document.getElementById('radar-slider');
+  if (sl && parseInt(sl.value, 10) !== radarIdx) sl.value = radarIdx;
+}
+
+function radarScrub(v) {
+  if (radarPlaying) radarTogglePlay(); // muovendo il cursore manualmente si mette in pausa
+  radarSetFrame(v);
 }
 
 function radarPlay() {
@@ -2791,12 +2820,7 @@ function radarPlay() {
   radarPlaying = true;
   const btn = document.getElementById('radar-play-btn');
   if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausa';
-  radarTimer = setInterval(() => {
-    if (!radarFrames.length || !radarRainLayer) return;
-    radarIdx = (radarIdx + 1) % radarFrames.length;
-    radarRainLayer.setUrl(radarTileUrl(radarFrames[radarIdx].path));
-    radarUpdateLabel();
-  }, 700);
+  radarTimer = setInterval(() => { radarSetFrame(radarIdx + 1); }, 700);
 }
 
 function radarTogglePlay() {
