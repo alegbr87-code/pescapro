@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v35-meteo-in-app-mappe-bloccate';
+const CACHE_NAME = 'pescapro-v36-tendina-fissa-catture';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

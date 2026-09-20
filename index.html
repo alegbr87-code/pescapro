@@ -1026,6 +1026,53 @@
       to { transform: translateY(0); }
     }
 
+    /* ===== TENDINA FISSA ANCORATA IN BASSO (Registra Cattura & co.) =====
+       Si scorre SOLO su e giù:
+       - overflow-x: hidden      -> il form non può più essere trascinato di lato
+       - touch-action: pan-y     -> il dito muove la tendina solo in verticale
+       - overscroll-behavior: contain -> arrivata in fondo non muove la pagina sotto */
+    .sheet {
+      overflow-x: hidden !important;
+      touch-action: pan-y;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Il velo del modal è alto quanto lo SCHERMO VISIBILE (dvh): aprendo la
+       tastiera la tendina non "salta" più su e giù. */
+    .modal {
+      height: 100dvh !important;
+      overflow: hidden !important;
+      overscroll-behavior: none;
+    }
+
+    /* Intestazione della tendina sempre visibile mentre scorri il form */
+    .sheet-head {
+      position: sticky;
+      top: -18px;
+      z-index: 5;
+      background: #111c33;
+      padding: 18px 0 8px;
+    }
+
+    /* Nessun campo o riquadro deve allargare la tendina:
+       le colonne possono restringersi fino a zero (era la causa dello
+       scorrimento laterale con le tendine dei select lunghi). */
+    .sheet .fr2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+    .sheet .fg,
+    .sheet .fr2 > *,
+    .sheet input,
+    .sheet select,
+    .sheet textarea,
+    .sheet button,
+    .sheet img {
+      min-width: 0;
+      max-width: 100%;
+    }
+    .sheet select, .sheet input, .sheet textarea { text-overflow: ellipsis; }
+    .sheet img { height: auto; }
+
     .fg { margin-bottom: 10px; }
     .fg label { display: block; font-size: 11px; font-weight: 800; color: #cbd5e1; margin-bottom: 3px; }
     .fg input, .fg select, .fg textarea {
@@ -2445,7 +2492,7 @@
     <!-- MODAL: CATCH ENTRY -->
     <div class="modal" id="mc">
       <div class="sheet">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="sheet-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <h3 style="font-size:15px;font-weight:900" id="mch">Registra Cattura 🎣</h3>
           <button onclick="closeCatchModal()" style="background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer">✕</button>
         </div>
@@ -4986,9 +5033,22 @@ function closeCatchPhoto() {
   document.getElementById('modal-catch-photo').classList.remove('on');
 }
 
+// Con la tastiera aperta il campo attivo resta visibile dentro la tendina
+document.addEventListener('focusin', (e) => {
+  const t = e.target;
+  if (!t || !t.closest) return;
+  const sheet = t.closest('.sheet');
+  if (!sheet) return;
+  setTimeout(() => { try { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (err) {} }, 300);
+});
+
 function openCatchModal(ex, forceCappotto = false) {
   photoB64 = null;
   document.getElementById('mc').classList.add('on');
+  // La tendina si apre sempre dall'alto e ancorata in basso (niente salti su iOS)
+  const sheetEl = document.querySelector('#mc .sheet');
+  if (sheetEl) sheetEl.scrollTop = 0;
+  try { window.scrollTo(0, 0); } catch (e) {}
   document.getElementById('cf').reset();
   const p = document.getElementById('pp');
   p.style.display = 'none';
