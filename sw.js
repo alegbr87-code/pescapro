@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v33-esche-tecniche-mappe';
+const CACHE_NAME = 'pescapro-v34-meteo-ilmeteo-webcam-memoria';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {

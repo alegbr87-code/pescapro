@@ -365,17 +365,16 @@
       background: #0b132b;
     }
 
-    /* ===== MAPPE A SCHERMO INTERO (Windy + Radar) =====
-       Mentre una mappa è a schermo intero la barra dell'app e la barra di
-       navigazione in basso vengono nascoste: in questo modo i pulsanti
-       "Chiudi" non restano mai coperti (era il bug segnalato). */
+    /* ===== MAPPA A SCHERMO INTERO (Windy) =====
+       Mentre la mappa è a schermo intero la barra dell'app e la barra di
+       navigazione in basso vengono nascoste: in questo modo il pulsante
+       "Chiudi" non resta mai coperto (era il bug segnalato). */
     body.map-fs-open .app-bar,
     body.map-fs-open .bnav {
       display: none !important;
     }
 
-    .map-card.windy-fs,
-    .map-card.radar-fs {
+    .map-card.windy-fs {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       z-index: 10000;
@@ -385,8 +384,7 @@
       flex-direction: column;
       height: 100%;
     }
-    .map-card.windy-fs .map-frame,
-    .map-card.radar-fs .map-frame {
+    .map-card.windy-fs .map-frame {
       flex: 1 1 auto;
       height: auto;
       min-height: 0;
@@ -394,13 +392,9 @@
     .map-card.windy-fs #windy-frame {
       height: 100%;
     }
-    .map-card.radar-fs #radarview {
-      height: 100%;
-    }
     /* Pulsante di chiusura: piccolo, in ALTO a SINISTRA, sempre sotto la
        status bar / notch (lontano dalla barra del tempo di Windy). */
-    .map-card.windy-fs #windy-fs-close,
-    .map-card.radar-fs #radar-fs-close {
+    .map-card.windy-fs #windy-fs-close {
       display: flex !important;
       top: 70px !important;
       top: max(70px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
@@ -415,9 +409,7 @@
       box-shadow: 0 3px 12px rgba(0,0,0,0.75) !important;
     }
     .map-card.windy-fs .map-hdr,
-    .map-card.windy-fs .map-toolbar,
-    .map-card.radar-fs .map-hdr,
-    .map-card.radar-fs .map-toolbar {
+    .map-card.windy-fs .map-toolbar {
       display: none !important;
     }
 
@@ -1510,37 +1502,54 @@
       <div class="tab on" id="t0">
         <div class="scroll-pane" id="home-scroll-pane">
 
-          <!-- -1. METEO & RADAR PRECIPITAZIONI (RainViewer) -->
-          <div class="map-card" id="radar-card" style="border-color:#6366f1">
+          <!-- -1. METEO & PREVISIONI (stile ilmeteo.it) -->
+          <div class="map-card" id="ilmeteo-card" style="border-color:#f59e0b">
             <div class="map-hdr">
-              <div style="display:flex;align-items:center;gap:6px"><i class="fa-solid fa-cloud-showers-heavy" style="color:#818cf8;font-size:14px"></i> Meteo &amp; Radar Precipitazioni <span style="font-size:9px;color:#94a3b8;font-weight:600">· LIVE</span></div>
-              <div class="map-badge" style="background:#6366f1"><i class="fa-solid fa-satellite-dish"></i> Radar</div>
+              <div style="display:flex;align-items:center;gap:6px"><i class="fa-solid fa-cloud-sun" style="color:#fbbf24;font-size:14px"></i> Meteo &amp; Previsioni <span style="font-size:9px;color:#94a3b8;font-weight:600">· LIVE</span></div>
+              <a id="ilm-link-header" href="https://www.ilmeteo.it/meteo/ancona" target="_blank" rel="noopener" class="map-badge" style="background:#dc2626;text-decoration:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> ilmeteo.it</a>
             </div>
-            <div class="map-toolbar" style="flex-wrap:wrap;justify-content:flex-start">
-              <button class="pill" onclick="radarCenter()"><i class="fa-solid fa-location-crosshairs"></i> Il mio Spot</button>
-              <button class="pill" id="radar-fs-btn" onclick="radarZoom()"><i class="fa-solid fa-expand"></i> Zoom</button>
-              <span style="font-size:10px;color:#94a3b8;font-weight:700">🌧️ Radar: ultime 2h + previsione 30 min</span>
+            <!-- Condizioni attuali (stile ilmeteo.it) -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:12px 14px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div id="ilm-icon" style="font-size:46px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))">⏳</div>
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:flex-start;gap:1px">
+                    <span id="ilm-temp" style="font-size:40px;font-weight:900;color:#fff;line-height:0.95">--</span>
+                    <span style="font-size:16px;font-weight:900;color:#fbbf24;padding-top:2px">°C</span>
+                  </div>
+                  <div id="ilm-desc" style="font-size:12.5px;font-weight:900;color:#e2e8f0">Rilevamento in corso…</div>
+                  <div id="ilm-sub" style="font-size:10px;color:#94a3b8;margin-top:1px">Previsioni della tua località</div>
+                </div>
+                <div style="margin-left:auto;text-align:right;font-size:10.5px;font-weight:800;color:#cbd5e1;line-height:1.75">
+                  <div>🌬️ <span id="ilm-wind">--</span> <span id="ilm-wind-dir" style="color:#94a3b8"></span></div>
+                  <div>💧 Umidità <span id="ilm-hum">--</span></div>
+                  <div>🧭 <span id="ilm-press">--</span></div>
+                  <div>🌊 <span id="ilm-sea">--</span></div>
+                </div>
+              </div>
+              <div id="ilm-alert" style="display:none;margin-top:9px;background:#7f1d1d;border:1px solid #b91c1c;color:#fecaca;font-size:10.5px;font-weight:800;padding:6px 9px;border-radius:8px"></div>
             </div>
-            <div class="map-frame" id="radar-frame-box" style="height:320px">
-              <div id="radarview" style="width:100%;height:100%"></div>
-              <button id="radar-fs-close" onclick="radarZoom()" style="display:none;position:absolute;top:70px;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
-            </div>
-            <!-- Timeline radar: Pausa/Play + cursore manuale + ora del frame -->
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#0f172a;border-top:1px solid #1e293b">
-              <button class="pill pri" id="radar-play-btn" onclick="radarTogglePlay()" style="min-width:78px;justify-content:center"><i class="fa-solid fa-pause"></i> Pausa</button>
-              <input type="range" id="radar-slider" min="0" max="0" value="0" oninput="radarScrub(this.value)" style="flex:1;min-width:0;accent-color:#6366f1">
-              <span id="radar-time-lbl" style="font-size:11px;font-weight:800;color:#a5b4fc;min-width:48px;text-align:right">--:--</span>
+            <!-- Previsioni giorno per giorno (stile tabella ilmeteo.it) -->
+            <div style="background:#0b1220">
+              <div style="display:grid;grid-template-columns:72px 1fr 62px 62px 52px;gap:4px;padding:7px 10px;background:#0f172a;font-size:9px;font-weight:900;color:#94a3b8;letter-spacing:0.3px">
+                <span>GIORNO</span><span>PREVISIONE</span><span style="text-align:right">MAX/MIN</span><span style="text-align:right">PIOGGIA</span><span style="text-align:right">VENTO</span>
+              </div>
+              <div id="ilm-days"></div>
             </div>
             <!-- Previsione precipitazioni OGGI + DOMANI, ora per ora (Open-Meteo) -->
             <div style="background:#0b1220;border-top:1px solid #1e293b">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px 4px">
-                <span style="font-size:10px;font-weight:900;color:#a5b4fc;white-space:nowrap"><i class="fa-solid fa-calendar-days"></i> Pioggia Oggi + Domani</span>
+                <span style="font-size:10px;font-weight:900;color:#a5b4fc;white-space:nowrap"><i class="fa-solid fa-clock"></i> Pioggia ora per ora · Oggi + Domani</span>
                 <span id="precip-strip-info" style="font-size:9.5px;font-weight:800;color:#94a3b8;text-align:right">calcolo…</span>
               </div>
               <div id="precip-strip" style="display:flex;gap:2px;overflow-x:auto;padding:0 8px 8px;-webkit-overflow-scrolling:touch"></div>
             </div>
+            <div style="display:flex;gap:6px;padding:8px 10px;background:#0f172a;border-top:1px solid #1e293b">
+              <button onclick="openIlMeteoSite()" class="pill pri" style="flex:1;justify-content:center"><i class="fa-solid fa-cloud-sun"></i> ilmeteo.it qui</button>
+              <a id="ilm-link-mari" class="pill" href="https://www.ilmeteo.it/mari" target="_blank" rel="noopener" style="flex:1;justify-content:center;text-decoration:none"><i class="fa-solid fa-water"></i> Mari d'Italia</a>
+            </div>
             <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
-              🌧️ Radar RainViewer: ultime 2h + 30 min • Barre orarie = mm di pioggia previsti (tutta la giornata di oggi + domani, traccia grigia = solo probabilità) • Pizzica la mappa per zoomare
+              ☀️ Previsioni in stile ilmeteo.it • Dati live Open-Meteo (aria, vento, pioggia, mare) • Tocca "ilmeteo.it qui" per il sito ufficiale dentro l'app
             </div>
           </div>
 
@@ -1821,6 +1830,22 @@
             </div>
             <h3 style="font-size:16px;font-weight:900;margin:2px 0 4px 0">📹 Webcam Spiagge &amp; Spot in Tempo Reale</h3>
             <p style="font-size:11px;opacity:0.9;line-height:1.4;margin:0">Controlla onde, vento e colore dell'acqua prima di partire. Modifica gli URL o aggiungi le webcam delle tue spiagge.</p>
+          </div>
+
+          <!-- Memoria Webcam: backup, ripristino e recupero (stessa logica del Diario Catture) -->
+          <div style="background:#0b1220;border:1.5px solid #1e40af;border-radius:12px;padding:9px 10px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:7px">
+              <span style="font-size:11px;font-weight:900;color:#38bdf8"><i class="fa-solid fa-floppy-disk"></i> Memoria Webcam</span>
+              <span id="webcam-memory-count" style="font-size:10px;font-weight:800;color:#94a3b8">—</span>
+            </div>
+            <div style="display:flex;gap:6px;align-items:stretch">
+              <button onclick="exportWebcamsBackup()" class="pill" style="flex:1;justify-content:center;font-size:10.5px"><i class="fa-solid fa-download"></i> Backup</button>
+              <label class="pill" style="flex:1;justify-content:center;font-size:10.5px;margin:0;cursor:pointer"><i class="fa-solid fa-upload"></i> Ripristina
+                <input type="file" accept="application/json,.json" onchange="importWebcamsBackup(event)" style="display:none">
+              </label>
+              <button onclick="manualRecoverWebcams()" class="pill" style="flex:1;justify-content:center;font-size:10.5px"><i class="fa-solid fa-rotate-right"></i> Recupera</button>
+            </div>
+            <div style="font-size:9.5px;color:#94a3b8;margin-top:6px;line-height:1.35">Le webcam che aggiungi restano salvate nel telefono e ricompaiono ad ogni apertura dell'app, esattamente come le catture del Diario.</div>
           </div>
 
           <!-- Search Bar -->
@@ -2221,6 +2246,21 @@
     </div>
 
     <!-- MODAL: AGGIUNGI / MODIFICA WEBCAM CON ASSISTENTE E INCOLLA APPUNTI -->
+    <!-- MODAL: ILMETEO.IT IN-APP (pagina ufficiale della tua zona) -->
+    <div class="modal" id="modal-ilmeteo" style="z-index:10050;background:rgba(2,6,23,0.98);align-items:stretch">
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0b1220">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;background:#0f172a;border-bottom:1px solid #1e293b">
+          <span style="font-size:12px;font-weight:900;color:#38bdf8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="fa-solid fa-cloud-sun"></i> ilmeteo.it · <span id="ilmeteo-modal-city">Italia</span></span>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <a id="ilmeteo-modal-ext" href="https://www.ilmeteo.it/meteo/ancona" target="_blank" rel="noopener" class="pill" style="text-decoration:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> Browser</a>
+            <button onclick="closeIlMeteoSite()" class="pill" style="background:#dc2626;color:#fff;border:none;font-size:11px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
+          </div>
+        </div>
+        <iframe id="ilmeteo-modal-frame" src="about:blank" style="flex:1 1 auto;width:100%;min-height:0;border:0;background:#fff" referrerpolicy="no-referrer-when-downgrade" title="Previsioni ilmeteo.it"></iframe>
+        <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid #1e293b">Pagina ufficiale ilmeteo.it della tua località · Se non si carica, tocca "Browser"</div>
+      </div>
+    </div>
+
     <div class="modal" id="modal-add-webcam">
       <div class="sheet" style="max-height:88vh;overflow-y:auto">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #1e293b">
@@ -2748,105 +2788,166 @@ function toggleView() {
   setTimeout(() => { if (map) map.invalidateSize(); }, 300);
 }
 
-// === MAPPA METEO & RADAR PRECIPITAZIONI (RainViewer — gratis, senza chiave) ===
-let radarMap = null, radarBaseLayer = null, radarRainLayer = null;
-let radarHost = 'https://tilecache.rainviewer.com';
-let radarFrames = [], radarIdx = 0, radarTimer = null, radarPlaying = true, radarNowcastStart = 0;
+// === METEO & PREVISIONI (stile ilmeteo.it) ==============================
+// I codici meteo WMO di Open-Meteo vengono tradotti in icone + descrizioni
+// come fa ilmeteo.it: sole, nuvole, pioggia, temporale, neve...
+const ILM_WMO = {
+  0: ['☀️', 'Sereno'],
+  1: ['🌤️', 'Prevalentemente sereno'],
+  2: ['⛅', 'Parzialmente nuvoloso'],
+  3: ['☁️', 'Nuvoloso'],
+  45: ['🌫️', 'Nebbia'],
+  48: ['🌫️', 'Nebbia con brina'],
+  51: ['🌦️', 'Pioviggine debole'],
+  53: ['🌦️', 'Pioviggine'],
+  55: ['🌦️', 'Pioviggine forte'],
+  56: ['🌧️', 'Pioviggine gelata'],
+  57: ['🌧️', 'Pioviggine gelata forte'],
+  61: ['🌧️', 'Pioggia debole'],
+  63: ['🌧️', 'Pioggia moderata'],
+  65: ['🌧️', 'Pioggia forte'],
+  66: ['🌧️', 'Pioggia gelata'],
+  67: ['🌧️', 'Pioggia gelata forte'],
+  71: ['🌨️', 'Neve debole'],
+  73: ['🌨️', 'Neve moderata'],
+  75: ['❄️', 'Neve forte'],
+  77: ['🌨️', 'Granelli di neve'],
+  80: ['🌦️', 'Rovesci deboli'],
+  81: ['🌧️', 'Rovesci moderati'],
+  82: ['⛈️', 'Rovesci violenti'],
+  85: ['🌨️', 'Rovesci di neve'],
+  86: ['❄️', 'Rovesci di neve forti'],
+  95: ['⛈️', 'Temporale'],
+  96: ['⛈️', 'Temporale con grandine'],
+  99: ['⛈️', 'Temporale violento']
+};
 
-function radarTileUrl(path) {
-  return radarHost + path + '/256/{z}/{x}/{y}/4/1_1.png';
+function ilmWeather(code) {
+  if (code === null || code === undefined || !ILM_WMO[code]) return ILM_WMO[3];
+  return ILM_WMO[code];
 }
 
-function initRadarMap() {
-  const el = document.getElementById('radarview');
-  if (!el || radarMap || typeof L === 'undefined') return;
-  const lat = (spot && typeof spot.lat === 'number') ? spot.lat : 43.6158;
-  const lon = (spot && typeof spot.lng === 'number') ? spot.lng : 13.5189;
-  radarMap = L.map('radarview', { zoomControl: false, attributionControl: true }).setView([lat, lon], 8);
-  // Base NAUTICA: mare azzurro con batimetria e costa ben visibile
-  // (la vecchia "World_Dark_Gray_Base" rendeva il mare completamente nero)
-  radarBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 18, attribution: 'Base: Esri, GEBCO, NOAA, HERE, Garmin, &copy; OpenStreetMap' }).addTo(radarMap);
-  radarMap.attributionControl.setPrefix('');
-  radarLoadFrames();
-  loadPrecipForecast(lat, lon);
-  setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+// "Oggi", "Domani", poi "Lun 22", "Mar 23"...
+function ilmDayName(dateStr, idx) {
+  if (idx === 0) return 'Oggi';
+  if (idx === 1) return 'Domani';
+  const giorni = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+  const dt = new Date(String(dateStr) + 'T12:00');
+  if (isNaN(dt.getTime())) return String(dateStr);
+  return giorni[dt.getDay()] + ' ' + String(dt.getDate()).padStart(2, '0');
 }
 
-async function radarLoadFrames() {
-  try {
-    const r = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-    const d = await r.json();
-    if (d && d.host) radarHost = d.host;
-    const past = (d && d.radar && d.radar.past) ? d.radar.past : [];
-    const nwc = (d && d.radar && d.radar.nowcast) ? d.radar.nowcast : [];
-    radarFrames = past.concat(nwc);
-    if (!radarFrames.length) return;
-    radarNowcastStart = past.length;
-    radarIdx = radarFrames.length - 1 - nwc.length;
-    if (radarIdx < 0) radarIdx = 0;
-    if (radarRainLayer && radarMap) radarMap.removeLayer(radarRainLayer);
-    // RainViewer: zoom massimo supportato = 7 (oltre restituisce "Zoom Level Not Supported").
-    // maxNativeZoom fa ingrandire i tile esistenti senza richiedere livelli inesistenti.
-    radarRainLayer = L.tileLayer(radarTileUrl(radarFrames[radarIdx].path), { opacity: 0.8, zIndex: 5, tileSize: 256, maxNativeZoom: 7, attribution: 'Radar: RainViewer' }).addTo(radarMap);
-    const sl = document.getElementById('radar-slider');
-    if (sl) { sl.max = radarFrames.length - 1; sl.value = radarIdx; }
-    radarUpdateLabel();
-    radarPlay();
-  } catch (e) {}
+// Link alla pagina ufficiale ilmeteo.it della località selezionata
+function ilmeteoCitySlug() {
+  const raw = (spot && spot.name) ? String(spot.name) : 'Ancona';
+  const city = raw.split('(')[0].split('/')[0].trim();
+  return city.toLowerCase().replace(/[^a-z0-9àèéìòù\s'-]/gi, '').replace(/\s+/g, '+') || 'ancona';
 }
 
-function radarUpdateLabel() {
-  const el = document.getElementById('radar-time-lbl');
-  if (!el || !radarFrames[radarIdx]) return;
-  const dt = new Date(radarFrames[radarIdx].time * 1000);
-  const hh = String(dt.getHours()).padStart(2, '0');
-  const mm = String(dt.getMinutes()).padStart(2, '0');
-  el.textContent = (radarIdx >= radarNowcastStart ? '⏩ ' : '🕒 ') + hh + ':' + mm;
+function ilmeteoCityUrl() {
+  return 'https://www.ilmeteo.it/meteo/' + ilmeteoCitySlug();
 }
 
-function radarSetFrame(i) {
-  if (!radarFrames.length || !radarRainLayer) return;
-  let v = parseInt(i, 10);
-  if (isNaN(v)) v = 0;
-  if (v < 0) v = radarFrames.length - 1;
-  if (v > radarFrames.length - 1) v = 0;
-  radarIdx = v;
-  radarRainLayer.setUrl(radarTileUrl(radarFrames[radarIdx].path));
-  radarUpdateLabel();
-  const sl = document.getElementById('radar-slider');
-  if (sl && parseInt(sl.value, 10) !== radarIdx) sl.value = radarIdx;
+function updateIlMeteoLinks() {
+  const url = ilmeteoCityUrl();
+  const h = document.getElementById('ilm-link-header');
+  const ext = document.getElementById('ilmeteo-modal-ext');
+  if (h) h.href = url;
+  if (ext) ext.href = url;
 }
 
-function radarScrub(v) {
-  if (radarPlaying) radarTogglePlay(); // muovendo il cursore manualmente si mette in pausa
-  radarSetFrame(v);
+// Apre il sito ufficiale ilmeteo.it a schermo intero dentro l'app
+function openIlMeteoSite() {
+  const url = ilmeteoCityUrl();
+  const city = (spot && spot.name) ? String(spot.name).split('(')[0].split('/')[0].trim() : 'Italia';
+  const cityEl = document.getElementById('ilmeteo-modal-city');
+  if (cityEl) cityEl.textContent = city;
+  updateIlMeteoLinks();
+  const f = document.getElementById('ilmeteo-modal-frame');
+  if (f) f.src = url;
+  const m = document.getElementById('modal-ilmeteo');
+  if (m) m.classList.add('on');
 }
 
-function radarPlay() {
-  if (radarTimer) clearInterval(radarTimer);
-  radarPlaying = true;
-  const btn = document.getElementById('radar-play-btn');
-  if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausa';
-  radarTimer = setInterval(() => { radarSetFrame(radarIdx + 1); }, 700);
+function closeIlMeteoSite() {
+  const f = document.getElementById('ilmeteo-modal-frame');
+  if (f) f.src = 'about:blank';
+  const m = document.getElementById('modal-ilmeteo');
+  if (m) m.classList.remove('on');
 }
 
-function radarTogglePlay() {
-  if (radarPlaying) {
-    radarPlaying = false;
-    if (radarTimer) clearInterval(radarTimer);
-    radarTimer = null;
-    const btn = document.getElementById('radar-play-btn');
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i> Play';
-  } else {
-    radarPlay();
+function initIlMeteoCard() {
+  updateIlMeteoLinks();
+  if (spot && typeof spot.lat === 'number') loadPrecipForecast(spot.lat, spot.lng);
+}
+
+// Riempe la card meteo (stile ilmeteo.it) con i dati live Open-Meteo
+function renderIlMeteoCard(wData, marine) {
+  if (!wData || !wData.current) return;
+  const cur = wData.current;
+  const daily = wData.daily || {};
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  const days = Array.isArray(daily.time) ? daily.time : [];
+
+  const wmo = ilmWeather(cur.weather_code);
+  set('ilm-icon', wmo[0]);
+  set('ilm-temp', Math.round(cur.temperature_2m));
+  set('ilm-desc', wmo[1]);
+
+  const max0 = (daily.temperature_2m_max && daily.temperature_2m_max[0] != null) ? Math.round(daily.temperature_2m_max[0]) + '°' : '--';
+  const min0 = (daily.temperature_2m_min && daily.temperature_2m_min[0] != null) ? Math.round(daily.temperature_2m_min[0]) + '°' : '--';
+  const rain0 = (daily.precipitation_sum && daily.precipitation_sum[0] != null) ? daily.precipitation_sum[0].toFixed(1) : '0.0';
+  const prob0 = (daily.precipitation_probability_max && daily.precipitation_probability_max[0] != null) ? daily.precipitation_probability_max[0] : null;
+  const feel = (cur.apparent_temperature != null) ? Math.round(cur.apparent_temperature) + '°' : '--';
+  set('ilm-sub', '👕 Percepita ' + feel + ' · Max ' + max0 + ' / Min ' + min0 + ' · 💧 ' + rain0 + ' mm' + (prob0 !== null ? ' (' + prob0 + '%)' : ''));
+
+  const deg = (cur.wind_direction_10m != null) ? cur.wind_direction_10m : 0;
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  set('ilm-wind', (cur.wind_speed_10m != null ? cur.wind_speed_10m.toFixed(1) : '--') + ' km/h');
+  set('ilm-wind-dir', dirs[Math.round(deg / 45) % 8] + ' (' + deg + '°)');
+  set('ilm-hum', (cur.relative_humidity_2m != null ? cur.relative_humidity_2m : '--') + '%');
+  set('ilm-press', (cur.surface_pressure != null ? cur.surface_pressure.toFixed(0) : '--') + ' hPa');
+  if (marine && marine.waveHeight != null && isFinite(Number(marine.waveHeight))) {
+    const wh = Number(marine.waveHeight);
+    set('ilm-sea', wh.toFixed(2) + ' m' + ((marine.seaTemp != null && isFinite(Number(marine.seaTemp))) ? ' · ' + Number(marine.seaTemp).toFixed(1) + '°C' : ''));
   }
-}
 
-function radarCenter() {
-  if (!radarMap) return;
-  const lat = (spot && typeof spot.lat === 'number') ? spot.lat : 43.6158;
-  const lon = (spot && typeof spot.lng === 'number') ? spot.lng : 13.5189;
-  radarMap.setView([lat, lon], 9);
+  // Tabella previsioni giorno per giorno (stile ilmeteo.it)
+  const host = document.getElementById('ilm-days');
+  if (host && days.length) {
+    host.innerHTML = days.map((d, i) => {
+      const w = ilmWeather(daily.weather_code ? daily.weather_code[i] : null);
+      const mx = (daily.temperature_2m_max && daily.temperature_2m_max[i] != null) ? Math.round(daily.temperature_2m_max[i]) + '°' : '--';
+      const mn = (daily.temperature_2m_min && daily.temperature_2m_min[i] != null) ? Math.round(daily.temperature_2m_min[i]) + '°' : '--';
+      const mm = (daily.precipitation_sum && daily.precipitation_sum[i] != null) ? daily.precipitation_sum[i] : 0;
+      const pr = (daily.precipitation_probability_max && daily.precipitation_probability_max[i] != null) ? daily.precipitation_probability_max[i] : null;
+      const wn = (daily.wind_speed_10m_max && daily.wind_speed_10m_max[i] != null) ? Math.round(daily.wind_speed_10m_max[i]) : '--';
+      const mmColor = mm >= 2 ? '#38bdf8' : (mm > 0 ? '#93c5fd' : '#64748b');
+      return `
+      <div style="display:grid;grid-template-columns:72px 1fr 62px 62px 52px;gap:4px;padding:8px 10px;border-top:1px solid #1e293b;align-items:center;background:${i === 0 ? '#111c33' : 'transparent'}">
+        <span style="font-size:11px;font-weight:900;color:${i < 2 ? '#fbbf24' : '#e2e8f0'}">${ilmDayName(d, i)}</span>
+        <span style="font-size:11px;font-weight:700;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w[0]} ${w[1]}</span>
+        <span style="text-align:right;font-size:11px;font-weight:900;color:#fbbf24">${mx}<span style="color:#93c5fd;font-weight:800"> ${mn}</span></span>
+        <span style="text-align:right;font-size:10.5px;font-weight:800;color:${mmColor}">${mm.toFixed(1)} mm${pr !== null ? '<span style="color:#64748b"> ' + pr + '%</span>' : ''}</span>
+        <span style="text-align:right;font-size:10.5px;font-weight:800;color:#cbd5e1">${wn}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Avvisi stile ilmeteo.it: pioggia intensa o vento forte su oggi/domani
+  const alerts = [];
+  for (let i = 0; i < Math.min(2, days.length); i++) {
+    const mm = (daily.precipitation_sum && daily.precipitation_sum[i] != null) ? daily.precipitation_sum[i] : 0;
+    const wn = (daily.wind_speed_10m_max && daily.wind_speed_10m_max[i] != null) ? daily.wind_speed_10m_max[i] : 0;
+    const nm = ilmDayName(days[i], i).toLowerCase();
+    if (mm >= 5) alerts.push('🌧️ Pioggia intensa prevista ' + nm + ': ' + mm.toFixed(1) + ' mm');
+    if (wn >= 40) alerts.push('🌬️ Vento forte ' + nm + ': fino a ' + Math.round(wn) + ' km/h');
+  }
+  const alertBox = document.getElementById('ilm-alert');
+  if (alertBox) {
+    if (alerts.length) { alertBox.style.display = 'block'; alertBox.innerHTML = alerts.join('<br>'); }
+    else { alertBox.style.display = 'none'; }
+  }
 }
 
 // === SCHERMO INTERO MAPPE: nasconde barra app + barra di navigazione ======
@@ -2854,7 +2955,7 @@ function radarCenter() {
 let mapFsSavedScroll = null;
 
 function syncMapFullscreen() {
-  const anyFs = !!document.querySelector('.map-card.radar-fs, .map-card.windy-fs');
+  const anyFs = !!document.querySelector('.map-card.windy-fs');
   document.body.classList.toggle('map-fs-open', anyFs);
   document.body.style.overflow = anyFs ? 'hidden' : '';
   const pane = document.getElementById('home-scroll-pane');
@@ -2869,19 +2970,8 @@ function syncMapFullscreen() {
   }
 }
 
-function radarZoom() {
-  const card = document.getElementById('radar-card');
-  const btn = document.getElementById('radar-fs-btn');
-  if (!card) return;
-  const on = card.classList.toggle('radar-fs');
-  syncMapFullscreen();
-  if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> Chiudi' : '<i class="fa-solid fa-expand"></i> Zoom';
-  setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 250);
-  setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 700);
-}
 // === PIOGGIA OGGI + DOMANI ORA PER ORA (Open-Meteo, gratis e senza chiave) ===
-// Il radar RainViewer copre solo le ultime 2h + 30 min: questa striscia mostra
-// invece TUTTA la giornata di oggi e tutta la giornata di domani.
+// Striscia oraria: copre TUTTA la giornata di oggi e TUTTA la giornata di domani.
 let precipHours = [];
 let precipLastKey = '';
 const PRECIP_CELL_W = 30;
@@ -3506,7 +3596,7 @@ async function fetchMeteopescaData(lat, lng, locName) {
 
   // 5. Fetch Meteo Reale da Open-Meteo
   try {
-    const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&hourly=temperature_2m,surface_pressure,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`);
+    const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,surface_pressure,wind_speed_10m,wind_direction_10m,weather_code,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&forecast_days=5&hourly=temperature_2m,surface_pressure,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`);
     const wData = await wResp.json();
 
     let waveDataHourly = [0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12];
@@ -3574,9 +3664,14 @@ async function fetchMeteopescaData(lat, lng, locName) {
     if (timeBadge) timeBadge.innerHTML = `🟢 Live ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
     updateCharts(waveDataHourly, mp);
+    renderIlMeteoCard(wData, { waveHeight: waveHeight, wavePeriod: wavePeriod, seaTemp: realSeaTemp });
+    updateIlMeteoLinks();
   } catch(err) {
     if (timeBadge) timeBadge.innerHTML = '🟢 Meteopesca Live';
     updateCharts([0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12], mp);
+    const ilmDesc = document.getElementById('ilm-desc');
+    if (ilmDesc) ilmDesc.textContent = 'Dati live non disponibili: apri ilmeteo.it';
+    updateIlMeteoLinks();
   }
 }
 
@@ -4865,7 +4960,6 @@ function go(i) {
   document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('on', j === i));
   if (i === 0) {
     if (map) setTimeout(() => map.invalidateSize(), 200);
-    if (radarMap) setTimeout(() => radarMap.invalidateSize(), 200);
   }
   if (i === 1) renderWebcams();
   if (i === 2) renderDiary();
@@ -5748,29 +5842,217 @@ const DEFAULT_COASTAL_WEBCAMS = [
   }
 ];
 
-const DB_WEBCAMS_KEY = 'PESCAPRO_USER_WEBCAMS_DB_V2';
+// === MEMORIA WEBCAM (stessa logica robusta del Diario Catture) =============
+// Le webcam personali vivono in una chiave dedicata + copia di sicurezza e
+// vengono SEMPRE unite alle predefinite: nulla va perso, nemmeno se in futuro
+// cambiano le webcam predefinite dell'app.
+const DB_WEBCAMS_KEY = 'PESCAPRO_USER_WEBCAMS_DB_V3';
+const DB_WEBCAMS_BAK_KEY = 'PESCAPRO_USER_WEBCAMS_DB_V3_BAK';
+const DB_WEBCAM_FAVS_KEY = 'PESCAPRO_WEBCAM_FAVS_V1';
+const LEGACY_WEBCAMS_KEY = 'PESCAPRO_USER_WEBCAMS_DB_V2';
 let coastalWebcams = [];
+let webcamFavs = [];
 let currentSelectedWebcam = null;
 let currentWebcamFilterRegion = 'Ancona & Conero';
 
-function loadWebcamsFromDB() {
+function isUserWebcam(w) {
+  return !!(w && (w.userAdded || String(w.id || '').indexOf('custom-') === 0));
+}
+
+function readWebcamJson(key) {
   try {
-    const saved = localStorage.getItem(DB_WEBCAMS_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        coastalWebcams = parsed;
-        return;
-      }
-    }
-  } catch(e){}
-  coastalWebcams = JSON.parse(JSON.stringify(DEFAULT_COASTAL_WEBCAMS));
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function webcamKey(w) {
+  return String((w && (w.streamUrl || w.embedUrl || w.name)) || '').toLowerCase().trim();
+}
+
+// Chiave ufficiale -> copia di sicurezza -> migrazione dalla vecchia chiave
+function loadUserWebcamsFromDB() {
+  let list = readWebcamJson(DB_WEBCAMS_KEY);
+  if (!Array.isArray(list) || !list.length) {
+    const bak = readWebcamJson(DB_WEBCAMS_BAK_KEY);
+    if (Array.isArray(bak) && bak.length) list = bak;
+  }
+  if (!Array.isArray(list) || !list.length) {
+    const legacy = readWebcamJson(LEGACY_WEBCAMS_KEY);
+    if (Array.isArray(legacy) && legacy.length) list = legacy.filter(isUserWebcam);
+  }
+  if (!Array.isArray(list)) list = [];
+  list = list.filter(w => w && typeof w === 'object' && w.name && (w.streamUrl || w.embedUrl));
+  list.forEach(w => { w.userAdded = true; });
+  return list;
 }
 
 function saveWebcamsToDB() {
+  const customs = coastalWebcams.filter(isUserWebcam).map(w => ({
+    id: w.id || ('custom-' + Date.now()),
+    name: w.name,
+    reg: w.reg || 'Marche',
+    prov: w.prov || 'Ancona (AN)',
+    spot: w.spot || 'Spot di pesca costiero',
+    source: w.source || 'Webcam Live',
+    thumb: w.thumb || '',
+    streamUrl: w.streamUrl || '',
+    embedUrl: w.embedUrl || w.streamUrl || '',
+    views: w.views || 'Personale',
+    sea: w.sea || 'Live Stream',
+    fav: !!w.fav,
+    userAdded: true
+  }));
+  webcamFavs = coastalWebcams.filter(w => !isUserWebcam(w) && w.fav).map(w => w.id);
+  let payload = JSON.stringify(customs);
+  let written = false;
   try {
-    localStorage.setItem(DB_WEBCAMS_KEY, JSON.stringify(coastalWebcams));
-  } catch(e){}
+    localStorage.setItem(DB_WEBCAMS_KEY, payload);
+    localStorage.setItem(DB_WEBCAMS_BAK_KEY, payload);
+    written = true;
+  } catch (e) {
+    // Spazio esaurito: ritenta alleggerendo le immagini di anteprima
+    try {
+      const light = customs.map(w => (w.thumb && w.thumb.length > 500) ? Object.assign({}, w, { thumb: '' }) : w);
+      payload = JSON.stringify(light);
+      localStorage.setItem(DB_WEBCAMS_KEY, payload);
+      written = true;
+    } catch (e2) { written = false; }
+  }
+  try { localStorage.setItem(DB_WEBCAM_FAVS_KEY, JSON.stringify(webcamFavs)); } catch (e) {}
+  // Verifica di scrittura (read-back): così sappiamo davvero se la memoria ha tenuto
+  const back = JSON.stringify(readWebcamJson(DB_WEBCAMS_KEY) || []);
+  const saved = written && back === payload;
+  if (!saved) {
+    try {
+      alert('⚠️ Memoria del telefono piena: non è stato possibile salvare le webcam. Fai prima un "Backup" e poi elimina qualche webcam.');
+    } catch (e) {}
+  }
+  return saved;
+}
+
+// Unisce webcam personali + predefinite (senza duplicati) e ripristina le ⭐
+function loadWebcamsFromDB() {
+  const customs = loadUserWebcamsFromDB();
+  const favs = readWebcamJson(DB_WEBCAM_FAVS_KEY);
+  webcamFavs = Array.isArray(favs) ? favs : [];
+  const usedUrls = {};
+  customs.forEach(c => { usedUrls[webcamKey(c)] = true; });
+  const defaults = JSON.parse(JSON.stringify(DEFAULT_COASTAL_WEBCAMS)).filter(d => !usedUrls[webcamKey(d)]);
+  defaults.forEach(d => { d.fav = webcamFavs.indexOf(d.id) !== -1; });
+  coastalWebcams = customs.concat(defaults); // le webcam personali restano in cima
+  return coastalWebcams;
+}
+
+// Recupero manuale (come "Recupera Catture" del Diario): cerca in tutta la memoria
+function manualRecoverWebcams() {
+  const found = [];
+  const seen = {};
+  coastalWebcams.filter(isUserWebcam).forEach(w => { seen[webcamKey(w)] = true; });
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !/webcam/i.test(k)) continue;
+      const v = readWebcamJson(k);
+      const arr = Array.isArray(v) ? v : (v && Array.isArray(v.webcams) ? v.webcams : []);
+      arr.forEach(w => {
+        if (!w || typeof w !== 'object' || !w.name || !(w.streamUrl || w.embedUrl)) return;
+        const kk = webcamKey(w);
+        if (!kk || seen[kk]) return;
+        seen[kk] = true;
+        found.push({
+          id: w.id || ('custom-' + Date.now() + '-' + found.length),
+          name: w.name,
+          reg: w.reg || 'Marche',
+          prov: w.prov || 'Ancona (AN)',
+          spot: w.spot || 'Spot di pesca costiero',
+          source: w.source || 'Webcam Live',
+          thumb: w.thumb || '',
+          streamUrl: w.streamUrl || w.embedUrl,
+          embedUrl: w.embedUrl || w.streamUrl,
+          views: w.views || 'Personale',
+          sea: w.sea || 'Live Stream',
+          fav: true,
+          userAdded: true
+        });
+      });
+    }
+  } catch (e) {}
+  if (!found.length) {
+    alert('Nessuna webcam precedente trovata nella memoria di questo telefono.');
+    return;
+  }
+  coastalWebcams = found.concat(coastalWebcams);
+  saveWebcamsToDB();
+  renderWebcams();
+  alert('🎉 RECUPERO COMPLETATO! Ripristinate ' + found.length + ' webcam personali.');
+}
+
+// Backup / Ripristino, come nel Diario Catture
+function exportWebcamsBackup() {
+  const payload = {
+    app: 'PESCA PRO',
+    tipo: 'backup-webcam',
+    data: new Date().toISOString().slice(0, 10),
+    webcams: coastalWebcams.filter(isUserWebcam),
+    preferiti: coastalWebcams.filter(w => !isUserWebcam(w) && w.fav).map(w => w.id)
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Backup_Webcam_PescaPro_' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+}
+
+function importWebcamsBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const list = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.webcams) ? parsed.webcams : []);
+      if (!list.length) { alert('File di backup non valido o senza webcam.'); return; }
+      const seen = {};
+      coastalWebcams.forEach(w => { seen[webcamKey(w)] = true; });
+      let added = 0;
+      list.forEach(w => {
+        if (!w || !w.name || !(w.streamUrl || w.embedUrl)) return;
+        const kk = webcamKey(w);
+        if (!kk || seen[kk]) return;
+        seen[kk] = true;
+        coastalWebcams.push({
+          id: w.id || ('custom-' + Date.now() + '-' + added),
+          name: w.name,
+          reg: w.reg || 'Marche',
+          prov: w.prov || 'Ancona (AN)',
+          spot: w.spot || 'Spot di pesca costiero',
+          source: w.source || 'Webcam Live',
+          thumb: w.thumb || '',
+          streamUrl: w.streamUrl || w.embedUrl,
+          embedUrl: w.embedUrl || w.streamUrl,
+          views: w.views || 'Personale',
+          sea: w.sea || 'Live Stream',
+          fav: true,
+          userAdded: true
+        });
+        added++;
+      });
+      if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.preferiti)) {
+        coastalWebcams.forEach(w => { if (!isUserWebcam(w) && parsed.preferiti.indexOf(w.id) !== -1) w.fav = true; });
+      }
+      saveWebcamsToDB();
+      renderWebcams();
+      alert('✅ Backup webcam importato! ' + added + ' webcam aggiunte (le esistenti non sono state toccate).');
+    } catch (err) {
+      alert('Errore nella lettura del file di backup.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
 function renderWebcams() {
@@ -5778,12 +6060,21 @@ function renderWebcams() {
   const container = document.getElementById('webcam-grid');
   if (!container) return;
 
+  const memEl = document.getElementById('webcam-memory-count');
+  if (memEl) {
+    const mine = coastalWebcams.filter(isUserWebcam).length;
+    memEl.textContent = mine + (mine === 1 ? ' webcam personale salvata' : ' webcam personali salvate');
+  }
+
   const query = (document.getElementById('webcam-search')?.value || '').toLowerCase().trim();
 
   const filtered = coastalWebcams.filter(w => {
     let matchReg = true;
     if (currentWebcamFilterRegion === 'Preferiti') {
       matchReg = w.fav;
+    } else if (isUserWebcam(w)) {
+      // Le webcam personali (la tua memoria) restano sempre visibili in ogni filtro
+      matchReg = true;
     } else if (currentWebcamFilterRegion === 'Ancona & Conero') {
       matchReg = (w.prov && w.prov.includes('Ancona')) || w.name.toLowerCase().includes('conero') || w.name.toLowerCase().includes('ancona');
     } else if (currentWebcamFilterRegion === 'Tutte le Marche') {
@@ -5982,7 +6273,7 @@ function saveCustomWebcam(e) {
   const source = document.getElementById('w-source').value.trim() || 'Webcam Live';
 
   if (id) {
-    // Edit existing
+    // Modifica di una webcam esistente: diventa definitiva (resta in memoria)
     const existing = coastalWebcams.find(item => item.id === id);
     if (existing) {
       existing.name = name;
@@ -5993,6 +6284,7 @@ function saveCustomWebcam(e) {
       existing.spot = spotText;
       existing.thumb = thumb;
       existing.source = source;
+      existing.userAdded = true;
     }
   } else {
     // Create new
@@ -6008,7 +6300,8 @@ function saveCustomWebcam(e) {
       embedUrl: url,
       views: 'Personale',
       fav: true,
-      sea: 'Live Stream'
+      sea: 'Live Stream',
+      userAdded: true
     };
     coastalWebcams.unshift(newW);
   }
@@ -6016,7 +6309,7 @@ function saveCustomWebcam(e) {
   saveWebcamsToDB();
   closeAddWebcamModal();
   renderWebcams();
-  alert('✅ Webcam salvata con successo!');
+  alert('✅ Webcam salvata nella memoria dell\'app! La ritroverai anche dopo aver chiuso e riaperto PESCA PRO.');
 }
 
 function deleteWebcam(id) {
@@ -6031,11 +6324,13 @@ function deleteWebcam(id) {
 }
 
 function confirmResetWebcams() {
-  if (confirm('Vuoi ripristinare tutte le webcam predefinite di Ancona, Marche e Italia?')) {
-    coastalWebcams = JSON.parse(JSON.stringify(DEFAULT_COASTAL_WEBCAMS));
+  if (confirm('Vuoi ripristinare l\'elenco completo delle webcam predefinite? Le webcam personali che hai aggiunto NON verranno eliminate.')) {
+    const mine = coastalWebcams.filter(isUserWebcam);
+    coastalWebcams = mine.concat(JSON.parse(JSON.stringify(DEFAULT_COASTAL_WEBCAMS)));
+    webcamFavs = [];
     saveWebcamsToDB();
     renderWebcams();
-    alert('✅ Webcam predefinite ripristinate!');
+    alert('✅ Webcam predefinite ripristinate! Le tue ' + mine.length + ' webcam personali sono rimaste salvate.');
   }
 }
 
@@ -6691,7 +6986,7 @@ function executeDirectHtmlDownload() {
 window.addEventListener('DOMContentLoaded', () => {
   initMap();
   loadWindyMap();
-  initRadarMap();
+  initIlMeteoCard();
   generateMonthlyMoonStrip();
   fetchMeteopescaData(spot.lat, spot.lng, spot.name);
   renderWebcams();
