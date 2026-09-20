@@ -412,11 +412,84 @@
     .map-card.windy-fs .map-toolbar {
       display: none !important;
     }
+    /* In schermo intero il pulsante blocco/sblocco va in alto a destra */
+    .map-card.windy-fs #windy-lockbtn {
+      top: 70px !important;
+      top: max(70px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
+      right: 10px !important;
+      left: auto !important;
+      bottom: auto !important;
+      z-index: 10002 !important;
+    }
+    .map-card.windy-fs #windy-lock-hint span {
+      margin-top: 46px;
+    }
 
     #mapview {
       width: 100%;
       height: 300px;
       z-index: 10;
+    }
+
+    /* ===== SCROLL DELLE MAPPE: la pagina scorre sempre, la mappa no =====
+       Con la mappa BLOCCATA il dito scorre la pagina (touch-action: pan-y) e
+       Leaflet non trascina/zooma. Si attiva la mappa con una pressione
+       prolungata (dito appoggiato) o con il pulsante di blocco/sblocco. */
+    #mapview.map-locked,
+    #mapview.map-locked.leaflet-touch-drag,
+    #mapview.map-locked.leaflet-touch-drag.leaflet-touch-zoom {
+      touch-action: pan-y !important;
+      -ms-touch-action: pan-y !important;
+    }
+
+    .map-lock-chip {
+      position: absolute;
+      z-index: 22;
+      background: rgba(15,23,42,.92);
+      color: #fff;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 6px 9px;
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.55);
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .map-lock-chip.on { background: rgba(2,132,199,.92); border-color: #38bdf8; color: #fff; }
+
+    .map-lock-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 21;
+    }
+    .map-lock-hint span {
+      background: rgba(15,23,42,.85);
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 6px 11px;
+      font-size: 10.5px;
+      font-weight: 800;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .map-fs-hint {
+      position: absolute;
+      top: 70px;
+      right: 10px;
+      z-index: 10002;
+      display: none;
+      pointer-events: none;
     }
 
     .map-banner {
@@ -1506,7 +1579,18 @@
           <div class="map-card" id="ilmeteo-card" style="border-color:#f59e0b">
             <div class="map-hdr">
               <div style="display:flex;align-items:center;gap:6px"><i class="fa-solid fa-cloud-sun" style="color:#fbbf24;font-size:14px"></i> Meteo &amp; Previsioni <span style="font-size:9px;color:#94a3b8;font-weight:600">· LIVE</span></div>
-              <a id="ilm-link-header" href="https://www.ilmeteo.it/meteo/ancona" target="_blank" rel="noopener" class="map-badge" style="background:#dc2626;text-decoration:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> ilmeteo.it</a>
+              <div class="map-badge" id="ilm-live-badge" style="background:#0ea5e9"><i class="fa-solid fa-tower-broadcast"></i> LIVE</div>
+            </div>
+            <!-- Località usata per il meteo: stessa posizione di mappa, mare e marea -->
+            <div style="background:#0f172a;padding:9px 12px;border-bottom:1px solid #1e293b">
+              <div style="display:flex;align-items:center;gap:7px">
+                <div style="min-width:0;flex:1">
+                  <div id="ilm-loc-name" style="font-size:13px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 Località: rilevo…</div>
+                  <div id="ilm-loc-meta" style="font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:1px">Stessa posizione della mappa, del mare e delle maree</div>
+                </div>
+                <button class="pill" onclick="doGPS()" style="flex-shrink:0" title="Usa la mia posizione GPS"><i class="fa-solid fa-location-crosshairs"></i> GPS</button>
+                <button class="pill" onclick="toggleSearch()" style="flex-shrink:0" title="Cerca un'altra località"><i class="fa-solid fa-magnifying-glass"></i> Cambia</button>
+              </div>
             </div>
             <!-- Condizioni attuali (stile ilmeteo.it) -->
             <div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:12px 14px">
@@ -1529,27 +1613,42 @@
               </div>
               <div id="ilm-alert" style="display:none;margin-top:9px;background:#7f1d1d;border:1px solid #b91c1c;color:#fecaca;font-size:10.5px;font-weight:800;padding:6px 9px;border-radius:8px"></div>
             </div>
-            <!-- Previsioni giorno per giorno (stile tabella ilmeteo.it) -->
-            <div style="background:#0b1220">
-              <div style="display:grid;grid-template-columns:72px 1fr 62px 62px 52px;gap:4px;padding:7px 10px;background:#0f172a;font-size:9px;font-weight:900;color:#94a3b8;letter-spacing:0.3px">
-                <span>GIORNO</span><span>PREVISIONE</span><span style="text-align:right">MAX/MIN</span><span style="text-align:right">PIOGGIA</span><span style="text-align:right">VENTO</span>
-              </div>
-              <div id="ilm-days"></div>
-            </div>
-            <!-- Previsione precipitazioni OGGI + DOMANI, ora per ora (Open-Meteo) -->
+            <!-- Selettore giorni scorrevole (7 giorni) -->
             <div style="background:#0b1220;border-top:1px solid #1e293b">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px 4px">
-                <span style="font-size:10px;font-weight:900;color:#a5b4fc;white-space:nowrap"><i class="fa-solid fa-clock"></i> Pioggia ora per ora · Oggi + Domani</span>
-                <span id="precip-strip-info" style="font-size:9.5px;font-weight:800;color:#94a3b8;text-align:right">calcolo…</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 10px 4px">
+                <span style="font-size:10px;font-weight:900;color:#fbbf24;white-space:nowrap"><i class="fa-solid fa-calendar-days"></i> PREVISIONI 7 GIORNI</span>
+                <span style="font-size:9px;font-weight:800;color:#94a3b8">scorri e tocca un giorno</span>
               </div>
-              <div id="precip-strip" style="display:flex;gap:2px;overflow-x:auto;padding:0 8px 8px;-webkit-overflow-scrolling:touch"></div>
+              <div id="ilm-days" style="display:flex;gap:6px;overflow-x:auto;padding:2px 10px 10px;-webkit-overflow-scrolling:touch"></div>
             </div>
-            <div style="display:flex;gap:6px;padding:8px 10px;background:#0f172a;border-top:1px solid #1e293b">
-              <button onclick="openIlMeteoSite()" class="pill pri" style="flex:1;justify-content:center"><i class="fa-solid fa-cloud-sun"></i> ilmeteo.it qui</button>
-              <a id="ilm-link-mari" class="pill" href="https://www.ilmeteo.it/mari" target="_blank" rel="noopener" style="flex:1;justify-content:center;text-decoration:none"><i class="fa-solid fa-water"></i> Mari d'Italia</a>
+            <!-- Dettaglio completo del giorno scelto: riepilogo + grafico 24h + ore + dettagli -->
+            <div style="background:#0b1220;border-top:1px solid #1e293b">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px 9px;background:linear-gradient(135deg,#0f172a,#1e293b)">
+                <div id="ilm-day-icon" style="font-size:36px;line-height:1">⏳</div>
+                <div style="min-width:0;flex:1">
+                  <div id="ilm-day-title" style="font-size:13px;font-weight:900;color:#fbbf24">Oggi</div>
+                  <div id="ilm-day-desc" style="font-size:11px;font-weight:800;color:#e2e8f0">—</div>
+                  <div id="ilm-day-summary" style="font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:1px">—</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                  <div id="ilm-day-temp" style="font-size:20px;font-weight:900;color:#fff">--°</div>
+                  <div id="ilm-day-range" style="font-size:9.5px;font-weight:800;color:#93c5fd">--° / --°</div>
+                </div>
+              </div>
+              <!-- Grafico 24 ore: temperatura + pioggia -->
+              <div id="ilm-graph" style="padding:6px 4px 0;background:#0b1220"></div>
+              <!-- Ora per ora del giorno scelto (pioggia, vento, temperatura) -->
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:7px 10px 2px">
+                <span style="font-size:10px;font-weight:900;color:#a5b4fc;white-space:nowrap"><i class="fa-solid fa-clock"></i> ORA PER ORA · PIOGGIA E VENTO</span>
+                <span id="ilm-hours-info" style="font-size:9.5px;font-weight:800;color:#94a3b8;text-align:right">—</span>
+              </div>
+              <div id="ilm-hours" style="display:flex;gap:4px;overflow-x:auto;padding:0 8px 10px;-webkit-overflow-scrolling:touch"></div>
+              <!-- Dettagli del giorno scelto -->
+              <div id="ilm-tiles" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 10px 10px"></div>
+              <div id="ilm-alert" style="display:none;margin:0 10px 10px;background:#7f1d1d;border:1px solid #b91c1c;color:#fecaca;font-size:10.5px;font-weight:800;padding:6px 9px;border-radius:8px"></div>
             </div>
-            <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
-              ☀️ Previsioni in stile ilmeteo.it • Dati live Open-Meteo (aria, vento, pioggia, mare) • Tocca "ilmeteo.it qui" per il sito ufficiale dentro l'app
+            <div style="padding:7px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
+              📡 Tutto dentro l'app, nessun link esterno • Dati live Open-Meteo (modelli ECMWF/ICON + modello onde/mare) • Si aggiorna ad ogni apertura
             </div>
           </div>
 
@@ -1567,10 +1666,13 @@
             </div>
             <div class="map-frame" id="windy-frame-box">
               <iframe id="windy-frame" src="about:blank" style="width:100%;height:100%;border:0;display:block" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="Mappa dei Venti Live Windy"></iframe>
+              <div class="map-lock-hint" id="windy-lock-hint" style="z-index:22"><span>✋ Mappa bloccata: il dito scorre la pagina<br>Tieni premuto per muovere la mappa</span></div>
+              <div id="windy-lock" style="position:absolute;inset:0;z-index:21;background:transparent"></div>
+              <button id="windy-lockbtn" class="map-lock-chip" style="bottom:8px;left:8px;z-index:24" onclick="toggleWindyLock()"><i class="fa-solid fa-lock"></i> Bloccata</button>
               <button id="windy-fs-close" onclick="windyFullscreen()" style="display:none;position:absolute;top:70px;left:8px;z-index:10002;background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.7);align-items:center;gap:6px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
             </div>
             <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid var(--border)">
-              🌬️ Pizzica la mappa per zoomare sulla tua località • Direzione e velocità del vento in km/h • Dati Windy.com
+              🌬️ Mappa bloccata: il dito scorre la pagina • Tieni premuto sulla mappa (o usa il pulsante) per muoverla • Dati Windy.com
             </div>
           </div>
 
@@ -1587,6 +1689,8 @@
             </div>
             <div class="map-frame">
               <div id="mapview"></div>
+              <div class="map-lock-hint" id="mapview-lock-hint"><span>✋ Mappa bloccata: il dito scorre la pagina<br>Tieni premuto per muovere la mappa</span></div>
+              <button id="mapview-lockbtn" class="map-lock-chip" style="bottom:8px;left:8px" onclick="toggleLeafletLock()"><i class="fa-solid fa-lock"></i> Bloccata</button>
               <div class="map-banner"><i class="fa-solid fa-hand-pointer" style="color:#38bdf8"></i> Tocca per salvare uno Spot ⭐</div>
               <div class="fab-stack">
                 <button class="fab" id="gpsbtn" onclick="doGPS()" title="GPS"><i class="fa-solid fa-location-crosshairs"></i></button>
@@ -2246,21 +2350,6 @@
     </div>
 
     <!-- MODAL: AGGIUNGI / MODIFICA WEBCAM CON ASSISTENTE E INCOLLA APPUNTI -->
-    <!-- MODAL: ILMETEO.IT IN-APP (pagina ufficiale della tua zona) -->
-    <div class="modal" id="modal-ilmeteo" style="z-index:10050;background:rgba(2,6,23,0.98);align-items:stretch">
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0b1220">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;background:#0f172a;border-bottom:1px solid #1e293b">
-          <span style="font-size:12px;font-weight:900;color:#38bdf8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="fa-solid fa-cloud-sun"></i> ilmeteo.it · <span id="ilmeteo-modal-city">Italia</span></span>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <a id="ilmeteo-modal-ext" href="https://www.ilmeteo.it/meteo/ancona" target="_blank" rel="noopener" class="pill" style="text-decoration:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> Browser</a>
-            <button onclick="closeIlMeteoSite()" class="pill" style="background:#dc2626;color:#fff;border:none;font-size:11px"><i class="fa-solid fa-xmark"></i> Chiudi</button>
-          </div>
-        </div>
-        <iframe id="ilmeteo-modal-frame" src="about:blank" style="flex:1 1 auto;width:100%;min-height:0;border:0;background:#fff" referrerpolicy="no-referrer-when-downgrade" title="Previsioni ilmeteo.it"></iframe>
-        <div style="padding:6px 12px;background:#0f172a;color:#94a3b8;font-size:9.5px;text-align:center;border-top:1px solid #1e293b">Pagina ufficiale ilmeteo.it della tua località · Se non si carica, tocca "Browser"</div>
-      </div>
-    </div>
-
     <div class="modal" id="modal-add-webcam">
       <div class="sheet" style="max-height:88vh;overflow-y:auto">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #1e293b">
@@ -2827,126 +2916,221 @@ function ilmWeather(code) {
   return ILM_WMO[code];
 }
 
+// === APP METEO IN-APP: nomi giorni, date sicure e piccoli helper =====
+const METEO_DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+const METEO_WEEK = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+const METEO_WEEK_FULL = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+
+// Parsing SICURO delle date Open-Meteo "2026-09-20T14:00"
+// (Safari su iPhone a volte restituisce Invalid Date con new Date(iso))
+function meteoParseTime(s) {
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function meteoDayKey(s) { return String(s || '').slice(0, 10); }
+function meteoDir(deg) { return METEO_DIRS[Math.round((Number(deg) || 0) / 45) % 8]; }
+function meteoNum(v) { return (v === null || v === undefined || v === '' || isNaN(Number(v))) ? null : Number(v); }
+function meteoHHMM(iso) { const t = String(iso || '').split('T')[1]; return t ? t.slice(0, 5) : '--:--'; }
+function meteoAvg(arr) {
+  const v = arr.filter(x => x !== null && x !== undefined);
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+
 // "Oggi", "Domani", poi "Lun 22", "Mar 23"...
 function ilmDayName(dateStr, idx) {
   if (idx === 0) return 'Oggi';
   if (idx === 1) return 'Domani';
-  const giorni = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
-  const dt = new Date(String(dateStr) + 'T12:00');
-  if (isNaN(dt.getTime())) return String(dateStr);
-  return giorni[dt.getDay()] + ' ' + String(dt.getDate()).padStart(2, '0');
+  const m = String(dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return String(dateStr);
+  const d = new Date(+m[1], +m[2] - 1, +m[3], 12, 0);
+  return METEO_WEEK[d.getDay()] + ' ' + String(d.getDate()).padStart(2, '0');
 }
 
-// Link alla pagina ufficiale ilmeteo.it della località selezionata
-function ilmeteoCitySlug() {
-  const raw = (spot && spot.name) ? String(spot.name) : 'Ancona';
-  const city = raw.split('(')[0].split('/')[0].trim();
-  return city.toLowerCase().replace(/[^a-z0-9àèéìòù\s'-]/gi, '').replace(/\s+/g, '+') || 'ancona';
+// Nome lungo: "Oggi", "Domani", "Mercoledì 23/09"
+function ilmDayLong(dateStr, idx) {
+  if (idx === 0) return 'Oggi';
+  if (idx === 1) return 'Domani';
+  const m = String(dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return String(dateStr);
+  const d = new Date(+m[1], +m[2] - 1, +m[3], 12, 0);
+  return METEO_WEEK_FULL[d.getDay()] + ' ' + String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
 }
 
-function ilmeteoCityUrl() {
-  return 'https://www.ilmeteo.it/meteo/' + ilmeteoCitySlug();
+// ===== LOCALITÀ: nome chiaro e sempre visibile (stessa posizione della mappa) =====
+let spotSourceLabel = 'Spot predefinito';
+let resolvedLocCache = {};
+
+function setMeteoLocation(name, lat, lng, srcLabel) {
+  const n = document.getElementById('ilm-loc-name');
+  const m = document.getElementById('ilm-loc-meta');
+  if (n) n.textContent = '📍 ' + (name || 'Località');
+  if (m) {
+    const src = srcLabel || spotSourceLabel || 'Spot';
+    const coords = (typeof lat === 'number' && typeof lng === 'number') ? (lat.toFixed(4) + ', ' + lng.toFixed(4)) : '—';
+    m.textContent = src + ' · ' + coords + ' · mappa, mare e marea usano la stessa posizione';
+  }
 }
 
-function updateIlMeteoLinks() {
-  const url = ilmeteoCityUrl();
-  const h = document.getElementById('ilm-link-header');
-  const ext = document.getElementById('ilmeteo-modal-ext');
-  if (h) h.href = url;
-  if (ext) ext.href = url;
+// Nome della località dalle coordinate (OpenStreetMap) se il nome non è chiaro
+async function resolveLocalityName(lat, lng) {
+  const key = Number(lat).toFixed(3) + ',' + Number(lng).toFixed(3);
+  if (resolvedLocCache[key] !== undefined) return resolvedLocCache[key];
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=12&addressdetails=1&lat=' + lat + '&lon=' + lng);
+    const d = await r.json();
+    const a = d && d.address;
+    if (!a) { resolvedLocCache[key] = null; return null; }
+    const city = a.city || a.town || a.village || a.municipality || a.county || null;
+    const prov = a.state || a.region || null;
+    const out = city ? (city + (prov ? ' (' + prov + ')' : '')) : null;
+    resolvedLocCache[key] = out;
+    return out;
+  } catch (e) {
+    resolvedLocCache[key] = null;
+    return null;
+  }
 }
 
-// Apre il sito ufficiale ilmeteo.it a schermo intero dentro l'app
-function openIlMeteoSite() {
-  const url = ilmeteoCityUrl();
-  const city = (spot && spot.name) ? String(spot.name).split('(')[0].split('/')[0].trim() : 'Italia';
-  const cityEl = document.getElementById('ilmeteo-modal-city');
-  if (cityEl) cityEl.textContent = city;
-  updateIlMeteoLinks();
-  const f = document.getElementById('ilmeteo-modal-frame');
-  if (f) f.src = url;
-  const m = document.getElementById('modal-ilmeteo');
-  if (m) m.classList.add('on');
-}
-
-function closeIlMeteoSite() {
-  const f = document.getElementById('ilmeteo-modal-frame');
-  if (f) f.src = 'about:blank';
-  const m = document.getElementById('modal-ilmeteo');
-  if (m) m.classList.remove('on');
+function meteoNameNeedsResolve(name) {
+  const s = String(name || '').trim();
+  if (!s) return true;
+  return /posizione|rilevata|attuale|spot gps|località|^italia$/i.test(s);
 }
 
 function initIlMeteoCard() {
-  updateIlMeteoLinks();
-  if (spot && typeof spot.lat === 'number') loadPrecipForecast(spot.lat, spot.lng);
+  setMeteoLocation(spot && spot.name, spot && spot.lat, spot && spot.lng, spotSourceLabel);
+  renderMeteoDays();
 }
 
-// Riempe la card meteo (stile ilmeteo.it) con i dati live Open-Meteo
-function renderIlMeteoCard(wData, marine) {
-  if (!wData || !wData.current) return;
-  const cur = wData.current;
-  const daily = wData.daily || {};
-  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  const days = Array.isArray(daily.time) ? daily.time : [];
+// === APP METEO IN-APP (tutto dentro l'app, nessun link esterno) =====
+let meteoState = { data: null, marine: null, selDay: 0, locName: '', updatedAt: '' };
 
-  const wmo = ilmWeather(cur.weather_code);
-  set('ilm-icon', wmo[0]);
-  set('ilm-temp', Math.round(cur.temperature_2m));
-  set('ilm-desc', wmo[1]);
+function meteoDayHourIndexes(i) {
+  const d = meteoState.data;
+  const out = [];
+  if (!d || !d.hourly || !Array.isArray(d.hourly.time) || !d.daily || !Array.isArray(d.daily.time)) return out;
+  const key = meteoDayKey(d.daily.time[i]);
+  d.hourly.time.forEach((t, k) => { if (meteoDayKey(t) === key) out.push(k); });
+  return out;
+}
 
-  const max0 = (daily.temperature_2m_max && daily.temperature_2m_max[0] != null) ? Math.round(daily.temperature_2m_max[0]) + '°' : '--';
-  const min0 = (daily.temperature_2m_min && daily.temperature_2m_min[0] != null) ? Math.round(daily.temperature_2m_min[0]) + '°' : '--';
-  const rain0 = (daily.precipitation_sum && daily.precipitation_sum[0] != null) ? daily.precipitation_sum[0].toFixed(1) : '0.0';
-  const prob0 = (daily.precipitation_probability_max && daily.precipitation_probability_max[0] != null) ? daily.precipitation_probability_max[0] : null;
-  const feel = (cur.apparent_temperature != null) ? Math.round(cur.apparent_temperature) + '°' : '--';
-  set('ilm-sub', '👕 Percepita ' + feel + ' · Max ' + max0 + ' / Min ' + min0 + ' · 💧 ' + rain0 + ' mm' + (prob0 !== null ? ' (' + prob0 + '%)' : ''));
+// Punto di ingresso: riceve i dati live e disegna tutta la card
+function renderMeteoApp(wData, marine, locName) {
+  if (!wData || !wData.current || !wData.daily || !wData.daily.time) return;
+  meteoState.data = wData;
+  meteoState.marine = marine || null;
+  meteoState.locName = locName || '';
+  const now = new Date();
+  meteoState.updatedAt = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  const nDays = (wData.daily.time || []).length;
+  if (!(meteoState.selDay >= 0 && meteoState.selDay < nDays)) meteoState.selDay = 0;
+  renderMeteoNow();
+  renderMeteoDays();
+  renderMeteoDay(meteoState.selDay);
+}
 
-  const deg = (cur.wind_direction_10m != null) ? cur.wind_direction_10m : 0;
-  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  set('ilm-wind', (cur.wind_speed_10m != null ? cur.wind_speed_10m.toFixed(1) : '--') + ' km/h');
-  set('ilm-wind-dir', dirs[Math.round(deg / 45) % 8] + ' (' + deg + '°)');
-  set('ilm-hum', (cur.relative_humidity_2m != null ? cur.relative_humidity_2m : '--') + '%');
-  set('ilm-press', (cur.surface_pressure != null ? cur.surface_pressure.toFixed(0) : '--') + ' hPa');
-  if (marine && marine.waveHeight != null && isFinite(Number(marine.waveHeight))) {
-    const wh = Number(marine.waveHeight);
-    set('ilm-sea', wh.toFixed(2) + ' m' + ((marine.seaTemp != null && isFinite(Number(marine.seaTemp))) ? ' · ' + Number(marine.seaTemp).toFixed(1) + '°C' : ''));
-  }
-
-  // Tabella previsioni giorno per giorno (stile ilmeteo.it)
+// Messaggio di errore con pulsante Riprova (la card non resta mai vuota)
+function meteoShowError(msg) {
   const host = document.getElementById('ilm-days');
-  if (host && days.length) {
-    host.innerHTML = days.map((d, i) => {
-      const w = ilmWeather(daily.weather_code ? daily.weather_code[i] : null);
-      const mx = (daily.temperature_2m_max && daily.temperature_2m_max[i] != null) ? Math.round(daily.temperature_2m_max[i]) + '°' : '--';
-      const mn = (daily.temperature_2m_min && daily.temperature_2m_min[i] != null) ? Math.round(daily.temperature_2m_min[i]) + '°' : '--';
-      const mm = (daily.precipitation_sum && daily.precipitation_sum[i] != null) ? daily.precipitation_sum[i] : 0;
-      const pr = (daily.precipitation_probability_max && daily.precipitation_probability_max[i] != null) ? daily.precipitation_probability_max[i] : null;
-      const wn = (daily.wind_speed_10m_max && daily.wind_speed_10m_max[i] != null) ? Math.round(daily.wind_speed_10m_max[i]) : '--';
-      const mmColor = mm >= 2 ? '#38bdf8' : (mm > 0 ? '#93c5fd' : '#64748b');
-      return `
-      <div style="display:grid;grid-template-columns:72px 1fr 62px 62px 52px;gap:4px;padding:8px 10px;border-top:1px solid #1e293b;align-items:center;background:${i === 0 ? '#111c33' : 'transparent'}">
-        <span style="font-size:11px;font-weight:900;color:${i < 2 ? '#fbbf24' : '#e2e8f0'}">${ilmDayName(d, i)}</span>
-        <span style="font-size:11px;font-weight:700;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w[0]} ${w[1]}</span>
-        <span style="text-align:right;font-size:11px;font-weight:900;color:#fbbf24">${mx}<span style="color:#93c5fd;font-weight:800"> ${mn}</span></span>
-        <span style="text-align:right;font-size:10.5px;font-weight:800;color:${mmColor}">${mm.toFixed(1)} mm${pr !== null ? '<span style="color:#64748b"> ' + pr + '%</span>' : ''}</span>
-        <span style="text-align:right;font-size:10.5px;font-weight:800;color:#cbd5e1">${wn}</span>
-      </div>`;
-    }).join('');
+  if (host) host.innerHTML = '<div style="font-size:10.5px;color:#fca5a5;font-weight:800;padding:6px 4px">⚠️ ' + msg + '</div>';
+  const h = document.getElementById('ilm-hours');
+  if (h) h.innerHTML = '';
+  const g = document.getElementById('ilm-graph');
+  if (g) g.innerHTML = '<div style="font-size:10px;color:#94a3b8;font-weight:700;padding:6px 10px">Dati non disponibili.</div>';
+  const info = document.getElementById('ilm-hours-info');
+  if (info) info.textContent = '—';
+  const alertBox = document.getElementById('ilm-alert');
+  if (alertBox) alertBox.style.display = 'none';
+  const d1 = document.getElementById('ilm-desc');
+  if (d1) d1.textContent = 'Meteo live non disponibile';
+}
+
+function retryMeteo() {
+  if (typeof spot !== 'undefined' && spot && typeof spot.lat === 'number') {
+    fetchMeteopescaData(spot.lat, spot.lng, spot.name);
+  }
+}
+
+// Condizioni attuali (blocco in alto della card)
+function renderMeteoNow() {
+  const d = meteoState.data;
+  if (!d) return;
+  const cur = d.current || {}, daily = d.daily || {};
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  const w = ilmWeather(cur.weather_code);
+  set('ilm-icon', w[0]);
+  set('ilm-temp', cur.temperature_2m != null ? Math.round(cur.temperature_2m) : '--');
+  set('ilm-desc', w[1]);
+
+  const mx = meteoNum(daily.temperature_2m_max ? daily.temperature_2m_max[0] : null);
+  const mn = meteoNum(daily.temperature_2m_min ? daily.temperature_2m_min[0] : null);
+  const feel = meteoNum(cur.apparent_temperature);
+  const mm = meteoNum(daily.precipitation_sum ? daily.precipitation_sum[0] : null) || 0;
+  const pr = meteoNum(daily.precipitation_probability_max ? daily.precipitation_probability_max[0] : null);
+  set('ilm-sub', '👕 Percepita ' + (feel != null ? Math.round(feel) + '°' : '--')
+    + ' · Max ' + (mx != null ? Math.round(mx) + '°' : '--') + ' / Min ' + (mn != null ? Math.round(mn) + '°' : '--')
+    + ' · 💧 ' + mm.toFixed(1) + ' mm' + (pr != null ? ' (' + pr + '%)' : '')
+    + ' · 🕐 ' + meteoState.updatedAt);
+
+  const gust = meteoNum(cur.wind_gusts_10m);
+  const wdeg = meteoNum(cur.wind_direction_10m);
+  const wsp = meteoNum(cur.wind_speed_10m);
+  set('ilm-wind', (wsp != null ? wsp.toFixed(1) : '--') + ' km/h');
+  set('ilm-wind-dir', meteoDir(wdeg) + (wdeg != null ? ' (' + Math.round(wdeg) + '°)' : '') + (gust != null ? ' · raffiche ' + Math.round(gust) : ''));
+  set('ilm-hum', (cur.relative_humidity_2m != null ? cur.relative_humidity_2m : '--') + '%');
+  set('ilm-press', (cur.surface_pressure != null ? Math.round(cur.surface_pressure) : '--') + ' hPa');
+
+  const m = meteoState.marine;
+  if (m && m.waveHeight != null && isFinite(Number(m.waveHeight))) {
+    set('ilm-sea', Number(m.waveHeight).toFixed(2) + ' m' + ((m.seaTemp != null && isFinite(Number(m.seaTemp))) ? ' · ' + Number(m.seaTemp).toFixed(1) + '°C' : ''));
+  } else {
+    set('ilm-sea', 'n.d.');
   }
 
-  // Avvisi stile ilmeteo.it: pioggia intensa o vento forte su oggi/domani
-  const alerts = [];
-  for (let i = 0; i < Math.min(2, days.length); i++) {
-    const mm = (daily.precipitation_sum && daily.precipitation_sum[i] != null) ? daily.precipitation_sum[i] : 0;
-    const wn = (daily.wind_speed_10m_max && daily.wind_speed_10m_max[i] != null) ? daily.wind_speed_10m_max[i] : 0;
-    const nm = ilmDayName(days[i], i).toLowerCase();
-    if (mm >= 5) alerts.push('🌧️ Pioggia intensa prevista ' + nm + ': ' + mm.toFixed(1) + ' mm');
-    if (wn >= 40) alerts.push('🌬️ Vento forte ' + nm + ': fino a ' + Math.round(wn) + ' km/h');
+  const badge = document.getElementById('ilm-live-badge');
+  if (badge) badge.innerHTML = '<i class="fa-solid fa-tower-broadcast"></i> LIVE ' + meteoState.updatedAt;
+}
+
+// Selettore giorni scorrevole (7 giorni: icona, max/min, pioggia)
+function renderMeteoDays() {
+  const host = document.getElementById('ilm-days');
+  const d = meteoState.data;
+  if (!host) return;
+  if (!d || !d.daily || !Array.isArray(d.daily.time)) {
+    host.innerHTML = '<div style="font-size:10.5px;color:#94a3b8;font-weight:800;padding:6px 4px">Carico le previsioni…</div>';
+    return;
   }
-  const alertBox = document.getElementById('ilm-alert');
-  if (alertBox) {
-    if (alerts.length) { alertBox.style.display = 'block'; alertBox.innerHTML = alerts.join('<br>'); }
-    else { alertBox.style.display = 'none'; }
+  const D = d.daily;
+  host.innerHTML = D.time.map(function (dayStr, i) {
+    const w = ilmWeather(D.weather_code ? D.weather_code[i] : null);
+    const mx = meteoNum(D.temperature_2m_max ? D.temperature_2m_max[i] : null);
+    const mn = meteoNum(D.temperature_2m_min ? D.temperature_2m_min[i] : null);
+    const rain = meteoNum(D.precipitation_sum ? D.precipitation_sum[i] : null) || 0;
+    const pr = meteoNum(D.precipitation_probability_max ? D.precipitation_probability_max[i] : null);
+    const sel = i === meteoState.selDay;
+    return '<button onclick="selectMeteoDay(' + i + ')" style="flex:0 0 76px;width:76px;cursor:pointer;border-radius:12px;padding:7px 4px;text-align:center;border:1.5px solid ' + (sel ? '#f59e0b' : '#334155') + ';background:' + (sel ? '#1e293b' : '#0f172a') + ';color:#e2e8f0">'
+      + '<div style="font-size:9.5px;font-weight:900;color:' + (sel ? '#fbbf24' : '#cbd5e1') + '">' + ilmDayName(dayStr, i) + '</div>'
+      + '<div style="font-size:20px;line-height:1.2">' + w[0] + '</div>'
+      + '<div style="font-size:11px;font-weight:900;color:#fbbf24">' + (mx != null ? Math.round(mx) : '--') + '°<span style="color:#93c5fd"> ' + (mn != null ? Math.round(mn) : '--') + '°</span></div>'
+      + '<div style="font-size:9px;font-weight:800;color:' + (rain >= 2 ? '#38bdf8' : '#64748b') + '">💧 ' + rain.toFixed(1) + 'mm</div>'
+      + (pr != null ? '<div style="font-size:8.5px;font-weight:800;color:#64748b">' + pr + '%</div>' : '')
+      + '</button>';
+  }).join('');
+}
+
+function selectMeteoDay(i) {
+  meteoState.selDay = i;
+  renderMeteoDays();
+  renderMeteoDay(i);
+  // Centra il giorno scelto nella striscia senza far saltare la pagina
+  const host = document.getElementById('ilm-days');
+  if (host && host.children[i]) {
+    const b = host.children[i];
+    const target = b.offsetLeft - 12;
+    host.scrollLeft = Math.max(0, Math.min(target, host.scrollWidth - host.clientWidth));
   }
 }
 
@@ -2970,11 +3154,7 @@ function syncMapFullscreen() {
   }
 }
 
-// === PIOGGIA OGGI + DOMANI ORA PER ORA (Open-Meteo, gratis e senza chiave) ===
-// Striscia oraria: copre TUTTA la giornata di oggi e TUTTA la giornata di domani.
-let precipHours = [];
-let precipLastKey = '';
-const PRECIP_CELL_W = 30;
+// === COLORI DELLE BARRE DI PIOGGIA (usati da grafico e celle orarie) ===
 
 function precipColor(mm) {
   if (!mm || mm <= 0.02) return '#1e293b';
@@ -2985,89 +3165,228 @@ function precipColor(mm) {
   return '#ef4444';
 }
 
-function precipIsSameHour(d1, d2) {
-  return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate() && d1.getHours() === d2.getHours();
+// Tutto il dettaglio del giorno scelto
+function renderMeteoDay(i) {
+  const d = meteoState.data;
+  if (!d || !d.daily || !d.daily.time || !d.daily.time.length) return;
+  const D = d.daily;
+  const dayStr = D.time[i] || D.time[0];
+  const w = ilmWeather(D.weather_code ? D.weather_code[i] : null);
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  const mx = meteoNum(D.temperature_2m_max ? D.temperature_2m_max[i] : null);
+  const mn = meteoNum(D.temperature_2m_min ? D.temperature_2m_min[i] : null);
+  const mm = meteoNum(D.precipitation_sum ? D.precipitation_sum[i] : null) || 0;
+  const pr = meteoNum(D.precipitation_probability_max ? D.precipitation_probability_max[i] : null);
+  const ph = meteoNum(D.precipitation_hours ? D.precipitation_hours[i] : null);
+  const wmax = meteoNum(D.wind_speed_10m_max ? D.wind_speed_10m_max[i] : null);
+  const wdir = meteoNum(D.wind_direction_10m_dominant ? D.wind_direction_10m_dominant[i] : null);
+
+  set('ilm-day-icon', w[0]);
+  set('ilm-day-title', ilmDayLong(dayStr, i));
+  set('ilm-day-desc', w[1]);
+  set('ilm-day-temp', (mx != null ? Math.round(mx) : '--') + '°');
+  set('ilm-day-range', (mx != null ? Math.round(mx) : '--') + '° / ' + (mn != null ? Math.round(mn) : '--') + '°');
+  set('ilm-day-summary', '💧 ' + mm.toFixed(1) + ' mm' + (pr != null ? ' (' + pr + '%)' : '') + (ph != null ? ' · ' + ph + 'h di pioggia' : '')
+    + ' · 🌬️ max ' + (wmax != null ? Math.round(wmax) : '--') + ' km/h' + (wdir != null ? ' ' + meteoDir(wdir) : ''));
+
+  renderMeteoGraph(i);
+  renderMeteoHours(i);
+  renderMeteoTiles(i);
+  renderMeteoAlerts(i);
 }
 
-async function loadPrecipForecast(lat, lng) {
-  const info = document.getElementById('precip-strip-info');
-  const host = document.getElementById('precip-strip');
-  if (!lat && lat !== 0) return;
-  const key = Number(lat).toFixed(3) + ',' + Number(lng).toFixed(3);
-  if (key === precipLastKey && precipHours.length) return; // già caricato per questo spot
-  precipLastKey = key;
-  if (info) info.textContent = 'calcolo…';
-  try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng +
-      '&hourly=precipitation,precipitation_probability&forecast_days=2&timezone=auto&precipitation_unit=mm';
-    const r = await fetch(url);
-    const d = await r.json();
-    const h = d && d.hourly;
-    if (!h || !h.time || !h.time.length) throw new Error('nessun dato');
-    precipHours = h.time.map((t, i) => ({
-      date: new Date(t),
-      mm: (h.precipitation && h.precipitation[i] !== null && h.precipitation[i] !== undefined) ? h.precipitation[i] : 0,
-      prob: (h.precipitation_probability && h.precipitation_probability[i] !== null && h.precipitation_probability[i] !== undefined) ? h.precipitation_probability[i] : null
-    }));
-    renderPrecipStrip();
-  } catch (e) {
-    precipHours = [];
-    if (info) info.textContent = 'previsione non disponibile';
-    if (host) host.innerHTML = '<div style="font-size:10px;color:#94a3b8;padding:4px 8px">Previsione oraria non disponibile: riprova tra poco.</div>';
+// Grafico 24 ore: curva temperatura + barre pioggia + traccia probabilità
+function renderMeteoGraph(i) {
+  const host = document.getElementById('ilm-graph');
+  if (!host) return;
+  const d = meteoState.data;
+  const idx = meteoDayHourIndexes(i);
+  if (!d || !d.hourly || idx.length < 2) {
+    host.innerHTML = '<div style="font-size:10px;color:#94a3b8;font-weight:700;padding:6px 10px">Grafico non disponibile per questo giorno.</div>';
+    return;
   }
+  const H = d.hourly;
+  const temps = idx.map(k => meteoNum(H.temperature_2m ? H.temperature_2m[k] : null));
+  const rains = idx.map(k => meteoNum(H.precipitation ? H.precipitation[k] : null) || 0);
+  const probs = idx.map(k => meteoNum(H.precipitation_probability ? H.precipitation_probability[k] : null));
+  const tvals = temps.filter(v => v !== null);
+  const tmin = tvals.length ? Math.min.apply(null, tvals) : 0;
+  const tmax = tvals.length ? Math.max.apply(null, tvals) : 1;
+  const rmax = Math.max(0.5, Math.max.apply(null, rains));
+  const n = idx.length;
+  const padL = 24, padR = 8;
+  const x = j => padL + ((320 - padL - padR) * j / Math.max(1, n - 1));
+  const yT = v => 10 + (1 - (v - tmin) / Math.max(0.6, tmax - tmin)) * 38;
+
+  let line = '';
+  temps.forEach((v, j) => { if (v === null) return; line += (line ? ' L' : 'M') + x(j).toFixed(1) + ' ' + yT(v).toFixed(1); });
+
+  let bars = '', probPath = '', labels = '', dots = '';
+  const now = new Date();
+  idx.forEach((k, j) => {
+    const hr = meteoParseTime(H.time[k]);
+    const hour = hr ? hr.getHours() : 0;
+    if (rains[j] > 0.02) {
+      const h = Math.max(2, Math.round((rains[j] / rmax) * 22));
+      bars += '<rect x="' + (x(j) - 5).toFixed(1) + '" y="' + (74 - h) + '" width="10" height="' + h + '" rx="2" fill="' + precipColor(rains[j]) + '"/>';
+    }
+    if (probs[j] !== null) probPath += (probPath ? ' L' : 'M') + x(j).toFixed(1) + ' ' + (74 - (probs[j] / 100) * 22).toFixed(1);
+    if (j % 3 === 0) labels += '<text x="' + x(j).toFixed(1) + '" y="88" fill="#64748b" font-size="8" font-weight="700" text-anchor="middle">' + String(hour).padStart(2, '0') + '</text>';
+    if (i === 0 && hr && hr.getDate() === now.getDate() && hour === now.getHours()) {
+      dots += '<line x1="' + x(j).toFixed(1) + '" y1="6" x2="' + x(j).toFixed(1) + '" y2="76" stroke="#4ade80" stroke-width="1" stroke-dasharray="3 2"/>';
+    }
+  });
+  const maxJ = temps.findIndex(v => v === tmax);
+  const minJ = temps.findIndex(v => v === tmin);
+  if (maxJ >= 0) dots += '<circle cx="' + x(maxJ).toFixed(1) + '" cy="' + yT(tmax).toFixed(1) + '" r="2.6" fill="#fbbf24"/>';
+  if (minJ >= 0) dots += '<circle cx="' + x(minJ).toFixed(1) + '" cy="' + yT(tmin).toFixed(1) + '" r="2.6" fill="#60a5fa"/>';
+
+  let svg = '<svg viewBox="0 0 320 96" style="display:block;width:100%;height:auto">';
+  svg += '<rect x="0" y="0" width="320" height="96" fill="#0b1220"/>';
+  svg += '<line x1="22" y1="10" x2="314" y2="10" stroke="#1e293b" stroke-width="1"/>';
+  svg += '<line x1="22" y1="29" x2="314" y2="29" stroke="#1e293b" stroke-width="1" stroke-dasharray="2 3"/>';
+  svg += '<line x1="22" y1="48" x2="314" y2="48" stroke="#1e293b" stroke-width="1" stroke-dasharray="2 3"/>';
+  svg += '<line x1="22" y1="74" x2="314" y2="74" stroke="#334155" stroke-width="1"/>';
+  svg += '<text x="2" y="13" fill="#f59e0b" font-size="8" font-weight="800">' + Math.round(tmax) + '°</text>';
+  svg += '<text x="2" y="51" fill="#60a5fa" font-size="8" font-weight="800">' + Math.round(tmin) + '°</text>';
+  svg += '<text x="2" y="72" fill="#64748b" font-size="8" font-weight="800">mm</text>';
+  if (probPath) svg += '<path d="' + probPath + '" fill="none" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>';
+  svg += bars;
+  if (line) svg += '<path d="' + line + '" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>';
+  svg += dots + labels + '</svg>';
+  host.innerHTML = svg;
 }
 
-function renderPrecipStrip() {
-  const host = document.getElementById('precip-strip');
-  if (!host || !precipHours.length) return;
+// Ora per ora del giorno scelto (pioggia mm, probabilità, vento, temperatura)
+function renderMeteoHours(i) {
+  const host = document.getElementById('ilm-hours');
+  const info = document.getElementById('ilm-hours-info');
+  if (!host) return;
+  const d = meteoState.data;
+  const idx = meteoDayHourIndexes(i);
+  if (!d || !d.hourly || !idx.length) {
+    host.innerHTML = '<div style="font-size:10px;color:#94a3b8;font-weight:700;padding:4px 8px">Ore non disponibili per questo giorno.</div>';
+    if (info) info.textContent = '—';
+    return;
+  }
+  const H = d.hourly;
   const now = new Date();
-  const maxMm = Math.max(0.6, Math.max.apply(null, precipHours.map(h => h.mm || 0)));
-  const two = n => String(n).padStart(2, '0');
+  const isToday = i === 0;
   let html = '';
-  precipHours.forEach((h, i) => {
-    const sameDayAsToday = h.date.toDateString() === now.toDateString();
-    const isNow = precipIsSameHour(h.date, now);
-    // Barra piena = pioggia prevista (mm). Traccia tenue = solo probabilità di pioggia.
-    let pct = 0, color = precipColor(h.mm);
-    if (h.mm > 0) {
-      pct = Math.max(10, Math.round(Math.min(1, h.mm / maxMm) * 100));
-    } else if (h.prob !== null && h.prob >= 30) {
-      pct = Math.max(8, Math.round(h.prob * 0.2));
-      color = '#334155';
-    }
-    const bar = pct
-      ? '<div style="position:absolute;bottom:0;left:3px;right:3px;height:' + pct + '%;background:' + color + ';border-radius:3px 3px 0 0"></div>'
-      : '';
-    html += '<div onclick="precipShowHour(' + i + ')" style="flex:0 0 ' + PRECIP_CELL_W + 'px;width:' + PRECIP_CELL_W + 'px;cursor:pointer">'
-      + '<div style="position:relative;height:34px;background:#0f172a;border-radius:5px;border:1px solid ' + (isNow ? '#6366f1' : '#1e293b') + ';border-bottom:2px solid ' + (isNow ? '#6366f1' : '#334155') + '">' + bar + '</div>'
-      + '<div style="font-size:8.5px;font-weight:' + (isNow ? 900 : 700) + ';color:' + (isNow ? '#a5b4fc' : '#94a3b8') + ';text-align:center;margin-top:1px">' + two(h.date.getHours()) + '</div>'
-      + (h.date.getHours() === 0
-        ? '<div style="font-size:7.5px;font-weight:900;color:' + (sameDayAsToday ? '#4ade80' : '#fbbf24') + ';text-align:center">' + (sameDayAsToday ? 'OGGI' : 'DOMANI') + ' ' + two(h.date.getDate()) + '/' + two(h.date.getMonth() + 1) + '</div>'
-        : '')
+  idx.forEach(k => {
+    const dt = meteoParseTime(H.time[k]);
+    const hour = dt ? dt.getHours() : 0;
+    const isNow = isToday && dt && dt.getDate() === now.getDate() && hour === now.getHours();
+    const w = ilmWeather(H.weather_code ? H.weather_code[k] : null);
+    const temp = meteoNum(H.temperature_2m ? H.temperature_2m[k] : null);
+    const mm = meteoNum(H.precipitation ? H.precipitation[k] : null) || 0;
+    const pr = meteoNum(H.precipitation_probability ? H.precipitation_probability[k] : null);
+    const wind = meteoNum(H.wind_speed_10m ? H.wind_speed_10m[k] : null);
+    const wd = meteoNum(H.wind_direction_10m ? H.wind_direction_10m[k] : null);
+    const mmCol = mm > 0.02 ? precipColor(mm) : '#475569';
+    html += '<div style="flex:0 0 58px;width:58px;background:' + (isNow ? '#1e293b' : '#0f172a') + ';border:1px solid ' + (isNow ? '#4ade80' : '#1e293b') + ';border-radius:10px;padding:5px 3px;text-align:center">'
+      + '<div style="font-size:9.5px;font-weight:900;color:' + (isNow ? '#4ade80' : '#cbd5e1') + '">' + (isNow ? 'ORA' : String(hour).padStart(2, '0')) + '</div>'
+      + '<div style="font-size:16px;line-height:1.15">' + w[0] + '</div>'
+      + '<div style="font-size:11px;font-weight:900;color:#fbbf24">' + (temp != null ? Math.round(temp) + '°' : '--') + '</div>'
+      + '<div style="font-size:9px;font-weight:800;color:' + mmCol + '">💧' + (mm >= 10 ? Math.round(mm) : mm.toFixed(1)) + '</div>'
+      + '<div style="font-size:8.5px;font-weight:800;color:' + ((pr || 0) >= 40 ? '#93c5fd' : '#64748b') + '">' + (pr != null ? pr + '%' : '—') + '</div>'
+      + '<div style="font-size:8.5px;font-weight:800;color:#94a3b8;line-height:1.2">' + (wind != null ? Math.round(wind) + 'km' : '--') + '<br>' + (wd != null ? meteoDir(wd) : '') + '</div>'
       + '</div>';
   });
   host.innerHTML = html;
 
-  const sums = {};
-  precipHours.forEach(h => { const k = h.date.toDateString(); sums[k] = (sums[k] || 0) + (h.mm || 0); });
-  const keys = Object.keys(sums);
-  const info = document.getElementById('precip-strip-info');
   if (info) {
-    info.innerHTML = keys.map((k, i) => (i === 0 ? 'Oggi' : 'Domani') + ' <b style="color:#38bdf8">' + sums[k].toFixed(1) + ' mm</b>').join(' · ');
+    const tot = idx.reduce((s, k) => s + (meteoNum(H.precipitation ? H.precipitation[k] : null) || 0), 0);
+    const maxPr = idx.length ? Math.max.apply(null, idx.map(k => meteoNum(H.precipitation_probability ? H.precipitation_probability[k] : null) || 0)) : 0;
+    const firstRain = idx.find(k => (meteoNum(H.precipitation ? H.precipitation[k] : null) || 0) >= 0.1);
+    let txt = '💧 tot <b style="color:#38bdf8">' + tot.toFixed(1) + ' mm</b> · max ' + maxPr + '%';
+    if (firstRain !== undefined) {
+      const dt = meteoParseTime(H.time[firstRain]);
+      txt += ' · 🌧️ dalle ' + (dt ? String(dt.getHours()).padStart(2, '0') + ':00' : '--');
+    } else {
+      txt += ' · ☀️ asciutto';
+    }
+    info.innerHTML = txt;
   }
-  const nowIdx = precipHours.findIndex(h => precipIsSameHour(h.date, now));
-  if (nowIdx >= 0) host.scrollLeft = Math.max(0, (nowIdx - 2) * (PRECIP_CELL_W + 2));
+  if (isToday) {
+    const nowJ = idx.findIndex(k => { const dt = meteoParseTime(H.time[k]); return dt && dt.getDate() === now.getDate() && dt.getHours() === now.getHours(); });
+    if (nowJ > 1) host.scrollLeft = Math.max(0, (nowJ - 1) * 62);
+  }
 }
 
-function precipShowHour(i) {
-  const h = precipHours[i];
-  const info = document.getElementById('precip-strip-info');
-  if (!h || !info) return;
-  const now = new Date();
-  const dayName = h.date.toDateString() === now.toDateString() ? 'Oggi' : 'Domani';
-  const hhmm = String(h.date.getHours()).padStart(2, '0') + ':00';
-  info.innerHTML = dayName + ' ' + hhmm + ' · <b style="color:' + precipColor(h.mm) + '">' + (h.mm || 0).toFixed(1) + ' mm/h</b>' + (h.prob !== null ? ' · ' + h.prob + '%' : '');
+// Riquadri di dettaglio del giorno scelto
+function renderMeteoTiles(i) {
+  const host = document.getElementById('ilm-tiles');
+  if (!host) return;
+  const d = meteoState.data;
+  if (!d || !d.daily) return;
+  const D = d.daily, H = d.hourly || {};
+  const idx = meteoDayHourIndexes(i);
+  const M = (meteoState.marine && meteoState.marine.day) ? meteoState.marine.day : {};
+  const g = (arr) => meteoNum(arr ? arr[i] : null);
+  const avg = (arr) => meteoAvg(idx.map(k => meteoNum(arr ? arr[k] : null)));
+  const tile = (icon, label, value, sub, color) =>
+    '<div style="background:#0f172a;border:1px solid #1e293b;border-radius:11px;padding:7px 9px">'
+    + '<div style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px">' + icon + ' ' + label + '</div>'
+    + '<div style="font-size:13px;font-weight:900;color:' + (color || '#fff') + ';margin-top:1px">' + value + '</div>'
+    + (sub ? '<div style="font-size:9.5px;font-weight:700;color:#94a3b8;margin-top:1px">' + sub + '</div>' : '')
+    + '</div>';
+
+  const rainTot = g(D.precipitation_sum) || 0;
+  const probMax = g(D.precipitation_probability_max);
+  const rainHours = g(D.precipitation_hours);
+  const rainPeak = idx.length ? Math.max.apply(null, idx.map(k => meteoNum(H.precipitation ? H.precipitation[k] : null) || 0)) : 0;
+  const windMax = g(D.wind_speed_10m_max), gustMax = g(D.wind_gusts_10m_max), windDir = g(D.wind_direction_10m_dominant);
+  const humAvg = avg(H.relative_humidity_2m), cloudAvg = avg(H.cloud_cover), uvMax = g(D.uv_index_max);
+  const appMax = g(D.apparent_temperature_max), appMin = g(D.apparent_temperature_min);
+  const durH = g(D.daylight_duration);
+  const waveMax = meteoNum(M.wave_height_max ? M.wave_height_max[i] : null);
+  const wavePer = meteoNum(M.wave_period_max ? M.wave_period_max[i] : null);
+  const waveDir = meteoNum(M.wave_direction_dominant ? M.wave_direction_dominant[i] : null);
+  const seaTempMax = meteoNum(M.sea_surface_temperature_max ? M.sea_surface_temperature_max[i] : null);
+
+  const uvLabel = uvMax === null ? 'n.d.' : (uvMax < 3 ? 'basso' : uvMax < 6 ? 'moderato' : uvMax < 8 ? 'alto' : 'molto alto');
+  const rainSub = (probMax !== null ? probMax + '% prob' : '') + (rainHours !== null ? ' · ' + rainHours + 'h' : '') + (rainPeak > 0.05 ? ' · picco ' + rainPeak.toFixed(1) + ' mm/h' : '');
+  const windSub = (gustMax !== null ? 'raffiche fino a ' + Math.round(gustMax) + ' km/h' : '') + (windDir !== null ? ' · da ' + meteoDir(windDir) : '');
+  const seaVal = waveMax !== null ? (waveMax.toFixed(2) + ' m' + (waveDir !== null ? ' ' + meteoDir(waveDir) : '')) : 'n.d.';
+  const seaSub = (wavePer !== null ? 'periodo ' + wavePer.toFixed(1) + 's' : '') + (seaTempMax !== null ? ' · acqua ' + seaTempMax.toFixed(1) + '°C' : '');
+
+  host.innerHTML = [
+    tile('🌧️', 'Pioggia', rainTot.toFixed(1) + ' mm', rainSub, rainTot >= 2 ? '#38bdf8' : '#fff'),
+    tile('🌬️', 'Vento', (windMax !== null ? Math.round(windMax) + ' km/h' : '--'), windSub),
+    tile('🌊', 'Mare', seaVal, seaSub, (waveMax !== null && waveMax >= 1.2) ? '#f87171' : '#38bdf8'),
+    tile('🌡️', 'Percepita', (appMax !== null ? Math.round(appMax) + '°' : '--') + ' / ' + (appMin !== null ? Math.round(appMin) + '°' : '--'), 'massima / minima'),
+    tile('💦', 'Umidità', humAvg !== null ? Math.round(humAvg) + '%' : '--', 'media del giorno'),
+    tile('☁️', 'Nuvole', cloudAvg !== null ? Math.round(cloudAvg) + '%' : '--', 'copertura media'),
+    tile('☀️', 'UV max', uvMax !== null ? uvMax.toFixed(1) : '--', uvLabel),
+    tile('🌅', 'Alba / Tramonto', meteoHHMM(D.sunrise ? D.sunrise[i] : null) + ' – ' + meteoHHMM(D.sunset ? D.sunset[i] : null), durH !== null ? Math.round(durH / 3600) + 'h ' + Math.round((durH % 3600) / 60) + 'm di luce' : '')
+  ].join('');
+}
+
+// Avvisi del giorno scelto (pioggia, raffiche, mare, caldo)
+function renderMeteoAlerts(i) {
+  const box = document.getElementById('ilm-alert');
+  if (!box) return;
+  const d = meteoState.data;
+  if (!d || !d.daily) { box.style.display = 'none'; return; }
+  const D = d.daily;
+  const M = (meteoState.marine && meteoState.marine.day) ? meteoState.marine.day : {};
+  const mm = meteoNum(D.precipitation_sum ? D.precipitation_sum[i] : null) || 0;
+  const gust = meteoNum(D.wind_gusts_10m_max ? D.wind_gusts_10m_max[i] : null);
+  const wave = meteoNum(M.wave_height_max ? M.wave_height_max[i] : null);
+  const app = meteoNum(D.apparent_temperature_max ? D.apparent_temperature_max[i] : null);
+  const nm = ilmDayName(D.time[i], i).toLowerCase();
+  const al = [];
+  if (mm >= 5) al.push('🌧️ Pioggia intensa ' + nm + ': ' + mm.toFixed(1) + ' mm previsti');
+  if (gust !== null && gust >= 40) al.push('🌬️ Raffiche forti ' + nm + ': fino a ' + Math.round(gust) + ' km/h');
+  if (wave !== null && wave >= 1.2) al.push('🌊 Mare mosso ' + nm + ': onde fino a ' + wave.toFixed(2) + ' m');
+  if (app !== null && app >= 33) al.push('🥵 Caldo intenso ' + nm + ': percepita fino a ' + Math.round(app) + '°');
+  if (al.length) {
+    box.style.display = 'block';
+    box.innerHTML = '<div style="font-weight:900;margin-bottom:2px">⚠️ Avvisi · ' + ilmDayLong(D.time[i], i) + '</div>' + al.join('<br>');
+  } else {
+    box.style.display = 'none';
+  }
 }
 
 
@@ -3112,7 +3431,129 @@ function windyFullscreen() {
   const on = card.classList.toggle('windy-fs');
   syncMapFullscreen();
   if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> Chiudi' : '<i class="fa-solid fa-expand"></i> Zoom';
+  // In schermo intero la mappa si può muovere subito; chiudendo torna bloccata
+  if (on) unlockWindyTemporarily(); else { clearTimeout(windyUnlockTimer); lockWindyMap(true); }
   setTimeout(() => { if (map) map.invalidateSize(); }, 250);
+}
+
+// === BLOCCO SCROLL DELLE MAPPE =====
+// Con la mappa BLOCCATA il dito scorre la pagina (la mappa non si muove).
+// Si attiva con una pressione prolungata (dito appoggiato ~0,45s) o dal pulsante.
+const MAP_UNLOCK_MS = 15000;
+let leafletUnlockTimer = null;
+let windyUnlockTimer = null;
+let leafletLongPressAt = 0;
+
+function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 15); } catch (e) {} }
+
+function bindLongPress(el, cb, ms) {
+  if (!el) return;
+  let timer = null, sx = 0, sy = 0;
+  const start = (e) => {
+    if (e.touches && e.touches.length > 1) { clearTimeout(timer); return; }
+    const t = (e.touches && e.touches[0]) || e;
+    sx = t.clientX; sy = t.clientY;
+    clearTimeout(timer);
+    timer = setTimeout(cb, ms || 450);
+  };
+  const move = (e) => {
+    const t = (e.touches && e.touches[0]) || e;
+    if (Math.abs(t.clientX - sx) > 12 || Math.abs(t.clientY - sy) > 12) clearTimeout(timer);
+  };
+  const stop = () => clearTimeout(timer);
+  el.addEventListener('touchstart', start, { passive: true });
+  el.addEventListener('touchmove', move, { passive: true });
+  el.addEventListener('touchend', stop, { passive: true });
+  el.addEventListener('touchcancel', stop, { passive: true });
+  el.addEventListener('mousedown', start);
+  el.addEventListener('mousemove', move);
+  el.addEventListener('mouseup', stop);
+}
+
+// --- Mappa satellite (Leaflet): blocco trascinamento e zoom con il dito ---
+function lockLeafletMap(lock) {
+  const box = document.getElementById('mapview');
+  if (box) box.classList.toggle('map-locked', !!lock);
+  const hint = document.getElementById('mapview-lock-hint');
+  if (hint) hint.style.display = lock ? 'flex' : 'none';
+  const btn = document.getElementById('mapview-lockbtn');
+  if (btn) {
+    btn.classList.toggle('on', !lock);
+    btn.innerHTML = lock ? '<i class="fa-solid fa-lock"></i> Bloccata' : '<i class="fa-solid fa-lock-open"></i> Attiva';
+  }
+  if (!map) return;
+  try {
+    if (lock) {
+      map.dragging.disable(); map.touchZoom.disable(); map.scrollWheelZoom.disable();
+      map.doubleClickZoom.disable(); map.boxZoom.disable();
+    } else {
+      map.dragging.enable(); map.touchZoom.enable(); map.doubleClickZoom.enable(); map.boxZoom.enable();
+    }
+  } catch (e) {}
+}
+
+function unlockLeafletTemporarily() {
+  lockLeafletMap(false);
+  haptic(20);
+  leafletLongPressAt = Date.now();
+  clearTimeout(leafletUnlockTimer);
+  leafletUnlockTimer = setTimeout(() => lockLeafletMap(true), MAP_UNLOCK_MS);
+}
+
+function toggleLeafletLock() {
+  const box = document.getElementById('mapview');
+  if (!box) return;
+  if (box.classList.contains('map-locked')) unlockLeafletTemporarily();
+  else { clearTimeout(leafletUnlockTimer); lockLeafletMap(true); }
+}
+
+// --- Mappa dei venti (Windy, iframe): overlay trasparente quando è bloccata ---
+function lockWindyMap(lock) {
+  const ov = document.getElementById('windy-lock');
+  if (ov) ov.style.pointerEvents = lock ? 'auto' : 'none';
+  const hint = document.getElementById('windy-lock-hint');
+  if (hint) hint.style.display = lock ? 'flex' : 'none';
+  const btn = document.getElementById('windy-lockbtn');
+  if (btn) {
+    btn.classList.toggle('on', !lock);
+    btn.innerHTML = lock ? '<i class="fa-solid fa-lock"></i> Bloccata' : '<i class="fa-solid fa-lock-open"></i> Attiva';
+  }
+}
+
+function unlockWindyTemporarily() {
+  lockWindyMap(false);
+  haptic(20);
+  clearTimeout(windyUnlockTimer);
+  const card = document.getElementById('windy-card');
+  if (card && card.classList.contains('windy-fs')) return; // in schermo intero resta attiva
+  windyUnlockTimer = setTimeout(() => lockWindyMap(true), MAP_UNLOCK_MS);
+}
+
+function toggleWindyLock() {
+  const ov = document.getElementById('windy-lock');
+  const locked = !ov || ov.style.pointerEvents !== 'none';
+  if (locked) unlockWindyTemporarily();
+  else { clearTimeout(windyUnlockTimer); lockWindyMap(true); }
+}
+
+function initMapScrollLocks() {
+  lockLeafletMap(true);
+  lockWindyMap(true);
+  const mv = document.getElementById('mapview');
+  bindLongPress(mv, unlockLeafletTemporarily);
+  bindLongPress(document.getElementById('windy-lock'), unlockWindyTemporarily);
+  // Dopo la pressione prolungata non deve aprirsi anche il popup "salva spot"
+  const frame = (mv && mv.parentElement) ? mv.parentElement : null;
+  if (frame) {
+    frame.addEventListener('click', function (ev) {
+      if (Date.now() - leafletLongPressAt > 800) return;
+      const t = ev.target;
+      if (t && t.closest && t.closest('.leaflet-container')) {
+        ev.stopPropagation();
+        ev.preventDefault();
+      }
+    }, true);
+  }
 }
 
 // === MAPPA GOOGLE SATELLITARE ===
@@ -3142,6 +3583,8 @@ function initMap() {
   drawMarkers();
   setTimeout(() => { if (map) map.invalidateSize(); }, 150);
   setTimeout(() => { if (map) map.invalidateSize(); }, 800);
+  // La mappa parte BLOCCATA: il dito scorre la pagina, non la mappa
+  lockLeafletMap(true);
 }
 
 function cycleLayer() {
@@ -3208,6 +3651,7 @@ function doGPS() {
       }
 
       spot = { name: realName, reg: "GPS", lat: lat, lng: lng, seaBase: 26.5 };
+      spotSourceLabel = 'Posizione GPS';
       document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${spot.name}`;
       if (map) map.setView([spot.lat, spot.lng], 15);
       drawMarkers();
@@ -3304,6 +3748,7 @@ function autoGeolocateOnStartup() {
             const cityName = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "Posizione Rilevata";
             const ns = { name: `${cityName} (GPS)`, reg: data.address?.state || "Italia", lat: lat, lng: lng, seaBase: 26.5 };
             spot = ns;
+            spotSourceLabel = 'Posizione GPS';
             document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> ${spot.name}`;
             if (map) map.setView([lat, lng], 14);
             drawMarkers();
@@ -3312,6 +3757,7 @@ function autoGeolocateOnStartup() {
           .catch(() => {
             const ns = { name: "Posizione GPS Attuale", reg: "Italia", lat: lat, lng: lng, seaBase: 26.5 };
             spot = ns;
+            spotSourceLabel = 'Posizione GPS';
             document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> ${spot.name}`;
             if (map) map.setView([lat, lng], 14);
             drawMarkers();
@@ -3331,6 +3777,7 @@ function pickLoc(n) {
   const s = locs.find(l => l.name === n);
   if (!s) return;
   spot = s;
+  spotSourceLabel = 'Località scelta da te';
   document.getElementById('spot-label').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${s.name}`;
   if (map) map.setView([s.lat, s.lng], 13);
   drawMarkers();
@@ -3474,8 +3921,19 @@ async function fetchMeteopescaData(lat, lng, locName) {
   const mp = computeMeteopescaTides(today, lat, lng);
   const moon = mp.moon;
 
-  // Previsione pioggia oggi + domani (striscia sotto il radar)
-  loadPrecipForecast(lat, lng);
+  // Località usata dalla card meteo (stessa posizione di mappa, mare e marea)
+  setMeteoLocation(locName || (spot && spot.name), lat, lng, spotSourceLabel);
+  if (meteoNameNeedsResolve(locName)) {
+    resolveLocalityName(lat, lng).then(nm => {
+      if (!nm) return;
+      if (typeof spot !== 'undefined' && spot && Math.abs(spot.lat - lat) < 0.0002 && Math.abs(spot.lng - lng) < 0.0002) {
+        spot.name = nm;
+        const lbl = document.getElementById('spot-label');
+        if (lbl) lbl.innerHTML = '<i class="fa-solid fa-location-dot"></i> ' + nm;
+      }
+      setMeteoLocation(nm, lat, lng, spotSourceLabel);
+    });
+  }
 
   // === MAREE REALI da modello numerico Open-Meteo (sea_level_height_msl) — gratis, senza chiave ===
   let realTideExtremes = null;
@@ -3596,15 +4054,16 @@ async function fetchMeteopescaData(lat, lng, locName) {
 
   // 5. Fetch Meteo Reale da Open-Meteo
   try {
-    const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,surface_pressure,wind_speed_10m,wind_direction_10m,weather_code,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&forecast_days=5&hourly=temperature_2m,surface_pressure,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`);
+    const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,precipitation,cloud_cover,is_day&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,precipitation_probability,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,uv_index_max,precipitation_sum,precipitation_probability_max,precipitation_hours,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant&forecast_days=7&wind_speed_unit=kmh&timezone=auto`);
     const wData = await wResp.json();
 
     let waveDataHourly = [0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12];
     let waveHeight = 0.30, wavePeriod = 3.2, waveDir = 90;
     let realSeaTemp = null;
+    let marineData = null;
 
     try {
-      const mResp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=wave_height,wave_period,wave_direction,sea_surface_temperature&hourly=wave_height,wave_period,wave_direction&timezone=auto`);
+      const mResp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=wave_height,wave_period,wave_direction,sea_surface_temperature&hourly=wave_height,wave_period,wave_direction,sea_surface_temperature&daily=wave_height_max,wave_period_max,wave_direction_dominant,sea_surface_temperature_max&forecast_days=7&timezone=auto`);
       const mData = await mResp.json();
       if (mData && mData.hourly && mData.hourly.wave_height && mData.hourly.wave_height.length > 0) {
         // Campiona le onde ogni 3 ore per allinearle alle etichette del grafico (00:00, 03:00, ... 24:00)
@@ -3621,16 +4080,27 @@ async function fetchMeteopescaData(lat, lng, locName) {
           realSeaTemp = mData.current.sea_surface_temperature;
         }
       }
+      marineData = {
+        waveHeight: waveHeight, wavePeriod: wavePeriod, waveDir: waveDir, seaTemp: realSeaTemp,
+        hourly: (mData && mData.hourly) ? mData.hourly : null,
+        day: (mData && mData.daily) ? mData.daily : null
+      };
     } catch(e){}
 
-    const currentAir = wData.current ? wData.current.temperature_2m.toFixed(1) : "26.4";
-    const maxAir = wData.daily ? wData.daily.temperature_2m_max[0].toFixed(0) : "30";
-    const minAir = wData.daily ? wData.daily.temperature_2m_min[0].toFixed(0) : "22";
-    const currentPress = wData.current ? wData.current.surface_pressure.toFixed(1) : "1013.2";
-    const currentWindKm = wData.current ? wData.current.wind_speed_10m.toFixed(1) : "8.5";
-    const currentWindDeg = wData.current ? wData.current.wind_direction_10m : 90;
-    const currentHumidity = wData.current ? wData.current.relative_humidity_2m : 55;
-    const currentUv = wData.daily ? wData.daily.uv_index_max[0].toFixed(1) : "6.8";
+    // 1) Disegna subito TUTTA la card meteo in-app (aria, vento, pioggia oraria, mare, 7 giorni)
+    renderMeteoApp(wData, marineData, locName || spot.name);
+
+    // 2) Valori rapidi delle altre card: se manca qualche dato non blocca la card meteo
+    try {
+    const nn = (v, dflt) => (v === null || v === undefined || isNaN(Number(v))) ? dflt : Number(v);
+    const currentAir = wData.current ? nn(wData.current.temperature_2m, 20).toFixed(1) : "26.4";
+    const maxAir = wData.daily ? nn(wData.daily.temperature_2m_max ? wData.daily.temperature_2m_max[0] : null, 30).toFixed(0) : "30";
+    const minAir = wData.daily ? nn(wData.daily.temperature_2m_min ? wData.daily.temperature_2m_min[0] : null, 22).toFixed(0) : "22";
+    const currentPress = wData.current ? nn(wData.current.surface_pressure, 1013.2).toFixed(1) : "1013.2";
+    const currentWindKm = wData.current ? nn(wData.current.wind_speed_10m, 8.5).toFixed(1) : "8.5";
+    const currentWindDeg = wData.current ? nn(wData.current.wind_direction_10m, 90) : 90;
+    const currentHumidity = wData.current ? nn(wData.current.relative_humidity_2m, 55) : 55;
+    const currentUv = (wData.daily && wData.daily.uv_index_max && wData.daily.uv_index_max[0] != null) ? wData.daily.uv_index_max[0].toFixed(1) : "--";
 
     let sunriseStr = "06:28", sunsetStr = "20:02";
     if (wData.daily && wData.daily.sunrise) {
@@ -3664,14 +4134,13 @@ async function fetchMeteopescaData(lat, lng, locName) {
     if (timeBadge) timeBadge.innerHTML = `🟢 Live ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
     updateCharts(waveDataHourly, mp);
-    renderIlMeteoCard(wData, { waveHeight: waveHeight, wavePeriod: wavePeriod, seaTemp: realSeaTemp });
-    updateIlMeteoLinks();
+    } catch (e2) { console.log('Valori rapidi non disponibili:', e2); }
   } catch(err) {
     if (timeBadge) timeBadge.innerHTML = '🟢 Meteopesca Live';
     updateCharts([0.34, 0.30, 0.26, 0.24, 0.20, 0.18, 0.16, 0.14, 0.12], mp);
-    const ilmDesc = document.getElementById('ilm-desc');
-    if (ilmDesc) ilmDesc.textContent = 'Dati live non disponibili: apri ilmeteo.it';
-    updateIlMeteoLinks();
+    meteoShowError('Meteo e mare live non disponibili: controlla la connessione e riprova.');
+    const hInfo = document.getElementById('ilm-hours-info');
+    if (hInfo) hInfo.innerHTML = '<button class="pill" onclick="retryMeteo()" style="font-size:9.5px"><i class="fa-solid fa-rotate-right"></i> Riprova</button>';
   }
 }
 
@@ -6987,6 +7456,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initMap();
   loadWindyMap();
   initIlMeteoCard();
+  initMapScrollLocks();
   generateMonthlyMoonStrip();
   fetchMeteopescaData(spot.lat, spot.lng, spot.name);
   renderWebcams();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pescapro-v34-meteo-ilmeteo-webcam-memoria';
+const CACHE_NAME = 'pescapro-v35-meteo-in-app-mappe-bloccate';
 const urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
